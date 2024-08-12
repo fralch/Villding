@@ -12,6 +12,7 @@ export default function RootNavigator() {
         <Stack.Screen
           name='Login'
           component={Login}
+          options={{ headerShown: false }}
         />
       </Stack.Navigator>
     </NavigationContainer>

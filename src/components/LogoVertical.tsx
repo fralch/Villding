@@ -15,8 +15,8 @@ import { SvgXml } from 'react-native-svg';
 function LogoVertical() {
   return (
     <View>
-      <Image source={require('../../assets/images/logo-icon_dark.png')} />
-      <Image source={require('../../assets/images/logo-text_dark.png')} />
+      <Image source={require('../assets/images/logo-icon_dark.png')} />
+      <Image source={require('../assets/images/logo-text_dark.png')} />
     </View>
   );
 }

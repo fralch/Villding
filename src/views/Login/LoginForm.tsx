@@ -18,9 +18,13 @@ function LoginForm() {
   return (
     <View>
       <TextoInput placeholder={'loginScreen.emailPlaceholder'} />
-      <PasswordInput placeholder={'loginScreen.passPlaceholder'} />
+      <PasswordInput
+        placeholder={'loginScreen.passPlaceholder'}
+        label={'loginScreen.passPlaceholder'}
+        onChange={() => {}}
+      />
       <TouchableOpacity>
-        <Text>{t('loginScreen.btnSubmit')}</Text>
+        <Text>{'loginScreen.btnSubmit'}</Text>
       </TouchableOpacity>
     </View>
   );
