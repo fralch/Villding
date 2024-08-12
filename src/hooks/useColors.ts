@@ -1,71 +1,37 @@
-import React, { useContext } from 'react';
+// useColors.ts
+import { useColorScheme } from 'react-native';
+import { lightTheme, darkTheme } from './themes';
+import { ThemeMode } from './../types/data';
 
-type ColorMode = 'dark' | 'light';
+function useColors(mode: ThemeMode = 'dark') {
+  const colorScheme = useColorScheme();
+  const m = colorScheme ?? mode;
+  const theme = m === 'dark' ? darkTheme : lightTheme;
 
-interface Colors {
-  bg10: string;
-  bg20: string;
-  bg30: string;
-  txt60: string;
-  txt80: string;
-  txt: string;
-  danger: string;
-  warning: string;
-  success: string;
-  primary: string;
-  white: string;
-  accent: string;
-}
-
-interface ColorContextType {
-  colors: Colors;
-  colorMode: ColorMode;
-  toggleColorMode: () => void;
-}
-
-const ColorContext = React.createContext<ColorContextType>({
-  colors: {
-    bg10: '',
-    bg20: '',
-    bg30: '',
-    txt60: '',
-    txt80: '',
-    txt: '',
-    danger: '',
-    warning: '',
-    success: '',
-    primary: '',
-    white: '',
-    accent: '',
-  },
-  colorMode: 'dark',
-  toggleColorMode: () => {},
-});
-
-export default function useColors(): ColorContextType {
-  const { colors, colorMode, toggleColorMode } = useContext(ColorContext);
-  return { colors, colorMode, toggleColorMode };
-}
-
-export function ColorProvider({ children }: { children: React.ReactNode }) {
-  const [colorMode, setColorMode] = React.useState<ColorMode>('dark');
+  const colors = {
+    bg10: theme.background[10],
+    bg20: theme.background[20],
+    bg30: theme.background[30],
+    txt60: theme.text[60],
+    txt80: theme.text[80],
+    txt: theme.text[80], // You can customize this based on your needs
+    danger: theme.danger,
+    warning: theme.warning,
+    success: theme.success,
+    primary: theme.primary,
+    white: theme.white,
+    accent: theme.accent,
+  };
 
   const toggleColorMode = () => {
-    setColorMode(colorMode === 'dark' ? 'light' : 'dark');
+    // Implement your logic to toggle color mode
   };
 
-  const colors: Colors = {
-    bg10: colorMode === 'dark' ? '#121212' : '#ffffff',
-    bg20: colorMode === 'dark' ? '#1f1f1f' : '#f2f2f2',
-    bg30: colorMode === 'dark' ? '#2c2c2c' : '#e6e6e6',
-    txt60: colorMode === 'dark' ? '#f2f2f2' : '#121212',
-    txt80: colorMode === 'dark' ? '#cccccc' : '#333333',
-    txt: colorMode === 'dark' ? '#ffffff' : '#000000',
-    danger: '#ff3b30',
-    warning: '#ff9500',
-    success: '#30d158',
-    primary: colorMode === 'dark' ? '#0a84ff' : '#007aff',
-    white: '#ffffff',
-    accent: '#5ac8fa',
+  return {
+    colors,
+    colorMode: colorScheme,
+    toggleColorMode,
   };
 }
+
+export default useColors;

@@ -16,7 +16,7 @@ import PasswordInput from './../../components/inputs/PasswordInput';
 
 function LoginForm() {
   return (
-    <View>
+    <View style={styles.container}>
       <TextoInput placeholder={'loginScreen.emailPlaceholder'} />
       <PasswordInput
         placeholder={'loginScreen.passPlaceholder'}
@@ -29,5 +29,21 @@ function LoginForm() {
     </View>
   );
 }
+const styles = StyleSheet.create({
+  container: {
+    padding: 16,
+  },
+  input: {
+    height: 40,
+    borderColor: 'gray',
+    borderWidth: 1,
+    marginBottom: 12,
+    paddingHorizontal: 8,
+  },
+  orText: {
+    textAlign: 'center',
+    marginVertical: 16,
+  },
+});
 
 export default LoginForm;
