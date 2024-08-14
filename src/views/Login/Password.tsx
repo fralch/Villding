@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import {
   View,
@@ -13,8 +14,9 @@ import {
 
 const { width, height } = Dimensions.get('window');
 
-function Login(): JSX.Element {
+function Password(): JSX.Element {
   const { navigate } = useNavigation();
+  const [secureText, setSecureText] = useState(true);
 
   return (
     <ScrollView
@@ -38,6 +40,16 @@ function Login(): JSX.Element {
           style={{ width: width * 0.5, resizeMode: 'contain', marginTop: -10 }}
         />
         <View style={{ width: '90%', maxWidth: 300 }}>
+          <Text
+            style={{
+              color: 'grey',
+              fontSize: 15,
+              textAlign: 'center',
+              marginBottom: 10,
+            }}
+          >
+            Ingresa tu contraseña
+          </Text>
           <TextInput
             style={{
               height: 50,
@@ -47,10 +59,10 @@ function Login(): JSX.Element {
               paddingHorizontal: 10,
               fontSize: 17,
             }}
-            placeholder='Escribe tu correo '
+            placeholder='Escribe tu contraseña '
             placeholderTextColor='grey'
-            keyboardType='email-address'
             autoCapitalize='none'
+            secureTextEntry={true}
           />
           <TouchableOpacity style={{ marginTop: 20 }}>
             <Text
@@ -63,33 +75,9 @@ function Login(): JSX.Element {
                 borderRadius: 5,
                 width: '100%',
               }}
-              onPress={() => navigate('Password')}
+              onPress={() => navigate('Verificacion')}
             >
-              Continuar
-            </Text>
-          </TouchableOpacity>
-
-          <Text style={{ color: 'white', textAlign: 'center', marginTop: 20 }}>
-            O
-          </Text>
-          <TouchableOpacity style={{ marginTop: 20 }}>
-            <Text
-              style={{
-                color: 'white',
-                fontWeight: 'bold',
-                fontSize: 16,
-                textAlign: 'center',
-                backgroundColor: '#4285F4',
-                padding: 10,
-                borderRadius: 5,
-                width: '100%',
-              }}
-            >
-              <Image
-                source={require('../../assets/images/google-logo.png')}
-                style={{ width: 20, height: 20, marginRight: 10 }}
-              />
-              Acceder con Google
+              Ingresar
             </Text>
           </TouchableOpacity>
         </View>
@@ -105,4 +93,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Login;
+export default Password;
