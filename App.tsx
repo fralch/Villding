@@ -5,6 +5,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import Login from './src/views/Login/Login';
 import Password from './src/views/Login/Password';
 import Verificacion from './src/views/Login/Verificacion';
+import CreacionCuenta from './src/views/Login/CreacionCuenta';
 
 export default function RootNavigator() {
   const Stack = createNativeStackNavigator();
@@ -21,6 +22,10 @@ export default function RootNavigator() {
     {
       name: 'Verificacion',
       component: Verificacion,
+    },
+    {
+      name: 'CreacionCuenta',
+      component: CreacionCuenta,
     },
   ];
 

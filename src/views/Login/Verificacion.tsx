@@ -62,6 +62,12 @@ function Verificacion(): JSX.Element {
             keyboardType='number-pad'
             autoCapitalize='none'
           />
+          <Text style={{ color: 'grey', marginTop: 10 }}>
+            Ingresa el código que enviamos a tu correo.
+          </Text>
+          <Text style={{ color: 'grey', marginTop: 5 }}>
+            Recuerda revisar Spam o Notificaciones.
+          </Text>
           <TouchableOpacity style={{ marginTop: 20 }}>
             <Text
               style={{
@@ -73,11 +79,29 @@ function Verificacion(): JSX.Element {
                 borderRadius: 5,
                 width: '100%',
               }}
+              onPress={() => navigate('CreacionCuenta')}
             >
               Verificar
             </Text>
           </TouchableOpacity>
         </View>
+        <TouchableOpacity
+          style={{ marginTop: 20 }}
+          onPress={() => navigate('Login')}
+        >
+          <Text
+            style={{
+              color: '#ddd',
+              fontSize: 17,
+              textAlign: 'center',
+              padding: 10,
+              borderRadius: 5,
+              width: '100%',
+            }}
+          >
+            Cancelar
+          </Text>
+        </TouchableOpacity>
       </SafeAreaView>
     </ScrollView>
   );
