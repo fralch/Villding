@@ -64,7 +64,6 @@ function CreacionCuenta(): JSX.Element {
               placeholder='Escribe tus nombres '
               placeholderTextColor='grey'
               autoCapitalize='none'
-              secureTextEntry={true}
             />
             <Text
               style={{
@@ -88,7 +87,6 @@ function CreacionCuenta(): JSX.Element {
               placeholder='Escribe tus apellidos '
               placeholderTextColor='grey'
               autoCapitalize='none'
-              secureTextEntry={true}
             />
           </View>
         </View>
