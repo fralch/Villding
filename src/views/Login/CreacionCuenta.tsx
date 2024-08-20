@@ -18,6 +18,10 @@ function CreacionCuenta(): JSX.Element {
   const { navigate } = useNavigation();
   const [secureText, setSecureText] = useState(true);
 
+  const handleCreateAccount = () => {
+    navigate('Verificacion');
+  };
+
   return (
     <ScrollView
       contentContainerStyle={{ flexGrow: 1, backgroundColor: '#0A3649' }}
@@ -88,6 +92,54 @@ function CreacionCuenta(): JSX.Element {
               placeholderTextColor='grey'
               autoCapitalize='none'
             />
+            <Text
+              style={{
+                color: 'grey',
+                fontSize: 15,
+                textAlign: 'left',
+                marginBottom: 10,
+              }}
+            >
+              Correo
+            </Text>
+            <TextInput
+              style={{
+                height: 50,
+                backgroundColor: '#05222F',
+                borderRadius: 5,
+                color: 'white',
+                paddingHorizontal: 10,
+                fontSize: 17,
+              }}
+              placeholder='Escribe tus apellidos '
+              placeholderTextColor='grey'
+              autoCapitalize='none'
+              keyboardType='email-address'
+            />
+            <Text
+              style={{
+                color: 'grey',
+                fontSize: 15,
+                textAlign: 'left',
+                marginBottom: 10,
+              }}
+            >
+              Contraseña
+            </Text>
+            <TextInput
+              style={{
+                height: 50,
+                backgroundColor: '#05222F',
+                borderRadius: 5,
+                color: 'white',
+                paddingHorizontal: 10,
+                fontSize: 17,
+              }}
+              placeholder='Escribe tu contraseña '
+              placeholderTextColor='grey'
+              autoCapitalize='none'
+              secureTextEntry={secureText}
+            />
           </View>
         </View>
         <View style={{ width: '90%', maxWidth: 300, marginTop: 30 }}>
@@ -102,6 +154,7 @@ function CreacionCuenta(): JSX.Element {
                 borderRadius: 5,
                 width: '100%',
               }}
+              onPress={() => handleCreateAccount()}
             >
               Crear nueva cuenta
             </Text>
@@ -117,6 +170,7 @@ function CreacionCuenta(): JSX.Element {
                 width: '100%',
                 marginBottom: 50,
               }}
+              onPress={() => navigate('Login')}
             >
               Cancelar
             </Text>

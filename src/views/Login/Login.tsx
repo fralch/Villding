@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import {
   View,
@@ -15,6 +16,18 @@ const { width, height } = Dimensions.get('window');
 
 function Login(): JSX.Element {
   const { navigate } = useNavigation();
+
+  const [correo, setCorreo] = useState('');
+  const [errorBoolean, setErrorBoolean] = useState(false);
+
+  const handleLogin = () => {
+    if (correo !== '') {
+      navigate('Password');
+      setErrorBoolean(false);
+    } else {
+      setErrorBoolean(true);
+    }
+  };
 
   return (
     <ScrollView
@@ -51,7 +64,14 @@ function Login(): JSX.Element {
             placeholderTextColor='grey'
             keyboardType='email-address'
             autoCapitalize='none'
+            value={correo}
+            onChangeText={setCorreo}
           />
+          {errorBoolean ? (
+            <Text style={{ color: '#ff7979', marginTop: 10 }}>
+              Ingresa un correo
+            </Text>
+          ) : null}
           <TouchableOpacity style={{ marginTop: 20 }}>
             <Text
               style={{
@@ -63,7 +83,7 @@ function Login(): JSX.Element {
                 borderRadius: 5,
                 width: '100%',
               }}
-              onPress={() => navigate('Password')}
+              onPress={() => handleLogin()}
             >
               Continuar
             </Text>
@@ -79,17 +99,18 @@ function Login(): JSX.Element {
                 fontWeight: 'bold',
                 fontSize: 16,
                 textAlign: 'center',
-                backgroundColor: '#4285F4',
+                backgroundColor: '#1C4360',
                 padding: 10,
                 borderRadius: 5,
                 width: '100%',
               }}
+              onPress={() => navigate('CreacionCuenta')}
             >
-              <Image
+              {/* <Image
                 source={require('../../assets/images/google-logo.png')}
                 style={{ width: 20, height: 20, marginRight: 10 }}
-              />
-              Acceder con Google
+              /> */}
+              Crear cuenta
             </Text>
           </TouchableOpacity>
         </View>

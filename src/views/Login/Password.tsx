@@ -17,7 +17,17 @@ const { width, height } = Dimensions.get('window');
 function Password(): JSX.Element {
   const { navigate } = useNavigation();
   const [secureText, setSecureText] = useState(true);
+  const [clave, setClave] = useState('');
+  const [errorBoolean, setErrorBoolean] = useState(false);
 
+  const handleLogin = () => {
+    if (clave !== '') {
+      navigate('Verificacion');
+      setErrorBoolean(false);
+    } else {
+      setErrorBoolean(true);
+    }
+  };
   return (
     <ScrollView
       contentContainerStyle={{ flexGrow: 1, backgroundColor: '#0A3649' }}
@@ -63,7 +73,14 @@ function Password(): JSX.Element {
             placeholderTextColor='grey'
             autoCapitalize='none'
             secureTextEntry={true}
+            value={clave}
+            onChangeText={setClave}
           />
+          {errorBoolean ? (
+            <Text style={{ color: '#ff7979', marginTop: 10 }}>
+              Ingresa una contraseña para continuar
+            </Text>
+          ) : null}
           <TouchableOpacity style={{ marginTop: 20 }}>
             <Text
               style={{
@@ -75,7 +92,7 @@ function Password(): JSX.Element {
                 borderRadius: 5,
                 width: '100%',
               }}
-              onPress={() => navigate('Verificacion')}
+              onPress={() => handleLogin()}
             >
               Ingresar
             </Text>

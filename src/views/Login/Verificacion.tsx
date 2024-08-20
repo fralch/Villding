@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import {
   View,
@@ -15,6 +16,18 @@ const { width, height } = Dimensions.get('window');
 
 function Verificacion(): JSX.Element {
   const { navigate } = useNavigation();
+
+  const [codigo, setCodigo] = useState('');
+  const [errorBoolean, setErrorBoolean] = useState(false);
+
+  const handleLogin = () => {
+    if (codigo !== '') {
+      // navigate('CreacionCuenta');
+      setErrorBoolean(false);
+    } else {
+      setErrorBoolean(true);
+    }
+  };
 
   return (
     <ScrollView
@@ -57,11 +70,18 @@ function Verificacion(): JSX.Element {
               paddingHorizontal: 10,
               fontSize: 17,
             }}
-            placeholder='Ingresa codigo'
+            placeholder='Ingresa código'
             placeholderTextColor='grey'
             keyboardType='number-pad'
             autoCapitalize='none'
+            value={codigo}
+            onChangeText={setCodigo}
           />
+          {errorBoolean ? (
+            <Text style={{ color: '#ff7979', marginTop: 10 }}>
+              Ingresa un código para continuar
+            </Text>
+          ) : null}
           <Text style={{ color: 'grey', marginTop: 10 }}>
             Ingresa el código que enviamos a tu correo.
           </Text>
@@ -79,7 +99,7 @@ function Verificacion(): JSX.Element {
                 borderRadius: 5,
                 width: '100%',
               }}
-              onPress={() => navigate('CreacionCuenta')}
+              onPress={() => handleLogin()}
             >
               Verificar
             </Text>
