@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, NavigationProp } from '@react-navigation/native';
 import {
   View,
   Text,
@@ -15,7 +15,7 @@ import {
 const { width, height } = Dimensions.get('window');
 
 function Login(): JSX.Element {
-  const { navigate } = useNavigation();
+  const { navigate } = useNavigation<NavigationProp<any>>();
 
   const [correo, setCorreo] = useState('');
   const [errorBoolean, setErrorBoolean] = useState(false);

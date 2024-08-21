@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, NavigationProp } from '@react-navigation/native';
 import {
   View,
   Text,
@@ -15,7 +15,7 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 const { width, height } = Dimensions.get('window');
 
 function CreacionCuenta(): JSX.Element {
-  const { navigate } = useNavigation();
+  const { navigate } = useNavigation<NavigationProp<any>>();
   const [secureText, setSecureText] = useState(true);
 
   const handleCreateAccount = () => {

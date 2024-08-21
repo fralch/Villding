@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, NavigationProp } from '@react-navigation/native';
 import {
   View,
   Text,
@@ -15,14 +15,14 @@ import {
 const { width, height } = Dimensions.get('window');
 
 function Password(): JSX.Element {
-  const { navigate } = useNavigation();
+  const navigation = useNavigation<NavigationProp<any>>();
   const [secureText, setSecureText] = useState(true);
   const [clave, setClave] = useState('');
   const [errorBoolean, setErrorBoolean] = useState(false);
 
   const handleLogin = () => {
     if (clave !== '') {
-      navigate('Verificacion');
+      navigation.navigate('Verificacion');
       setErrorBoolean(false);
     } else {
       setErrorBoolean(true);

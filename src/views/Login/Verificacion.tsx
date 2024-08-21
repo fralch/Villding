@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, NavigationProp } from '@react-navigation/native';
 import {
   View,
   Text,
@@ -15,14 +15,14 @@ import {
 const { width, height } = Dimensions.get('window');
 
 function Verificacion(): JSX.Element {
-  const { navigate } = useNavigation();
+  const navigation = useNavigation<NavigationProp<any>>();
 
   const [codigo, setCodigo] = useState('');
   const [errorBoolean, setErrorBoolean] = useState(false);
 
   const handleLogin = () => {
     if (codigo !== '') {
-      // navigate('CreacionCuenta');
+      navigation.navigate('HomeProject');
       setErrorBoolean(false);
     } else {
       setErrorBoolean(true);
@@ -107,7 +107,7 @@ function Verificacion(): JSX.Element {
         </View>
         <TouchableOpacity
           style={{ marginTop: 20 }}
-          onPress={() => navigate('Login')}
+          onPress={() => navigation.navigate('Login')}
         >
           <Text
             style={{
