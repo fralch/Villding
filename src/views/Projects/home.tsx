@@ -1,7 +1,19 @@
 import React from 'react';
-import { View, Text, StyleSheet, StatusBar, Image } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  StatusBar,
+  Image,
+  TextInput,
+  TouchableOpacity,
+  Animated,
+  Dimensions,
+} from 'react-native';
 import { StatusBar as ExpoStatusBar } from 'expo-status-bar';
 import Feather from '@expo/vector-icons/Feather';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+
 import ProjectList from '../../components/Project/ProjectList';
 
 interface Project {
@@ -13,6 +25,9 @@ interface Project {
 }
 
 export default function HomeProject() {
+  const [search, setSearch] = React.useState<string>('');
+  const [viewSearch, setViewSearch] = React.useState<boolean>(false);
+
   const projects: Project[] = [
     {
       title: 'Multifamiliar Barranco',
@@ -56,28 +71,74 @@ export default function HomeProject() {
     },
   ];
 
-  return (
-    <View style={styles.container}>
-      <ExpoStatusBar style='dark' />
-      <View style={styles.header}>
-        <Image
-          source={require('../../assets/images/logo-tex-simple_white.png')}
-          style={styles.title}
-        />
-        <View style={styles.headerIcons}>
-          <Feather
-            name='search'
-            size={24}
-            color='white'
-            style={styles.icon}
-          />
+  const screenWidth = Dimensions.get('window').width;
+  const headerWidth = React.useRef(new Animated.Value(screenWidth)).current;
 
+  React.useEffect(() => {
+    Animated.timing(headerWidth, {
+      toValue: viewSearch ? screenWidth * 1.01 : screenWidth,
+      duration: 300,
+      useNativeDriver: false,
+    }).start();
+  }, [viewSearch]);
+
+  return (
+    <View style={[styles.container]}>
+      <ExpoStatusBar style='dark' />
+
+      {!viewSearch ? (
+        <Animated.View style={[styles.header, { width: headerWidth }]}>
           <Image
-            source={require('../../assets/images/user.png')}
-            style={styles.avatar}
+            source={require('../../assets/images/logo-tex-simple_white.png')}
+            style={styles.title}
           />
-        </View>
-      </View>
+          <View style={styles.headerIcons}>
+            <TouchableOpacity onPress={() => setViewSearch(true)}>
+              <Feather
+                name='search'
+                size={26}
+                color='white'
+                style={styles.icon}
+              />
+            </TouchableOpacity>
+
+            <Image
+              source={require('../../assets/images/user.png')}
+              style={styles.avatar}
+            />
+          </View>
+        </Animated.View>
+      ) : null}
+      {viewSearch ? (
+        <Animated.View
+          style={[
+            styles.header,
+            {
+              width: headerWidth,
+            },
+          ]}
+        >
+          <View style={[styles.headerSearch]}>
+            <Feather
+              name='search'
+              size={26}
+              color='white'
+              style={[styles.icon, { marginRight: 0 }]}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder='Buscar...'
+            />
+            <TouchableOpacity onPress={() => setViewSearch(false)}>
+              <MaterialIcons
+                name='cancel'
+                size={26}
+                color='white'
+              />
+            </TouchableOpacity>
+          </View>
+        </Animated.View>
+      ) : null}
       <ProjectList projects={projects} />
     </View>
   );
@@ -113,11 +174,35 @@ const styles = StyleSheet.create({
   icon: {
     width: 24,
     height: 24,
-    marginRight: 16,
+    marginRight: 24,
   },
   avatar: {
     width: 36,
     height: 36,
     borderRadius: 18,
+  },
+  input: {
+    flex: 1,
+    height: 40,
+    backgroundColor: '#05222F',
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    color: 'white',
+    fontSize: 16,
+  },
+  headerSearch: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#05222F',
+    paddingHorizontal: 10,
+    borderWidth: 1,
+    borderColor: '#0D465E',
+    marginHorizontal: 0,
+    marginBottom: 20,
+  },
+  debug: {
+    borderColor: 'red',
+    borderWidth: 1,
   },
 });
