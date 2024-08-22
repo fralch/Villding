@@ -15,8 +15,10 @@ import Feather from '@expo/vector-icons/Feather';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
 import ProjectList from '../../components/Project/ProjectList';
+import ProjectListSearch from '../../components/Project/ProjectListSearch';
 
 interface Project {
+  id: string;
   title: string;
   subtitle: string;
   company: string;
@@ -30,6 +32,7 @@ export default function HomeProject() {
 
   const projects: Project[] = [
     {
+      id: '1',
       title: 'Multifamiliar Barranco',
       subtitle: 'Jirón Dos de Mayo Barranco',
       company: 'Weinstein Ingenieros SAC',
@@ -38,6 +41,7 @@ export default function HomeProject() {
       week: 7,
     },
     {
+      id: '2',
       title: 'Nave industrial',
       subtitle: 'Jirón Dos de Mayo Barranco',
       company: 'Weinstein Ingenieros SAC',
@@ -46,6 +50,7 @@ export default function HomeProject() {
       week: 7,
     },
     {
+      id: '3',
       title: 'Nave industrial',
       subtitle: 'Jirón Dos de Mayo Barranco',
       company: 'Weinstein Ingenieros SAC',
@@ -54,6 +59,7 @@ export default function HomeProject() {
       week: 7,
     },
     {
+      id: '4',
       title: 'Nave industrial',
       subtitle: 'Jirón Dos de Mayo Barranco',
       company: 'Weinstein Ingenieros SAC',
@@ -62,6 +68,7 @@ export default function HomeProject() {
       week: 7,
     },
     {
+      id: '5',
       title: 'Nave industrial',
       subtitle: 'Jirón Dos de Mayo Barranco',
       company: 'Weinstein Ingenieros SAC',
@@ -70,6 +77,9 @@ export default function HomeProject() {
       week: 7,
     },
   ];
+
+  const [filteredProjects, setFilteredProjects] =
+    React.useState<Project[]>(projects);
 
   const screenWidth = Dimensions.get('window').width;
   const headerWidth = React.useRef(new Animated.Value(screenWidth)).current;
@@ -81,6 +91,20 @@ export default function HomeProject() {
       useNativeDriver: false,
     }).start();
   }, [viewSearch]);
+
+  React.useEffect(() => {
+    const filtered = projects.filter((project) => {
+      if (search === '') {
+        return true;
+      }
+      return (
+        project.title.toLowerCase().includes(search.toLowerCase()) ||
+        project.subtitle.toLowerCase().includes(search.toLowerCase()) ||
+        project.company.toLowerCase().includes(search.toLowerCase())
+      );
+    });
+    setFilteredProjects(filtered);
+  }, [search]);
 
   return (
     <View style={[styles.container]}>
@@ -109,6 +133,7 @@ export default function HomeProject() {
           </View>
         </Animated.View>
       ) : null}
+
       {viewSearch ? (
         <Animated.View
           style={[
@@ -128,6 +153,8 @@ export default function HomeProject() {
             <TextInput
               style={styles.input}
               placeholder='Buscar...'
+              value={search}
+              onChangeText={setSearch}
             />
             <TouchableOpacity onPress={() => setViewSearch(false)}>
               <MaterialIcons
@@ -139,7 +166,12 @@ export default function HomeProject() {
           </View>
         </Animated.View>
       ) : null}
-      <ProjectList projects={projects} />
+
+      {!viewSearch ? (
+        <ProjectList projects={filteredProjects} />
+      ) : (
+        <ProjectListSearch projects={filteredProjects} />
+      )}
     </View>
   );
 }
