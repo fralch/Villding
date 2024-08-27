@@ -1,5 +1,12 @@
 import React from 'react';
-import { View, StyleSheet, ScrollView, Text } from 'react-native';
+import {
+  View,
+  StyleSheet,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+} from 'react-native';
+import { useNavigation, NavigationProp } from '@react-navigation/native';
 import ProjectCard from './ProjectCard';
 
 // creamos un componente de lista de proyectos para iterarlos y poder usar solo un card si es necesario
@@ -16,6 +23,11 @@ interface ProjectListProps {
 }
 
 const ProjectList: React.FC<ProjectListProps> = ({ projects }) => {
+  const { navigate } = useNavigation<NavigationProp<any>>();
+
+  const handleNewProject = () => {
+    navigate('NewProject');
+  };
   return (
     <ScrollView contentContainerStyle={styles.scrollContent}>
       {projects.map((project, index) => (
@@ -25,7 +37,9 @@ const ProjectList: React.FC<ProjectListProps> = ({ projects }) => {
         />
       ))}
       <View style={styles.content}>
-        <Text style={styles.newProjectText}>+ Nuevo proyecto</Text>
+        <TouchableOpacity onPress={handleNewProject}>
+          <Text style={styles.newProjectText}>+ Nuevo proyecto</Text>
+        </TouchableOpacity>
       </View>
     </ScrollView>
   );

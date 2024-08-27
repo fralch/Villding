@@ -7,6 +7,7 @@ import Password from './src/views/Login/Password';
 import Verificacion from './src/views/Login/Verificacion';
 import CreacionCuenta from './src/views/Login/CreacionCuenta';
 import HomeProject from './src/views/Projects/home';
+import NewProject from './src/views/Projects/NewProject';
 
 export default function RootNavigator() {
   const Stack = createNativeStackNavigator();
@@ -31,6 +32,10 @@ export default function RootNavigator() {
     {
       name: 'HomeProject',
       component: HomeProject,
+    },
+    {
+      name: 'NewProject',
+      component: NewProject,
     },
   ];
 
