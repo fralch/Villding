@@ -35,93 +35,123 @@ const NewProject: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.label}>Nombre del proyecto*</Text>
-      <TextInput
-        style={styles.input}
-        value={projectName}
-        onChangeText={setProjectName}
-        placeholder='Nombre del proyecto'
-        placeholderTextColor='#888'
-      />
-
-      <Text style={styles.label}>Ubicación</Text>
-      <TextInput
-        style={styles.input}
-        value={location}
-        onChangeText={setLocation}
-        placeholder='Ubicación'
-        placeholderTextColor='#888'
-      />
-
-      <Text style={styles.label}>Empresa ejecutora</Text>
-      <TextInput
-        style={styles.input}
-        value={company}
-        onChangeText={setCompany}
-        placeholder='Empresa ejecutora'
-        placeholderTextColor='#888'
-      />
-
-      <Text style={styles.label}>Fecha de inicio</Text>
-      <TextInput
-        style={styles.input}
-        value={startDate}
-        onChangeText={setStartDate}
-        placeholder='Fecha de inicio'
-        placeholderTextColor='#888'
-      />
-
-      <Text style={styles.label}>Tiempo de ejecución</Text>
-      <View style={styles.durationContainer}>
+      <View style={[styles.header]}>
+        <TouchableOpacity
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            width: '100%',
+          }}
+        >
+          <Text style={{ color: 'white', fontSize: 18 }}>Cancelar</Text>
+          <Text style={{ color: 'white', fontSize: 18, fontWeight: 'bold' }}>
+            Nuevo proyecto
+          </Text>
+          <Text style={{ color: 'white', fontSize: 18 }}>Crear</Text>
+        </TouchableOpacity>
+      </View>
+      <View style={styles.formContainer}>
+        <Text style={styles.label}>Nombre del proyecto*</Text>
         <TextInput
-          style={[styles.input, styles.durationInput]}
-          value={duration}
-          onChangeText={setDuration}
-          keyboardType='numeric'
+          style={styles.input}
+          value={projectName}
+          onChangeText={setProjectName}
+          placeholder='Nombre del proyecto'
           placeholderTextColor='#888'
         />
-        <Picker
-          selectedValue={durationUnit}
-          style={styles.picker}
-          onValueChange={(itemValue) => setDurationUnit(itemValue)}
+
+        <Text style={styles.label}>Ubicación</Text>
+        <TextInput
+          style={styles.input}
+          value={location}
+          onChangeText={setLocation}
+          placeholder='Ubicación'
+          placeholderTextColor='#888'
+        />
+
+        <Text style={styles.label}>Empresa ejecutora</Text>
+        <TextInput
+          style={styles.input}
+          value={company}
+          onChangeText={setCompany}
+          placeholder='Empresa ejecutora'
+          placeholderTextColor='#888'
+        />
+
+        <Text style={styles.label}>Fecha de inicio</Text>
+        <TextInput
+          style={styles.input}
+          value={startDate}
+          onChangeText={setStartDate}
+          placeholder='Fecha de inicio'
+          placeholderTextColor='#888'
+        />
+
+        <Text style={styles.label}>Tiempo de ejecución</Text>
+        <View style={styles.durationContainer}>
+          <TextInput
+            style={[
+              styles.input,
+              {
+                width: '40%',
+                textAlign: 'left',
+              },
+            ]}
+            value={duration}
+            onChangeText={setDuration}
+            keyboardType='numeric'
+            placeholderTextColor='#888'
+          />
+          <View
+            style={{
+              width: '50%',
+              alignItems: 'center',
+              marginTop: -15,
+              marginLeft: 10,
+              borderRadius: 5,
+            }}
+          >
+            <Picker
+              selectedValue={durationUnit}
+              style={{
+                height: 50,
+                width: '100%',
+                backgroundColor: '#05222F',
+                color: 'white',
+                borderRadius: 5,
+              }}
+              onValueChange={(itemValue) => setDurationUnit(itemValue)}
+            >
+              <Picker.Item
+                label='Meses'
+                value='Meses'
+              />
+              <Picker.Item
+                label='Años'
+                value='Años'
+              />
+            </Picker>
+          </View>
+        </View>
+
+        <Text style={styles.label}>Fecha estimada de fin:</Text>
+        <Text style={styles.endDate}>Diciembre 2023</Text>
+        <Text style={styles.label}>Foto de proyecto</Text>
+
+        <TouchableOpacity
+          style={styles.imagePicker}
+          onPress={handlePickImage}
         >
-          <Picker.Item
-            label='Meses'
-            value='Meses'
-          />
-          <Picker.Item
-            label='Años'
-            value='Años'
-          />
-        </Picker>
-      </View>
-
-      <Text style={styles.label}>Fecha estimada de fin:</Text>
-      <Text style={styles.endDate}>Diciembre 2023</Text>
-
-      <TouchableOpacity
-        style={styles.imagePicker}
-        onPress={handlePickImage}
-      >
-        {projectImage ? (
-          <Image
-            source={{ uri: projectImage }}
-            style={styles.image}
-          />
-        ) : (
-          <Text style={styles.imageText}>Subir foto del proyecto</Text>
-        )}
-      </TouchableOpacity>
-
-      <View style={styles.buttonsContainer}>
-        <Button
-          title='Cancelar'
-          onPress={() => {}}
-        />
-        <Button
-          title='Crear'
-          onPress={() => {}}
-        />
+          {projectImage ? (
+            <Image
+              source={{ uri: projectImage }}
+              style={styles.image}
+            />
+          ) : (
+            <Text style={styles.imageText}>Subir foto del proyecto</Text>
+          )}
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -130,16 +160,25 @@ const NewProject: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0E4A5F',
-    padding: 16,
+    backgroundColor: '#05222F', // Background color of the app
+  },
+  header: {
+    backgroundColor: '#05222F',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    height: 80,
+    marginTop: 30,
   },
   label: {
-    color: '#fff',
+    color: '#aaa',
     marginBottom: 4,
   },
   input: {
-    backgroundColor: '#034A5F',
+    backgroundColor: '#05222F',
     color: '#fff',
+    fontSize: 16,
     borderRadius: 8,
     paddingHorizontal: 8,
     paddingVertical: 12,
@@ -148,26 +187,21 @@ const styles = StyleSheet.create({
   durationContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 16,
+    justifyContent: 'space-between',
   },
-  durationInput: {
-    flex: 1,
-  },
-  picker: {
-    flex: 1,
-    color: '#fff',
-  },
+
   endDate: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: 21,
     marginBottom: 16,
   },
   imagePicker: {
     height: 150,
-    backgroundColor: '#034A5F',
+    backgroundColor: '#0A3649',
     borderRadius: 8,
     borderWidth: 1,
     borderColor: '#777',
+    borderStyle: 'dashed',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 16,
@@ -183,6 +217,13 @@ const styles = StyleSheet.create({
   buttonsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+  },
+  formContainer: {
+    flex: 1,
+    justifyContent: 'flex-start',
+    backgroundColor: '#0A3649',
+    padding: 16,
+    margin: 0,
   },
 });
 
