@@ -7,15 +7,18 @@ import {
   TouchableOpacity,
   Image,
   StyleSheet,
+  Platform,
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import * as ImagePicker from 'expo-image-picker';
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 const NewProject: React.FC = () => {
   const [projectName, setProjectName] = useState('');
   const [location, setLocation] = useState('');
   const [company, setCompany] = useState('');
-  const [startDate, setStartDate] = useState('13/06/2023');
+  const [startDate, setStartDate] = useState(new Date());
+  const [showDatePicker, setShowDatePicker] = useState(false);
   const [duration, setDuration] = useState('6');
   const [durationUnit, setDurationUnit] = useState('Meses');
   const [projectImage, setProjectImage] = useState<string | null>(null);
@@ -31,6 +34,16 @@ const NewProject: React.FC = () => {
     if (!result.canceled) {
       setProjectImage(result.uri);
     }
+  };
+
+  const onChangeDate = (event, selectedDate) => {
+    const currentDate = selectedDate || startDate;
+    setShowDatePicker(Platform.OS === 'ios');
+    setStartDate(currentDate);
+  };
+
+  const showDatepicker = () => {
+    setShowDatePicker(true);
   };
 
   return (
@@ -80,13 +93,24 @@ const NewProject: React.FC = () => {
         />
 
         <Text style={styles.label}>Fecha de inicio</Text>
-        <TextInput
+        <TouchableOpacity
           style={styles.input}
-          value={startDate}
-          onChangeText={setStartDate}
-          placeholder='Fecha de inicio'
-          placeholderTextColor='#888'
-        />
+          onPress={showDatepicker}
+        >
+          <Text style={{ color: '#fff' }}>
+            {startDate.toLocaleDateString()}
+          </Text>
+        </TouchableOpacity>
+        {showDatePicker && (
+          <DateTimePicker
+            testID='dateTimePicker'
+            value={startDate}
+            mode='date'
+            is24Hour={true}
+            display='default'
+            onChange={onChangeDate}
+          />
+        )}
 
         <Text style={styles.label}>Tiempo de ejecución</Text>
         <View style={styles.durationContainer}>
