@@ -5,6 +5,7 @@ import { View, Text, Image, StyleSheet } from 'react-native';
 
 interface ProjectCardProps {
   project: {
+    id: string;
     title: string;
     subtitle: string;
     company: string;

@@ -11,10 +11,11 @@ import ProjectCard from './ProjectCard';
 
 // creamos un componente de lista de proyectos para iterarlos y poder usar solo un card si es necesario
 interface Project {
+  id: string;
+  image: string;
   title: string;
   subtitle: string;
   company: string;
-  image: string;
   week: number;
 }
 

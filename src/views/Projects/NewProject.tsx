@@ -30,7 +30,7 @@ const NewProject: React.FC = () => {
     });
 
     if (!result.canceled) {
-      setProjectImage(result.uri);
+      setProjectImage(result.assets[0].uri);
     }
   };
 
