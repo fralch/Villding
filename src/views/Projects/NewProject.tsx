@@ -51,11 +51,15 @@ const NewProject: React.FC = () => {
 
   const calculateEndDate = () => {
     const start = new Date(startDate);
-    const durationInMonths = parseInt(duration, 10);
+    const durationInUnits = parseInt(duration, 10);
     if (durationUnit === 'Meses') {
-      start.setMonth(start.getMonth() + durationInMonths);
+      start.setMonth(start.getMonth() + durationInUnits);
     } else if (durationUnit === 'Años') {
-      start.setFullYear(start.getFullYear() + durationInMonths);
+      start.setFullYear(start.getFullYear() + durationInUnits);
+    } else if (durationUnit === 'Semanas') {
+      start.setDate(start.getDate() + durationInUnits * 7);
+    } else if (durationUnit === 'Dias') {
+      start.setDate(start.getDate() + durationInUnits);
     }
     return start.toLocaleDateString('es-ES');
   };
@@ -77,7 +81,7 @@ const NewProject: React.FC = () => {
   return (
     <View style={styles.container}>
       <View style={[styles.header]}>
-        <TouchableOpacity
+        <View
           style={{
             flexDirection: 'row',
             alignItems: 'center',
@@ -89,8 +93,10 @@ const NewProject: React.FC = () => {
           <Text style={{ color: 'white', fontSize: 18, fontWeight: 'bold' }}>
             Nuevo proyecto
           </Text>
-          <Text style={{ color: 'white', fontSize: 18 }}>Crear</Text>
-        </TouchableOpacity>
+          <TouchableOpacity onPress={handleCreateProject}>
+            <Text style={{ color: 'white', fontSize: 18 }}>Crear</Text>
+          </TouchableOpacity>
+        </View>
       </View>
       <View style={styles.formContainer}>
         <Text style={styles.label}>Nombre del proyecto*</Text>
@@ -164,6 +170,14 @@ const NewProject: React.FC = () => {
               onValueChange={(itemValue) => setDurationUnit(itemValue)}
             >
               <Picker.Item
+                label='Semanas'
+                value='Semanas'
+              />
+              <Picker.Item
+                label='Dias'
+                value='Dias'
+              />
+              <Picker.Item
                 label='Meses'
                 value='Meses'
               />
@@ -176,7 +190,7 @@ const NewProject: React.FC = () => {
         </View>
 
         <Text style={styles.label}>Fecha estimada de fin:</Text>
-        <Text style={styles.endDate}>Diciembre 2023</Text>
+        <Text style={styles.endDate}>{calculateEndDate()}</Text>
         <Text style={styles.label}>Foto de proyecto</Text>
 
         <TouchableOpacity
