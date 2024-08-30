@@ -10,7 +10,7 @@ interface Project {
   week: number;
 }
 
-export const useProject = () => {
+export const localStorageProject = () => {
   const [project, setProject] = useState<Project | null>(null);
 
   useEffect(() => {
@@ -37,5 +37,14 @@ export const useProject = () => {
     }
   };
 
-  return { project, saveProject };
+  const deleteProject = async () => {
+    try {
+      await AsyncStorage.removeItem('project');
+      setProject(null);
+    } catch (error) {
+      console.log('Error al eliminar el proyecto de AsyncStorage:', error);
+    }
+  };
+
+  return { project, saveProject, deleteProject };
 };

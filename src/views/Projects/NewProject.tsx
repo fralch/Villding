@@ -11,6 +11,7 @@ import {
 import { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
 import { Picker } from '@react-native-picker/picker';
 import * as ImagePicker from 'expo-image-picker';
+import { localStorageProject } from '../../hooks/localStorageProject';
 
 const NewProject: React.FC = () => {
   const [projectName, setProjectName] = useState('');
@@ -46,6 +47,31 @@ const NewProject: React.FC = () => {
       mode: 'date',
       is24Hour: true,
     });
+  };
+
+  const calculateEndDate = () => {
+    const start = new Date(startDate);
+    const durationInMonths = parseInt(duration, 10);
+    if (durationUnit === 'Meses') {
+      start.setMonth(start.getMonth() + durationInMonths);
+    } else if (durationUnit === 'Años') {
+      start.setFullYear(start.getFullYear() + durationInMonths);
+    }
+    return start.toLocaleDateString('es-ES');
+  };
+
+  const handleCreateProject = () => {
+    const newProject = {
+      id: Date.now().toString(), // Genera un ID único
+      image: projectImage || '',
+      title: projectName,
+      subtitle: location,
+      company,
+      week: parseInt(duration, 10),
+    };
+
+    localStorageProject.saveProject(newProject);
+    // Aquí puedes agregar lógica adicional, como navegar a otra pantalla o mostrar un mensaje de éxito
   };
 
   return (
