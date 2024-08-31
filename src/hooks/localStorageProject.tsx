@@ -1,4 +1,3 @@
-import { useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface Project {
@@ -10,41 +9,48 @@ interface Project {
   week: number;
 }
 
-export const localStorageProject = () => {
-  const [project, setProject] = useState<Project | null>(null);
+const PROJECTS_KEY = 'projects';
 
-  useEffect(() => {
-    const loadProject = async () => {
-      try {
-        const savedProject = await AsyncStorage.getItem('project');
-        if (savedProject) {
-          setProject(JSON.parse(savedProject));
-        }
-      } catch (error) {
-        console.log('Error al cargar el proyecto desde AsyncStorage:', error);
-      }
-    };
-
-    loadProject();
-  }, []);
-
-  const saveProject = async (newProject: Project) => {
-    try {
-      await AsyncStorage.setItem('project', JSON.stringify(newProject));
-      setProject(newProject);
-    } catch (error) {
-      console.log('Error al guardar el proyecto en AsyncStorage:', error);
-    }
-  };
-
-  const deleteProject = async () => {
-    try {
-      await AsyncStorage.removeItem('project');
-      setProject(null);
-    } catch (error) {
-      console.log('Error al eliminar el proyecto de AsyncStorage:', error);
-    }
-  };
-
-  return { project, saveProject, deleteProject };
+const saveProject = async (newProject: Project) => {
+  try {
+    const existingProjects = await getProjects();
+    const updatedProjects = [...existingProjects, newProject];
+    await AsyncStorage.setItem(PROJECTS_KEY, JSON.stringify(updatedProjects));
+  } catch (error) {
+    console.log('Error al guardar el proyecto en AsyncStorage:', error);
+  }
 };
+
+const deleteProject = async (projectId: string) => {
+  try {
+    const existingProjects = await getProjects();
+    const updatedProjects = existingProjects.filter(project => project.id !== projectId);
+    await AsyncStorage.setItem(PROJECTS_KEY, JSON.stringify(updatedProjects));
+  } catch (error) {
+    console.log('Error al eliminar el proyecto de AsyncStorage:', error);
+  }
+};
+
+const getProjects = async (): Promise<Project[]> => {
+  try {
+    const projectsJSON = await AsyncStorage.getItem(PROJECTS_KEY);
+    return projectsJSON ? JSON.parse(projectsJSON) : [];
+  } catch (error) {
+    console.log('Error al obtener los proyectos de AsyncStorage:', error);
+    return [];
+  }
+};
+
+const updateProject = async (updatedProject: Project) => {
+  try {
+    const existingProjects = await getProjects();
+    const updatedProjects = existingProjects.map(project =>
+      project.id === updatedProject.id ? updatedProject : project
+    );
+    await AsyncStorage.setItem(PROJECTS_KEY, JSON.stringify(updatedProjects));
+  } catch (error) {
+    console.log('Error al actualizar el proyecto en AsyncStorage:', error);
+  }
+};
+
+export { saveProject, deleteProject, getProjects, updateProject };

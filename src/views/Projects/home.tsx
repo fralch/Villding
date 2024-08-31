@@ -16,6 +16,7 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
 import ProjectList from '../../components/Project/ProjectList';
 import ProjectListSearch from '../../components/Project/ProjectListSearch';
+import { getProjects } from '../../hooks/localStorageProject';
 
 interface Project {
   id: string;
@@ -30,7 +31,7 @@ export default function HomeProject() {
   const [search, setSearch] = React.useState<string>('');
   const [viewSearch, setViewSearch] = React.useState<boolean>(false);
 
-  const projects: Project[] = [
+  const projects: Project[] =  [
     {
       id: '1',
       title: 'Multifamiliar Barranco',
@@ -93,6 +94,15 @@ export default function HomeProject() {
   }, [viewSearch]);
 
   React.useEffect(() => {
+    const obteniendoProyectos = async () => {
+      const storedprojects = await getProjects();
+      if (storedprojects) {
+        const combinedProjects = [...projects, ...storedprojects];
+        setFilteredProjects(combinedProjects);
+      }
+    }
+
+    obteniendoProyectos();
     const filtered = projects.filter((project) => {
       if (search === '') {
         return true;

@@ -11,7 +11,7 @@ import {
 import { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
 import { Picker } from '@react-native-picker/picker';
 import * as ImagePicker from 'expo-image-picker';
-import { localStorageProject } from '../../hooks/localStorageProject';
+import { saveProject , deleteProject } from '../../hooks/localStorageProject';
 
 const NewProject: React.FC = () => {
   const [projectName, setProjectName] = useState('');
@@ -65,6 +65,7 @@ const NewProject: React.FC = () => {
   };
 
   const handleCreateProject = () => {
+    console.log('Creando nuevo proyecto...');
     const newProject = {
       id: Date.now().toString(), // Genera un ID único
       image: projectImage || '',
@@ -74,8 +75,10 @@ const NewProject: React.FC = () => {
       week: parseInt(duration, 10),
     };
 
-    localStorageProject.saveProject(newProject);
-    // Aquí puedes agregar lógica adicional, como navegar a otra pantalla o mostrar un mensaje de éxito
+    saveProject(newProject);
+    
+    // verifica si se guardo el proyecto
+    console.log('Proyecto guardado:', newProject);
   };
 
   return (
