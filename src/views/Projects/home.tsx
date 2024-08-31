@@ -11,9 +11,9 @@ import {
   Dimensions,
 } from 'react-native';
 import { StatusBar as ExpoStatusBar } from 'expo-status-bar';
+import { useFocusEffect } from '@react-navigation/native';
 import Feather from '@expo/vector-icons/Feather';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-
 import ProjectList from '../../components/Project/ProjectList';
 import ProjectListSearch from '../../components/Project/ProjectListSearch';
 import { getProjects } from '../../hooks/localStorageProject';
@@ -93,16 +93,19 @@ export default function HomeProject() {
     }).start();
   }, [viewSearch]);
 
-  React.useEffect(() => {
-    const obteniendoProyectos = async () => {
-      const storedprojects = await getProjects();
-      if (storedprojects) {
-        const combinedProjects = [...projects, ...storedprojects];
+  useFocusEffect(() => {
+    getProjects().then((StoredProjects ) => {
+      if (StoredProjects) {
+        const combinedProjects = [...projects, ...StoredProjects];
         setFilteredProjects(combinedProjects);
       }
-    }
+      
+    });
+  });
 
-    obteniendoProyectos();
+  React.useEffect(() => {
+   
+
     const filtered = projects.filter((project) => {
       if (search === '') {
         return true;

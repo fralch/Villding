@@ -9,11 +9,14 @@ import {
   StyleSheet,
 } from 'react-native';
 import { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
+import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { Picker } from '@react-native-picker/picker';
 import * as ImagePicker from 'expo-image-picker';
 import { saveProject , deleteProject } from '../../hooks/localStorageProject';
 
 const NewProject: React.FC = () => {
+  const { navigate } = useNavigation<NavigationProp<any>>();
+
   const [projectName, setProjectName] = useState('');
   const [location, setLocation] = useState('');
   const [company, setCompany] = useState('');
@@ -78,7 +81,9 @@ const NewProject: React.FC = () => {
     saveProject(newProject);
     
     // verifica si se guardo el proyecto
-    console.log('Proyecto guardado:', newProject);
+    if (newProject) {
+      navigate('HomeProject');
+    }
   };
 
   return (
