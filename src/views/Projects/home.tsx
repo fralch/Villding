@@ -31,7 +31,7 @@ export default function HomeProject() {
   const [search, setSearch] = React.useState<string>('');
   const [viewSearch, setViewSearch] = React.useState<boolean>(false);
 
-  const projects: Project[] =  [
+  const projects: Project[] = [
     {
       id: '1',
       title: 'Multifamiliar Barranco',
@@ -94,18 +94,15 @@ export default function HomeProject() {
   }, [viewSearch]);
 
   useFocusEffect(() => {
-    getProjects().then((StoredProjects ) => {
+    getProjects().then((StoredProjects) => {
       if (StoredProjects) {
         const combinedProjects = [...projects, ...StoredProjects];
         setFilteredProjects(combinedProjects);
       }
-      
     });
   });
 
   React.useEffect(() => {
-   
-
     const filtered = projects.filter((project) => {
       if (search === '') {
         return true;
@@ -121,7 +118,7 @@ export default function HomeProject() {
 
   return (
     <View style={[styles.container]}>
-      <ExpoStatusBar style='dark' />
+      <ExpoStatusBar style='light' />
 
       {!viewSearch ? (
         <Animated.View style={[styles.header, { width: headerWidth }]}>
