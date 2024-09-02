@@ -17,9 +17,18 @@ const { width, height } = Dimensions.get('window');
 function CreacionCuenta(): JSX.Element {
   const { navigate } = useNavigation<NavigationProp<any>>();
   const [secureText, setSecureText] = useState(true);
+  const [errorBoolean, setErrorBoolean] = useState(false);
+
+  const [nombres, setNombres] = useState('');
+  const [apellidos, setApellidos] = useState('');
+  const [email, setEmail] = useState('');
+  const [clave, setClave] = useState('');
 
   const handleCreateAccount = () => {
-    navigate('Verificacion');
+    if (nombres !== '' && apellidos !== '' && email !== '' && clave !== '') {
+      navigate('Verificacion');
+    }
+    setErrorBoolean(true);
   };
 
   return (
@@ -68,7 +77,14 @@ function CreacionCuenta(): JSX.Element {
               placeholder='Escribe tus nombres '
               placeholderTextColor='grey'
               autoCapitalize='none'
+              value={nombres}
+              onChangeText={setNombres}
             />
+            {errorBoolean && nombres === '' ? (
+              <Text style={{ color: '#ff7979', marginTop: 10 }}>
+                Ingresa tus nombres
+              </Text>
+            ) : null}
             <Text
               style={{
                 color: 'grey',
@@ -91,7 +107,14 @@ function CreacionCuenta(): JSX.Element {
               placeholder='Escribe tus apellidos '
               placeholderTextColor='grey'
               autoCapitalize='none'
+              value={apellidos}
+              onChangeText={setApellidos}
             />
+            {errorBoolean && apellidos === '' ? (
+              <Text style={{ color: '#ff7979', marginTop: 10 }}>
+                Ingresa tus apellidos
+              </Text>
+            ) : null}
             <Text
               style={{
                 color: 'grey',
@@ -111,11 +134,18 @@ function CreacionCuenta(): JSX.Element {
                 paddingHorizontal: 10,
                 fontSize: 17,
               }}
-              placeholder='Escribe tus apellidos '
+              placeholder='Escribe tu correo '
               placeholderTextColor='grey'
               autoCapitalize='none'
               keyboardType='email-address'
+              value={email}
+              onChangeText={setEmail}
             />
+            {errorBoolean && email === '' ? (
+              <Text style={{ color: '#ff7979', marginTop: 10 }}>
+                Ingresa tu correo
+              </Text>
+            ) : null}
             <Text
               style={{
                 color: 'grey',
@@ -139,7 +169,14 @@ function CreacionCuenta(): JSX.Element {
               placeholderTextColor='grey'
               autoCapitalize='none'
               secureTextEntry={secureText}
+              value={clave}
+              onChangeText={setClave}
             />
+            {errorBoolean && clave === '' ? (
+              <Text style={{ color: '#ff7979', marginTop: 10 }}>
+                Ingresa tu contraseña
+              </Text>
+            ) : null}
           </View>
         </View>
         <View style={{ width: '90%', maxWidth: 300, marginTop: 30 }}>
