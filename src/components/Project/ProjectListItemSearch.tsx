@@ -22,6 +22,7 @@ const ProjectListItem: React.FC<ProjectListItemProps> = ({
     <TouchableOpacity
       style={styles.container}
       onPress={onPress}
+      activeOpacity={0.7}
     >
       <Image
         source={{ uri: image }}

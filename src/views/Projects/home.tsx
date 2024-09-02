@@ -165,6 +165,7 @@ export default function HomeProject() {
               placeholder='Buscar...'
               value={search}
               onChangeText={setSearch}
+              placeholderTextColor='white'
             />
             <TouchableOpacity onPress={() => setViewSearch(false)}>
               <MaterialIcons
