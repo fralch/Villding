@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, Image, StyleSheet } from 'react-native';
+import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
+import { useNavigation, NavigationProp } from '@react-navigation/native';
 
 // creamos un componente de card para mostrarlos en la lista de proyectos o en una sola selección
 
@@ -15,20 +16,26 @@ interface ProjectCardProps {
 }
 
 const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
+  const { navigate } = useNavigation<NavigationProp<any>>();
   return (
     <View style={styles.card}>
       <Image
         source={{ uri: project.image }}
         style={styles.cardImage}
       />
-      <View style={styles.cardContent}>
+      <TouchableOpacity
+        style={styles.cardContent}
+        onPress={() => {
+          navigate('Project');
+        }}
+      >
         <Text style={styles.cardTitle}>{project.title}</Text>
         <Text style={styles.cardSubtitle}>{project.subtitle}</Text>
         <Text style={styles.cardCompany}>{project.company}</Text>
         <View style={styles.weekBadge}>
           <Text style={styles.weekText}>Semana {project.week}</Text>
         </View>
-      </View>
+      </TouchableOpacity>
     </View>
   );
 };
