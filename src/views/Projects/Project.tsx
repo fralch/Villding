@@ -4,6 +4,7 @@ import { createDrawerNavigator } from '@react-navigation/drawer';
 import { View, Text } from 'react-native';
 
 import NavBar from '../../components/navbar';
+import TaskList from '../../components/Task/TaskList';
 
 const Drawer = createDrawerNavigator();
 
@@ -25,8 +26,8 @@ export default function Project() {
       }}
     >
       <Drawer.Screen
-        name='Home'
-        component={HomeScreen}
+        name='TaskList'
+        component={TaskList}
       />
     </Drawer.Navigator>
   );
