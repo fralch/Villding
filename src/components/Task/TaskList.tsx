@@ -34,14 +34,7 @@ const TaskList: React.FC = () => {
   return (
     <View style={styles.container}>
       {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Multifamiliar Barranco</Text>
-        <Ionicons
-          name='person-circle-outline'
-          size={30}
-          color='white'
-        />
-      </View>
+      <View style={styles.header}></View>
 
       {/* Week Selector */}
       <View style={styles.weekSelector}>
@@ -120,7 +113,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 20,
+    paddingVertical: 10,
   },
   headerTitle: {
     color: 'white',
