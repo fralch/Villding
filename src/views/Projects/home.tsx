@@ -30,57 +30,8 @@ interface Project {
 export default function HomeProject() {
   const [search, setSearch] = React.useState<string>('');
   const [viewSearch, setViewSearch] = React.useState<boolean>(false);
-
-  const projects: Project[] = [
-    {
-      id: '1',
-      title: 'Multifamiliar Barranco',
-      subtitle: 'Jirón Dos de Mayo Barranco',
-      company: 'Weinstein Ingenieros SAC',
-      image:
-        'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSKIJC0XQm26nBGa5VoTkZzjhBsAPsE9LdTeQ&s',
-      week: 7,
-    },
-    {
-      id: '2',
-      title: 'Nave industrial',
-      subtitle: 'Jirón Dos de Mayo Barranco',
-      company: 'Weinstein Ingenieros SAC',
-      image:
-        'https://danpal.com/wp-content/uploads/2020/09/Fachadas-de-Edificios-Contempor%C3%A1neos-2.jpg',
-      week: 7,
-    },
-    {
-      id: '3',
-      title: 'Nave industrial',
-      subtitle: 'Jirón Dos de Mayo Barranco',
-      company: 'Weinstein Ingenieros SAC',
-      image:
-        'https://danpal.com/wp-content/uploads/2020/09/Fachadas-de-Edificios-Contempor%C3%A1neos-2.jpg',
-      week: 7,
-    },
-    {
-      id: '4',
-      title: 'Nave industrial',
-      subtitle: 'Jirón Dos de Mayo Barranco',
-      company: 'Weinstein Ingenieros SAC',
-      image:
-        'https://danpal.com/wp-content/uploads/2020/09/Fachadas-de-Edificios-Contempor%C3%A1neos-2.jpg',
-      week: 7,
-    },
-    {
-      id: '5',
-      title: 'Nave industrial',
-      subtitle: 'Jirón Dos de Mayo Barranco',
-      company: 'Weinstein Ingenieros SAC',
-      image:
-        'https://danpal.com/wp-content/uploads/2020/09/Fachadas-de-Edificios-Contempor%C3%A1neos-2.jpg',
-      week: 7,
-    },
-  ];
-
-  const [filteredProjects, setFilteredProjects] =
-    React.useState<Project[]>(projects);
+  const [projects, setProjects] = React.useState<Project[]>([]);
+  const [filteredProjects, setFilteredProjects] = React.useState<Project[]>([]);
 
   const screenWidth = Dimensions.get('window').width;
   const headerWidth = React.useRef(new Animated.Value(screenWidth)).current;
@@ -93,14 +44,16 @@ export default function HomeProject() {
     }).start();
   }, [viewSearch]);
 
-  useFocusEffect(() => {
-    getProjects().then((StoredProjects) => {
-      if (StoredProjects) {
-        const combinedProjects = [...projects, ...StoredProjects];
-        setFilteredProjects(combinedProjects);
-      }
-    });
-  });
+  useFocusEffect(
+    React.useCallback(() => {
+      getProjects().then((StoredProjects) => {
+        if (StoredProjects) {
+          setProjects(StoredProjects);
+          setFilteredProjects(StoredProjects);
+        }
+      });
+    }, [])
+  );
 
   React.useEffect(() => {
     const filtered = projects.filter((project) => {
@@ -114,7 +67,7 @@ export default function HomeProject() {
       );
     });
     setFilteredProjects(filtered);
-  }, [search]);
+  }, [search, projects]);
 
   return (
     <View style={[styles.container]}>
