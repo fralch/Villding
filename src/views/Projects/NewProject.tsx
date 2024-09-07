@@ -12,7 +12,7 @@ import { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { Picker } from '@react-native-picker/picker';
 import * as ImagePicker from 'expo-image-picker';
-import { saveProject , deleteProject } from '../../hooks/localStorageProject';
+import { saveProject, deleteProject } from '../../hooks/localStorageProject';
 
 const NewProject: React.FC = () => {
   const { navigate } = useNavigation<NavigationProp<any>>();
@@ -67,7 +67,7 @@ const NewProject: React.FC = () => {
     return start.toLocaleDateString('es-ES');
   };
 
-  const handleCreateProject = () => {
+  const handleCreateProject = async () => {
     console.log('Creando nuevo proyecto...');
     const newProject = {
       id: Date.now().toString(), // Genera un ID único
@@ -78,11 +78,12 @@ const NewProject: React.FC = () => {
       week: parseInt(duration, 10),
     };
 
-    saveProject(newProject);
-    
-    // verifica si se guardo el proyecto
-    if (newProject) {
-      navigate('HomeProject');
+    // Guarda el proyecto y espera a que se complete antes de navegar
+    try {
+      await saveProject(newProject); // Asegúrate de que saveProject devuelva una promesa
+      navigate('HomeProject'); // Navega a HomeProject después de que se guarde
+    } catch (error) {
+      console.error('Error al guardar el proyecto:', error);
     }
   };
 
