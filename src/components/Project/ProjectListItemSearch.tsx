@@ -1,6 +1,7 @@
 // src/components/ProjectListItem.tsx
 import React from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
+import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 
 interface ProjectListItemProps {
@@ -8,7 +9,6 @@ interface ProjectListItemProps {
   title: string;
   location: string;
   company: string;
-  onPress: () => void;
 }
 
 const ProjectListItem: React.FC<ProjectListItemProps> = ({
@@ -16,13 +16,15 @@ const ProjectListItem: React.FC<ProjectListItemProps> = ({
   title,
   location,
   company,
-  onPress,
 }) => {
+  const { navigate } = useNavigation<NavigationProp<any>>();
+
   return (
     <TouchableOpacity
       style={styles.container}
-      onPress={onPress}
+      onPress={() => navigate('Project')}
       activeOpacity={0.7}
+      onLongPress={() => navigate('Project')}
     >
       <Image
         source={{ uri: image }}

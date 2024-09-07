@@ -26,7 +26,6 @@ const ProjectListSearch: React.FC<ProjectListProps> = ({ projects }) => {
             title={item.title}
             location={item.subtitle}
             company={item.company}
-            onPress={() => console.log(`Clicked on ${item.title}`)}
           />
         )}
         keyExtractor={(item) => item.id}

@@ -32,10 +32,15 @@ const ProjectList: React.FC<ProjectListProps> = ({ projects }) => {
   return (
     <ScrollView contentContainerStyle={styles.scrollContent}>
       {projects.map((project, index) => (
-        <ProjectCard
+        <TouchableOpacity
           key={index}
-          project={project}
-        />
+          onPress={() => navigate('Project', { project })}
+        >
+          <ProjectCard
+            key={index}
+            project={project}
+          />
+        </TouchableOpacity>
       ))}
       <View style={styles.content}>
         <TouchableOpacity onPress={handleNewProject}>
