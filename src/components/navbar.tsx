@@ -113,13 +113,7 @@ export default function NavBar() {
         <List.Item
           title='Ver proyectos'
           titleStyle={{ color: '#FFF' }}
-          left={(props) => (
-            <List.Icon
-              {...props}
-              icon='arrow-left'
-              color='#FFF'
-            />
-          )}
+          style={{ marginLeft: 20 }}
           onPress={() => {}}
         />
       </View>
