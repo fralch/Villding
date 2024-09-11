@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -23,8 +23,24 @@ const NewProject: React.FC = () => {
   const [startDate, setStartDate] = useState('13/06/2023');
   const [duration, setDuration] = useState('6');
   const [durationUnit, setDurationUnit] = useState('Meses');
+  const [durationOnWeeks, setDurationOnWeeks] = useState(0);
   const [projectImage, setProjectImage] = useState<string | null>(null);
 
+  useEffect(() => {
+    calculateEndDate();
+    hadleCaculationOnWeeks();
+  }, [startDate, duration, durationUnit]);
+
+  const hadleCaculationOnWeeks = () => {
+    const [day, month, year] = startDate.split('/').map(Number);
+    const start = new Date(year, month - 1, day); // Meses en JavaScript son 0-indexados
+    const end = new Date(year, month - 1, day + parseInt(duration, 10));
+    const diffTime = end.getTime() - start.getTime();
+    const diffWeeks = Math.ceil(diffTime / (1000 * 60 * 60 * 24 * 7));
+
+    console.log(diffWeeks);
+    setDurationOnWeeks(diffWeeks);
+  };
   const handlePickImage = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -53,7 +69,9 @@ const NewProject: React.FC = () => {
   };
 
   const calculateEndDate = () => {
-    const start = new Date(startDate);
+    const [day, month, year] = startDate.split('/').map(Number);
+    const start = new Date(year, month - 1, day); // Meses en JavaScript son 0-indexados
+
     const durationInUnits = parseInt(duration, 10);
     if (durationUnit === 'Meses') {
       start.setMonth(start.getMonth() + durationInUnits);
