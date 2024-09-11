@@ -9,6 +9,7 @@ interface ProjectListItemProps {
   title: string;
   location: string;
   company: string;
+  week: number;
 }
 
 const ProjectListItem: React.FC<ProjectListItemProps> = ({
@@ -16,6 +17,7 @@ const ProjectListItem: React.FC<ProjectListItemProps> = ({
   title,
   location,
   company,
+  week,
 }) => {
   const { navigate } = useNavigation<NavigationProp<any>>();
 
@@ -40,6 +42,9 @@ const ProjectListItem: React.FC<ProjectListItemProps> = ({
         size={30}
         color='white'
       /> */}
+      <View style={styles.weekBadge}>
+        <Text style={styles.weekText}>Semana {week}</Text>
+      </View>
     </TouchableOpacity>
   );
 };
@@ -70,6 +75,19 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 14,
     color: 'white',
+  },
+  weekBadge: {
+    position: 'absolute',
+    top: 16,
+    right: 16,
+    backgroundColor: '#0A3649',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 4,
+  },
+  weekText: {
+    color: 'white',
+    fontSize: 12,
   },
 });
 
