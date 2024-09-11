@@ -28,18 +28,37 @@ const NewProject: React.FC = () => {
 
   useEffect(() => {
     calculateEndDate();
-    hadleCaculationOnWeeks();
+    handleCalculationOnWeeks();
   }, [startDate, duration, durationUnit]);
 
-  const hadleCaculationOnWeeks = () => {
+  const handleCalculationOnWeeks = () => {
     const [day, month, year] = startDate.split('/').map(Number);
     const start = new Date(year, month - 1, day); // Meses en JavaScript son 0-indexados
-    const end = new Date(year, month - 1, day + parseInt(duration, 10));
-    const diffTime = end.getTime() - start.getTime();
-    const diffWeeks = Math.ceil(diffTime / (1000 * 60 * 60 * 24 * 7));
+    let durationInWeeks = 0;
 
-    console.log(diffWeeks);
-    setDurationOnWeeks(diffWeeks);
+    switch (durationUnit) {
+      case 'Dias':
+        durationInWeeks = parseInt(duration, 10) / 7; // Convertir días a semanas
+        break;
+      case 'Semanas':
+        durationInWeeks = parseInt(duration, 10);
+        break;
+      case 'Meses':
+        durationInWeeks = parseInt(duration, 10) * 4.34524; // 1 mes ≈ 4.345 semanas
+        break;
+      case 'Años':
+        durationInWeeks = parseInt(duration, 10) * 52.1429; // 1 año ≈ 52.14 semanas
+        break;
+      default:
+        console.error('Unidad de duración no reconocida');
+        return;
+    }
+
+    const end = new Date(start);
+    end.setDate(start.getDate() + Math.ceil(durationInWeeks * 7)); // Sumar las semanas en días
+
+    console.log(`Duration on weeks: ${durationInWeeks}`);
+    setDurationOnWeeks(Math.ceil(durationInWeeks));
   };
   const handlePickImage = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
@@ -93,7 +112,7 @@ const NewProject: React.FC = () => {
       title: projectName,
       subtitle: location,
       company,
-      week: parseInt(duration, 10),
+      week: durationOnWeeks,
     };
 
     // Guarda el proyecto y espera a que se complete antes de navegar
