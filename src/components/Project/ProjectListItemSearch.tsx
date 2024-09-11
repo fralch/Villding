@@ -35,11 +35,11 @@ const ProjectListItem: React.FC<ProjectListItemProps> = ({
         <Text style={styles.subtitle}>{location}</Text>
         <Text style={styles.subtitle}>{company}</Text>
       </View>
-      <Ionicons
+      {/* <Ionicons
         name='ellipsis-vertical'
-        size={24}
+        size={30}
         color='white'
-      />
+      /> */}
     </TouchableOpacity>
   );
 };
