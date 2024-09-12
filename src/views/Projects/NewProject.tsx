@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Image,
   StyleSheet,
+  ScrollView,
 } from 'react-native';
 import { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
@@ -20,11 +21,14 @@ const NewProject: React.FC = () => {
   const [projectName, setProjectName] = useState('');
   const [location, setLocation] = useState('');
   const [company, setCompany] = useState('');
-  const [startDate, setStartDate] = useState('13/06/2023');
+  const [startDate, setStartDate] = useState(
+    new Date().toLocaleDateString('es-ES')
+  );
   const [duration, setDuration] = useState('6');
   const [durationUnit, setDurationUnit] = useState('Meses');
   const [durationOnWeeks, setDurationOnWeeks] = useState(0);
   const [projectImage, setProjectImage] = useState<string | null>(null);
+  const [errorBoolean, setErrorBoolean] = useState(false);
 
   useEffect(() => {
     calculateEndDate();
@@ -77,7 +81,7 @@ const NewProject: React.FC = () => {
     DateTimePickerAndroid.open({
       value: new Date(),
       onChange: (event, date) => {
-        if (event.type === 'set') {
+        if (event.type === 'set' && date) {
           const formattedDate = new Date(date).toLocaleDateString('es-ES');
           setStartDate(formattedDate);
         }
@@ -106,26 +110,40 @@ const NewProject: React.FC = () => {
 
   const handleCreateProject = async () => {
     console.log('Creando nuevo proyecto...');
-    const newProject = {
-      id: Date.now().toString(), // Genera un ID único
-      image: projectImage || '',
-      title: projectName,
-      subtitle: location,
-      company,
-      week: durationOnWeeks,
-    };
+    if (
+      projectName === '' ||
+      location === '' ||
+      company === '' ||
+      ImagePicker === null
+    ) {
+      setErrorBoolean(true);
+      return;
+    }
+    if (!errorBoolean) {
+      const newProject = {
+        id: Date.now().toString(), // Genera un ID único
+        image: projectImage || '',
+        title: projectName,
+        subtitle: location,
+        company,
+        week: durationOnWeeks,
+      };
 
-    // Guarda el proyecto y espera a que se complete antes de navegar
-    try {
-      await saveProject(newProject); // Asegúrate de que saveProject devuelva una promesa
-      navigate('HomeProject'); // Navega a HomeProject después de que se guarde
-    } catch (error) {
-      console.error('Error al guardar el proyecto:', error);
+      // Guarda el proyecto y espera a que se complete antes de navegar
+      try {
+        await saveProject(newProject); // Asegúrate de que saveProject devuelva una promesa
+        navigate('HomeProject'); // Navega a HomeProject después de que se guarde
+      } catch (error) {
+        console.error('Error al guardar el proyecto:', error);
+      }
     }
   };
 
+  const handleCancel = () => {
+    navigate('HomeProject');
+  };
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container}>
       <View style={[styles.header]}>
         <View
           style={{
@@ -135,7 +153,9 @@ const NewProject: React.FC = () => {
             width: '100%',
           }}
         >
-          <Text style={{ color: 'white', fontSize: 18 }}>Cancelar</Text>
+          <TouchableOpacity onPress={handleCancel}>
+            <Text style={{ color: 'white', fontSize: 18 }}>Cancelar</Text>
+          </TouchableOpacity>
           <Text style={{ color: 'white', fontSize: 18, fontWeight: 'bold' }}>
             Nuevo proyecto
           </Text>
@@ -153,7 +173,11 @@ const NewProject: React.FC = () => {
           placeholder='Nombre del proyecto'
           placeholderTextColor='#888'
         />
-
+        {errorBoolean && projectName === '' ? (
+          <Text style={{ color: '#ff7979', marginTop: -20, marginBottom: 10 }}>
+            Ingresa un correo
+          </Text>
+        ) : null}
         <Text style={styles.label}>Ubicación</Text>
         <TextInput
           style={styles.input}
@@ -162,6 +186,11 @@ const NewProject: React.FC = () => {
           placeholder='Ubicación'
           placeholderTextColor='#888'
         />
+        {errorBoolean && location === '' ? (
+          <Text style={{ color: '#ff7979', marginTop: -20, marginBottom: 10 }}>
+            Ingresa una ubicación
+          </Text>
+        ) : null}
 
         <Text style={styles.label}>Empresa ejecutora</Text>
         <TextInput
@@ -171,6 +200,11 @@ const NewProject: React.FC = () => {
           placeholder='Empresa ejecutora'
           placeholderTextColor='#888'
         />
+        {errorBoolean && company === '' ? (
+          <Text style={{ color: '#ff7979', marginTop: -20, marginBottom: 10 }}>
+            Ingresa una empresa
+          </Text>
+        ) : null}
 
         <Text style={styles.label}>Fecha de inicio</Text>
         <TouchableOpacity
@@ -252,8 +286,13 @@ const NewProject: React.FC = () => {
             <Text style={styles.imageText}>Subir foto del proyecto</Text>
           )}
         </TouchableOpacity>
+        {errorBoolean && !projectImage ? (
+          <Text style={{ color: '#ff7979', marginTop: -20, marginBottom: 10 }}>
+            Ingresa una imagen
+          </Text>
+        ) : null}
       </View>
-    </View>
+    </ScrollView>
   );
 };
 

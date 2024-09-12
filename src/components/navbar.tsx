@@ -97,12 +97,12 @@ export default function NavBar() {
       <Divider style={{ backgroundColor: '#0A455E' }} />
 
       <List.Item
-        title='Eliminar proyecto'
+        title='Ver notas'
         titleStyle={{ color: '#FFF' }}
         right={(props) => (
           <List.Icon
             {...props}
-            icon='delete'
+            icon='book'
             color='#FFF'
           />
         )}
