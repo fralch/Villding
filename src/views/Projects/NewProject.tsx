@@ -119,23 +119,21 @@ const NewProject: React.FC = () => {
       setErrorBoolean(true);
       return;
     }
-    if (!errorBoolean) {
-      const newProject = {
-        id: Date.now().toString(), // Genera un ID único
-        image: projectImage || '',
-        title: projectName,
-        subtitle: location,
-        company,
-        week: durationOnWeeks,
-      };
+    const newProject = {
+      id: Date.now().toString(), // Genera un ID único
+      image: projectImage || '',
+      title: projectName,
+      subtitle: location,
+      company,
+      week: durationOnWeeks,
+    };
 
-      // Guarda el proyecto y espera a que se complete antes de navegar
-      try {
-        await saveProject(newProject); // Asegúrate de que saveProject devuelva una promesa
-        navigate('HomeProject'); // Navega a HomeProject después de que se guarde
-      } catch (error) {
-        console.error('Error al guardar el proyecto:', error);
-      }
+    // Guarda el proyecto y espera a que se complete antes de navegar
+    try {
+      await saveProject(newProject); // Asegúrate de que saveProject devuelva una promesa
+      navigate('HomeProject'); // Navega a HomeProject después de que se guarde
+    } catch (error) {
+      console.error('Error al guardar el proyecto:', error);
     }
   };
 
