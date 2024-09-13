@@ -24,9 +24,32 @@ function CreacionCuenta(): JSX.Element {
   const [email, setEmail] = useState('');
   const [clave, setClave] = useState('');
 
-  const handleCreateAccount = () => {
+  const handleCreateAccount = async () => {
     if (nombres !== '' && apellidos !== '' && email !== '' && clave !== '') {
-      navigate('Verificacion');
+      // const response = await fetch(
+      //   'http://186.64.113.100:3000/api/whatsapp/text',
+      //   {
+      //     method: 'POST',
+      //     headers: {
+      //       'Content-Type': 'application/json',
+      //     },
+      //     body: JSON.stringify({
+      //       nombre: nombres,
+      //       Apellidos: apellidos,
+      //       email: email,
+      //       password: clave,
+      //       rol: 'user',
+      //     }),
+      //   }
+      // );
+
+      navigate('Verificacion', {
+        nombres: nombres,
+        apellidos: apellidos,
+        email: email,
+        clave: clave,
+        rol: 'user',
+      });
     }
     setErrorBoolean(true);
   };

@@ -1,7 +1,8 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { NavigationContainer } from '@react-navigation/native';
 import * as SplashScreen from 'expo-splash-screen';
+import { getSesion } from './src/hooks/localStorageUser';
 
 import Login from './src/views/Login/Login';
 import Password from './src/views/Login/Password';
@@ -14,6 +15,8 @@ import Project from './src/views/Projects/Project';
 SplashScreen.preventAutoHideAsync(); // Evita que el splash screen desaparezca automáticamente
 
 export default function RootNavigator() {
+  const [stateLogin, setStateLogin] = useState(true); // Indica si debe ir a la pantalla de Login o HomeProject
+  const [isLoading, setIsLoading] = useState(true); // Indica si aún se está verificando la sesión
   const Stack = createNativeStackNavigator();
 
   const Pages = [
@@ -26,19 +29,33 @@ export default function RootNavigator() {
     { name: 'Project', component: Project },
   ];
 
+  const handleLogin = async () => {
+    const sesion = await getSesion();
+    if (sesion !== null) {
+      console.log('Login exitoso');
+      setStateLogin(false);
+    }
+    setIsLoading(false); // Indica que la verificación de la sesión ha terminado
+  };
+
   useEffect(() => {
-    // Simula una espera de 1 segundo antes de ocultar el splash screen
     const hideSplashScreen = async () => {
-      await new Promise((resolve) => setTimeout(resolve, 1500)); // 1 segundo
+      await new Promise((resolve) => setTimeout(resolve, 1000)); // 1 segundo
       await SplashScreen.hideAsync(); // Oculta el splash screen
     };
 
+    handleLogin();
     hideSplashScreen();
   }, []);
 
+  if (isLoading) {
+    // No renderices nada hasta que se haya terminado de verificar la sesión
+    return null;
+  }
+
   return (
     <NavigationContainer>
-      <Stack.Navigator>
+      <Stack.Navigator initialRouteName={stateLogin ? 'Login' : 'HomeProject'}>
         {Pages.map((page) => (
           <Stack.Screen
             key={page.name}

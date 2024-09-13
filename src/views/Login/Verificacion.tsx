@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 import {
   View,
@@ -11,17 +11,40 @@ import {
   SafeAreaView,
   TextInput,
 } from 'react-native';
+import { storeSesion } from '../../hooks/localStorageUser';
 
 const { width, height } = Dimensions.get('window');
+interface User {
+  id: string;
+  nombre: string;
+  Apellidos: string;
+  email: string;
+  password: string;
+  rol: string;
+  uri?: string;
+}
 
-function Verificacion(): JSX.Element {
+function Verificacion(props: any): JSX.Element {
   const navigation = useNavigation<NavigationProp<any>>();
-
+  const [propsUser, setPropsUser] = useState(props.route.params as User);
   const [codigo, setCodigo] = useState('');
   const [errorBoolean, setErrorBoolean] = useState(false);
 
+  useEffect(() => {
+    console.log(propsUser);
+  }, []);
+
   const handleLogin = () => {
     if (codigo !== '') {
+      storeSesion({
+        id: Date.now().toString(),
+        nombre: propsUser.nombre,
+        Apellidos: propsUser.Apellidos,
+        email: propsUser.email,
+        password: propsUser.password,
+        rol: 'user',
+      });
+
       navigation.navigate('HomeProject');
       setErrorBoolean(false);
     } else {
