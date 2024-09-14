@@ -24,7 +24,9 @@ const saveProject = async (newProject: Project) => {
 const deleteProject = async (projectId: string) => {
   try {
     const existingProjects = await getProjects();
-    const updatedProjects = existingProjects.filter(project => project.id !== projectId);
+    const updatedProjects = existingProjects.filter(
+      (project) => project.id !== projectId
+    );
     await AsyncStorage.setItem(PROJECTS_KEY, JSON.stringify(updatedProjects));
   } catch (error) {
     console.log('Error al eliminar el proyecto de AsyncStorage:', error);
@@ -41,10 +43,22 @@ const getProjects = async (): Promise<Project[]> => {
   }
 };
 
+const getProjectCurrent = async (
+  projectId: string
+): Promise<Project | null> => {
+  try {
+    const projects = await getProjects();
+    return projects.find((project) => project.id === projectId) || null;
+  } catch (error) {
+    console.log('Error al obtener el proyecto actual de AsyncStorage:', error);
+    return null;
+  }
+};
+
 const updateProject = async (updatedProject: Project) => {
   try {
     const existingProjects = await getProjects();
-    const updatedProjects = existingProjects.map(project =>
+    const updatedProjects = existingProjects.map((project) =>
       project.id === updatedProject.id ? updatedProject : project
     );
     await AsyncStorage.setItem(PROJECTS_KEY, JSON.stringify(updatedProjects));
@@ -53,4 +67,10 @@ const updateProject = async (updatedProject: Project) => {
   }
 };
 
-export { saveProject, deleteProject, getProjects, updateProject };
+export {
+  saveProject,
+  deleteProject,
+  getProjects,
+  updateProject,
+  getProjectCurrent,
+};

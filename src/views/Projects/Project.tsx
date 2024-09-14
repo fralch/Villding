@@ -1,23 +1,30 @@
-// src/views/Projects/Project.tsx
 import React from 'react';
 import { createDrawerNavigator } from '@react-navigation/drawer';
-import { View, Text } from 'react-native';
-
+import { useRoute } from '@react-navigation/native';
+import { Ionicons } from '@expo/vector-icons';
 import NavBar from '../../components/navbar';
 import TaskList from '../../components/Task/TaskList';
-import { Ionicons } from '@expo/vector-icons'; // Importa los íconos que desees usar
+import { useCurrentProject } from '../../hooks/localStorageCurrentProject';
 
 const Drawer = createDrawerNavigator();
 
-function HomeScreen() {
-  return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <Text>Home Screen</Text>
-    </View>
-  );
-}
-
 export default function Project() {
+  const route = useRoute();
+  const { project } = route.params as { project: any };
+
+  // Asegúrate de invocar el hook de esta manera
+  const { saveProject, clearProject } = useCurrentProject();
+
+  React.useEffect(() => {
+    // limpiar la tarea actual
+    clearProject();
+
+    console.log('project', project);
+    if (project) {
+      saveProject(project.id); // Llamar a la función saveProject correctamente
+    }
+  }, [project]);
+
   return (
     <Drawer.Navigator
       drawerContent={(props) => <NavBar />}
@@ -25,21 +32,20 @@ export default function Project() {
         drawerType: 'front',
         swipeEnabled: true,
         drawerStyle: {
-          backgroundColor: '#333', // Cambia el color de fondo del Drawer
+          backgroundColor: '#333',
         },
         headerStyle: {
-          backgroundColor: '#05222F', // Cambia el color del encabezado (header)
-          height: 100, // Ajusta la altura del encabezado si es necesario
+          backgroundColor: '#05222F',
+          height: 100,
         },
-        headerTintColor: '#fff', // Cambia el color del texto y los íconos en el header
+        headerTintColor: '#fff',
         headerRight: () => (
           <Ionicons
-            name='person-circle-outline' // Ícono de usuario
+            name='person-circle-outline'
             size={35}
             color='white'
-            style={{ marginRight: 10 }} // Espaciado a la derecha
+            style={{ marginRight: 10 }}
             onPress={() => {
-              // Acción cuando se presiona el ícono
               alert('Perfil de usuario');
             }}
           />
@@ -47,11 +53,8 @@ export default function Project() {
       }}
     >
       <Drawer.Screen
-        name='TaskList'
+        name={project?.title || 'Project'}
         component={TaskList}
-        options={{
-          title: 'Tareas',
-        }}
       />
     </Drawer.Navigator>
   );

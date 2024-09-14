@@ -26,7 +26,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
       <TouchableOpacity
         style={styles.cardContent}
         onPress={() => {
-          navigate('Project');
+          navigate('Project', { project });
         }}
       >
         <Text style={styles.cardTitle}>{project.title}</Text>
