@@ -11,18 +11,41 @@ import {
   SafeAreaView,
   TextInput,
 } from 'react-native';
+import { useRoute } from '@react-navigation/native';
+import {storeSesion} from '../../hooks/localStorageUser';
 
 const { width, height } = Dimensions.get('window');
+interface User {
+  id: string;
+  nombre: string;
+  Apellidos: string;
+  email: string;
+  password: string;
+  rol: string;
+  uri?: string;
+}
+
 
 function Password(): JSX.Element {
   const navigation = useNavigation<NavigationProp<any>>();
+  const route = useRoute();
+  const { email } = route.params as { email: any };
+
+
   const [secureText, setSecureText] = useState(true);
   const [clave, setClave] = useState('');
   const [errorBoolean, setErrorBoolean] = useState(false);
 
   const handleLogin = () => {
     if (clave !== '') {
-      navigation.navigate('Verificacion');
+      navigation.navigate('Verificacion', { 
+        id : Date.now().toString(),
+        nombre: 'Bruno',
+        Apellidos: 'Cairampoma',
+        email: email,
+        password: clave,
+        rol: 'admin'
+      });
       setErrorBoolean(false);
     } else {
       setErrorBoolean(true);

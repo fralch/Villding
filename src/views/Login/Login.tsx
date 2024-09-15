@@ -22,7 +22,9 @@ function Login(): JSX.Element {
 
   const handleLogin = () => {
     if (correo !== '') {
-      navigate('Password');
+      navigate('Password',
+        { email: correo }
+      );
       setErrorBoolean(false);
     } else {
       setErrorBoolean(true);

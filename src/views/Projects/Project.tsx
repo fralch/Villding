@@ -27,7 +27,7 @@ export default function Project() {
 
   return (
     <Drawer.Navigator
-      drawerContent={(props) => <NavBar />}
+      drawerContent={(project) => <NavBar {...project} />}
       screenOptions={{
         drawerType: 'front',
         swipeEnabled: true,
@@ -55,6 +55,9 @@ export default function Project() {
       <Drawer.Screen
         name={project?.title || 'Project'}
         component={TaskList}
+        options={{
+          headerTitle: project?.title || 'Project',
+        }}
       />
     </Drawer.Navigator>
   );

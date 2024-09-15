@@ -2,8 +2,14 @@
 import React from 'react';
 import { View, Text, Image } from 'react-native';
 import { List, Divider } from 'react-native-paper';
+import { useRoute } from '@react-navigation/native';
 
-export default function NavBar() {
+
+export default function NavBar( props: any) {
+  const route = useRoute();
+  const { project } = route.params as { project: any }
+  console.log(project.image); //file:///data/user/0/host.exp.exponent/cache/ExperienceData/%2540fralch%252FVillding/ImagePicker/5ce7cbe5-df9f-493e-b143-c450237822c3.jpeg
+  
   return (
     <View style={{ flex: 1, backgroundColor: '#05222F' }}>
       <View
@@ -33,27 +39,25 @@ export default function NavBar() {
         }}
       >
         <Image
-          source={{
-            uri: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSKIJC0XQm26nBGa5VoTkZzjhBsAPsE9LdTeQ&s',
-          }}
+          source={{ uri: project.image }}
           style={{
             width: '100%',
             height: 200,
             resizeMode: 'contain',
             paddingHorizontal: 0,
-            marginTop: -15,
+            marginTop: 5,
           }}
         />
         <Text
           style={{ color: '#FFF', fontWeight: 'bold', paddingHorizontal: 20 }}
         >
-          Multifamiliar Barranco
+          {project.title}
         </Text>
         <Text style={{ color: '#7AA0B8', paddingHorizontal: 20 }}>
-          Jirón Dos de Mayo Barranco
+          {project.subtitle}
         </Text>
         <Text style={{ color: '#7AA0B8', paddingHorizontal: 20 }}>
-          Weinstein Ingenieros SAC
+          {project.company}
         </Text>
       </View>
 
