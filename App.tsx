@@ -8,7 +8,7 @@ import Login from './src/views/Login/Login';
 import Password from './src/views/Login/Password';
 import Verificacion from './src/views/Login/Verificacion';
 import CreacionCuenta from './src/views/Login/CreacionCuenta';
-import HomeProject from './src/views/Projects/home';
+import HomeProject from './src/views/Projects/HomeProject';
 import NewProject from './src/views/Projects/NewProject';
 import Project from './src/views/Projects/Project';
 
