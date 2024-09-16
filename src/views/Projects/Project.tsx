@@ -2,7 +2,7 @@ import React from 'react';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import { useRoute } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
-import NavBar from '../../components/navbar';
+import Hamburguesa from '../../components/Hamburguesa';
 import TaskList from '../../components/Task/TaskList';
 import { useCurrentProject } from '../../hooks/localStorageCurrentProject';
 
@@ -27,7 +27,7 @@ export default function Project() {
 
   return (
     <Drawer.Navigator
-      drawerContent={(project) => <NavBar {...project} />}
+      drawerContent={(project) => <Hamburguesa {...project} />}
       screenOptions={{
         drawerType: 'front',
         swipeEnabled: true,

@@ -1,15 +1,14 @@
-// src/components/NavBar.tsx
+// src/components/Hamburguesa.tsx
 import React from 'react';
 import { View, Text, Image } from 'react-native';
 import { List, Divider } from 'react-native-paper';
 import { useRoute } from '@react-navigation/native';
 
-
-export default function NavBar( props: any) {
+export default function Hamburguesa(props: any) {
   const route = useRoute();
-  const { project } = route.params as { project: any }
+  const { project } = route.params as { project: any };
   console.log(project.image); //file:///data/user/0/host.exp.exponent/cache/ExperienceData/%2540fralch%252FVillding/ImagePicker/5ce7cbe5-df9f-493e-b143-c450237822c3.jpeg
-  
+
   return (
     <View style={{ flex: 1, backgroundColor: '#05222F' }}>
       <View
