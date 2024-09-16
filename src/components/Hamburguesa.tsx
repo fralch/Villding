@@ -59,19 +59,6 @@ export default function Hamburguesa(props: any) {
           {project.company}
         </Text>
       </View>
-
-      <List.Item
-        title='Editar proyecto'
-        titleStyle={{ color: '#FFF' }}
-        right={(props) => (
-          <List.Icon
-            {...props}
-            icon='pencil'
-            color='#FFF'
-          />
-        )}
-        onPress={() => {}}
-      />
       <List.Item
         title='Administrar acceso'
         titleStyle={{ color: '#FFF' }}
@@ -96,21 +83,20 @@ export default function Hamburguesa(props: any) {
         )}
         onPress={() => {}}
       />
-
-      <Divider style={{ backgroundColor: '#0A455E' }} />
-
       <List.Item
-        title='Ver notas'
+        title='Editar proyecto'
         titleStyle={{ color: '#FFF' }}
         right={(props) => (
           <List.Icon
             {...props}
-            icon='book'
+            icon='pencil'
             color='#FFF'
           />
         )}
         onPress={() => {}}
       />
+
+      <Divider style={{ backgroundColor: '#0A455E' }} />
 
       <View style={{ marginTop: 'auto' }}>
         <List.Item
