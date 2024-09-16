@@ -3,7 +3,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { NavigationContainer } from '@react-navigation/native';
 import * as SplashScreen from 'expo-splash-screen';
 import { getSesion } from './src/hooks/localStorageUser';
-
+import { getProject } from './src/hooks/localStorageCurrentProject';
 import Login from './src/views/Login/Login';
 import Password from './src/views/Login/Password';
 import Verificacion from './src/views/Login/Verificacion';
@@ -17,6 +17,7 @@ SplashScreen.preventAutoHideAsync(); // Evita que el splash screen desaparezca a
 export default function RootNavigator() {
   const [stateLogin, setStateLogin] = useState(true); // Indica si debe ir a la pantalla de Login o HomeProject
   const [isLoading, setIsLoading] = useState(true); // Indica si aún se está verificando la sesión
+  const [project, setProject] = useState(null as any);
   const Stack = createNativeStackNavigator();
 
   const Pages = [
@@ -33,6 +34,9 @@ export default function RootNavigator() {
     const sesion = await getSesion();
     if (sesion !== null) {
       console.log('Login exitoso');
+      const project = await getProject();
+      console.log('project on App', project);
+      setProject(JSON.parse(project));
       setStateLogin(false);
     }
     setIsLoading(false); // Indica que la verificación de la sesión ha terminado

@@ -1,52 +1,30 @@
 import { useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// Hook personalizado para manejar la tarea actual
-export const useCurrentProject = () => {
-  const [currentProject, setCurrentProject] = useState<string | null>(null);
-
-  // Guardar la tarea en AsyncStorage
-  const saveProject = async (ProjectId: string) => {
-    try {
-      // comprobar si la tarea ya existe en AsyncStorage
-      const savedProject = await AsyncStorage.getItem('currentProject');
-      if (savedProject) {
-        setCurrentProject(savedProject);
-        return;
-      }
-
-      await AsyncStorage.setItem('currentProject', ProjectId);
-      setCurrentProject(ProjectId);
-    } catch (error) {
-      console.error('Error al guardar el Project:', error);
-    }
-  };
-
-  const clearProject = async () => {
-    try {
-      await AsyncStorage.removeItem('currentProject');
-      setCurrentProject(null);
-    } catch (error) {
-      console.error('Error al borrar el Project:', error);
-    }
-  };
-
-  // Cargar la tarea desde AsyncStorage
-  const loadProject = async () => {
-    try {
-      const savedProject = await AsyncStorage.getItem('currentProject');
-      if (savedProject) {
-        setCurrentProject(savedProject);
-      }
-    } catch (error) {
-      console.error('Error al cargar el Project:', error);
-    }
-  };
-
-  // Cargar la tarea al iniciar
-  useEffect(() => {
-    loadProject();
-  }, []);
-
-  return { currentProject, saveProject, loadProject, clearProject };
+const storeProject = async (Project: string): Promise<void> => {
+  try {
+    await AsyncStorage.setItem('@current_Project', JSON.stringify(Project));
+  } catch (e) {
+    console.error(e);
+  }
 };
+
+const removeProject = async (): Promise<void> => {
+  try {
+    await AsyncStorage.removeItem('@current_Project');
+  } catch (e) {
+    console.error(e);
+  }
+};
+
+const getProject = async (): Promise<string | null> => {
+  try {
+    const value = await AsyncStorage.getItem('@current_Project');
+    return value;
+  } catch (e) {
+    console.error(e);
+    return null;
+  }
+};
+
+export { storeProject, removeProject, getProject };

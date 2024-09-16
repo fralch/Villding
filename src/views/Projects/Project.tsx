@@ -4,7 +4,7 @@ import { useRoute } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import Hamburguesa from '../../components/Hamburguesa';
 import TaskList from '../../components/Task/TaskList';
-import { useCurrentProject } from '../../hooks/localStorageCurrentProject';
+import { storeProject } from '../../hooks/localStorageCurrentProject';
 
 const Drawer = createDrawerNavigator();
 
@@ -12,16 +12,11 @@ export default function Project() {
   const route = useRoute();
   const { project } = route.params as { project: any };
 
-  // Asegúrate de invocar el hook de esta manera
-  const { saveProject, clearProject } = useCurrentProject();
-
   React.useEffect(() => {
-    // limpiar la tarea actual
-    clearProject();
-
     console.log('project', project);
     if (project) {
-      saveProject(project.id); // Llamar a la función saveProject correctamente
+      console.log('proyecto guardado');
+      storeProject(project);
     }
   }, [project]);
 
