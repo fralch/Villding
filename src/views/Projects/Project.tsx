@@ -8,21 +8,24 @@ import { storeProject } from '../../hooks/localStorageCurrentProject';
 
 const Drawer = createDrawerNavigator();
 
-export default function Project() {
+export default function Project(props: any) {
   const route = useRoute();
-  const { project } = route.params as { project: any };
-
+  const [ProyectoActual, setProyectoRoute] = React.useState<any>(null);
+  let { project: proyectoRoute } = route.params as { project: any };
+  console.log('-------- Projects ------------');
   React.useEffect(() => {
-    console.log('project', project);
-    if (project) {
+    console.log('project desde PROJECT', proyectoRoute);
+    if (proyectoRoute) {
       console.log('proyecto guardado');
-      storeProject(project);
+      storeProject(proyectoRoute);
+    } else {
+      proyectoRoute = props;
     }
-  }, [project]);
+  }, [proyectoRoute]);
 
   return (
     <Drawer.Navigator
-      drawerContent={(project) => <Hamburguesa {...project} />}
+      drawerContent={(proyectoRoute) => <Hamburguesa {...proyectoRoute} />}
       screenOptions={{
         drawerType: 'front',
         swipeEnabled: true,
@@ -48,10 +51,10 @@ export default function Project() {
       }}
     >
       <Drawer.Screen
-        name={project?.title || 'Project'}
+        name={proyectoRoute?.title || 'Project'}
         component={TaskList}
         options={{
-          headerTitle: project?.title || 'Project',
+          headerTitle: proyectoRoute?.title || 'Project',
         }}
       />
     </Drawer.Navigator>

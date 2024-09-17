@@ -17,7 +17,8 @@ SplashScreen.preventAutoHideAsync(); // Evita que el splash screen desaparezca a
 export default function RootNavigator() {
   const [stateLogin, setStateLogin] = useState(true); // Indica si debe ir a la pantalla de Login o HomeProject
   const [isLoading, setIsLoading] = useState(true); // Indica si aún se está verificando la sesión
-  const [project, setProject] = useState(null as any);
+  const [projectState, setProject] = useState(null as any);
+  const [initialRoute, setInitialRoute] = useState('Login'); // Maneja la ruta inicial
   const Stack = createNativeStackNavigator();
 
   const Pages = [
@@ -34,9 +35,9 @@ export default function RootNavigator() {
     const sesion = await getSesion();
     if (sesion !== null) {
       console.log('Login exitoso');
-      const project = await getProject();
-      console.log('project on App', project);
-      setProject(JSON.parse(project));
+      const proyecto = await getProject();
+      console.log('project on App', proyecto);
+      setProject(JSON.parse(proyecto));
       setStateLogin(false);
     }
     setIsLoading(false); // Indica que la verificación de la sesión ha terminado
@@ -59,13 +60,18 @@ export default function RootNavigator() {
 
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName={stateLogin ? 'Login' : 'HomeProject'}>
+      <Stack.Navigator
+        initialRouteName={
+          stateLogin ? 'Login' : projectState ? 'Project' : 'HomeProject'
+        }
+      >
         {Pages.map((page) => (
           <Stack.Screen
             key={page.name}
             name={page.name}
             component={page.component}
             options={{ headerShown: false }}
+            initialParams={page.name === 'Project' ? projectState : {}}
           />
         ))}
       </Stack.Navigator>
