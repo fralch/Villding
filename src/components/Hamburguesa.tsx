@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { View, Text, Image } from 'react-native';
 import { List, Divider } from 'react-native-paper';
-import { useRoute } from '@react-navigation/native';
+import { useRoute, RouteProp } from '@react-navigation/native';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 
 interface Project {
@@ -13,9 +13,19 @@ interface Project {
   week: number;
 }
 
+// Define el tipo para los parámetros de la ruta
+type RouteParams = {
+  params: {
+    project?: Project;
+  };
+};
+
 export default function Hamburguesa(props: any) {
   const { navigate } = useNavigation<NavigationProp<any>>();
-  const route = useRoute();
+
+  // Tipar la ruta para incluir los parámetros
+  const route = useRoute<RouteProp<RouteParams, 'params'>>();
+
   const hasExactProjectStructure = (obj: any): obj is Project => {
     if (!obj) {
       return false;
@@ -32,36 +42,29 @@ export default function Hamburguesa(props: any) {
 
     return requiredKeys.every((key) => key in obj);
   };
+
   const recibiendoProyecto = useMemo(() => {
-    console.log('------------ HAMBURGUESA ----------------');
-    console.log('route.params');
-    console.log(route.params?.project);
-    console.log('props.route?.params');
-    console.log(props.route?.params);
     if (
       hasExactProjectStructure(route.params?.project) &&
       Object.entries(route.params?.project).length > 0
     ) {
-      console.log('guardado en route.params.project');
       return route.params?.project;
     }
     if (
       hasExactProjectStructure(route?.params) &&
       Object.entries(route?.params).length > 0
     ) {
-      console.log('guardado en route.params');
       return route.params;
     }
     if (
       hasExactProjectStructure(props.route?.params) &&
       Object.entries(props.route?.params).length > 0
     ) {
-      console.log('guardado en props.route.params');
       return props.route.params;
     }
 
     return null;
-  }, [props.route?.params, route.params]); // Solo se ejecuta cuando props.project cambie
+  }, [props.route?.params, route.params]);
 
   return (
     <View style={{ flex: 1, backgroundColor: '#05222F' }}>
@@ -95,7 +98,7 @@ export default function Hamburguesa(props: any) {
       >
         <Image
           source={{
-            uri: recibiendoProyecto.image || 'https://via.placeholder.com/200',
+            uri: recibiendoProyecto?.image || 'https://via.placeholder.com/200',
           }}
           style={{
             width: '100%',
@@ -108,13 +111,13 @@ export default function Hamburguesa(props: any) {
         <Text
           style={{ color: '#FFF', fontWeight: 'bold', paddingHorizontal: 20 }}
         >
-          {recibiendoProyecto.title}
+          {recibiendoProyecto?.title}
         </Text>
         <Text style={{ color: '#7AA0B8', paddingHorizontal: 20 }}>
-          {recibiendoProyecto.subtitle}
+          {recibiendoProyecto?.subtitle}
         </Text>
         <Text style={{ color: '#7AA0B8', paddingHorizontal: 20 }}>
-          {recibiendoProyecto.company}
+          {recibiendoProyecto?.company}
         </Text>
       </View>
       {/* Opciones de administración */}

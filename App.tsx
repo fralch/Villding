@@ -17,7 +17,7 @@ SplashScreen.preventAutoHideAsync(); // Evita que el splash screen desaparezca a
 export default function RootNavigator() {
   const [stateLogin, setStateLogin] = useState(true); // Indica si debe ir a la pantalla de Login o HomeProject
   const [isLoading, setIsLoading] = useState(true); // Indica si aún se está verificando la sesión
-  const [projectState, setProject] = useState(null as any);
+  const [projectState, setProject] = useState<any>(null); // Ajusta el tipo de `projectState` a `any` o al tipo adecuado
   const [initialRoute, setInitialRoute] = useState('Login'); // Maneja la ruta inicial
   const Stack = createNativeStackNavigator();
 
@@ -36,8 +36,12 @@ export default function RootNavigator() {
     if (sesion !== null) {
       console.log('Login exitoso');
       const proyecto = await getProject();
-      console.log('project on App', proyecto);
-      setProject(JSON.parse(proyecto));
+      if (proyecto) {
+        // Asegúrate de que `proyecto` no es null antes de usar `JSON.parse`
+        setProject(JSON.parse(proyecto));
+      } else {
+        setProject(null); // Maneja el caso cuando `proyecto` es null
+      }
       setStateLogin(false);
     }
     setIsLoading(false); // Indica que la verificación de la sesión ha terminado
