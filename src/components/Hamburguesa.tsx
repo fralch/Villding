@@ -2,24 +2,67 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { View, Text, Image } from 'react-native';
 import { List, Divider } from 'react-native-paper';
 import { useRoute } from '@react-navigation/native';
+import { useNavigation, NavigationProp } from '@react-navigation/native';
+
+interface Project {
+  company: string;
+  id: string;
+  image: string;
+  subtitle: string;
+  title: string;
+  week: number;
+}
 
 export default function Hamburguesa(props: any) {
+  const { navigate } = useNavigation<NavigationProp<any>>();
   const route = useRoute();
+  const hasExactProjectStructure = (obj: any): obj is Project => {
+    if (!obj) {
+      return false;
+    }
 
+    const requiredKeys = [
+      'company',
+      'id',
+      'image',
+      'subtitle',
+      'title',
+      'week',
+    ];
+
+    return requiredKeys.every((key) => key in obj);
+  };
   const recibiendoProyecto = useMemo(() => {
     console.log('------------ HAMBURGUESA ----------------');
-    if (route.params !== undefined && Object.entries(route.params).length > 0) {
+    console.log('route.params');
+    console.log(route.params?.project);
+    console.log('props.route?.params');
+    console.log(props.route?.params);
+    if (
+      hasExactProjectStructure(route.params?.project) &&
+      Object.entries(route.params?.project).length > 0
+    ) {
+      console.log('guardado en route.params.project');
+      return route.params?.project;
+    }
+    if (
+      hasExactProjectStructure(route?.params) &&
+      Object.entries(route?.params).length > 0
+    ) {
+      console.log('guardado en route.params');
       return route.params;
     }
     if (
-      props.route.params !== undefined &&
-      Object.entries(props.route.params).length > 0
+      hasExactProjectStructure(props.route?.params) &&
+      Object.entries(props.route?.params).length > 0
     ) {
+      console.log('guardado en props.route.params');
       return props.route.params;
     }
 
-    return props.project;
+    return null;
   }, [props.route?.params, route.params]); // Solo se ejecuta cuando props.project cambie
+
   return (
     <View style={{ flex: 1, backgroundColor: '#05222F' }}>
       {/* Logo */}
@@ -118,7 +161,9 @@ export default function Hamburguesa(props: any) {
           title='Ver proyectos'
           titleStyle={{ color: '#FFF' }}
           style={{ marginLeft: 20 }}
-          onPress={() => {}}
+          onPress={() => {
+            navigate('HomeProject');
+          }}
         />
       </View>
     </View>

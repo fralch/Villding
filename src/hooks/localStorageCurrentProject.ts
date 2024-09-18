@@ -27,4 +27,6 @@ const getProject = async (): Promise<string | null> => {
   }
 };
 
+// remove all projects this h
+
 export { storeProject, removeProject, getProject };

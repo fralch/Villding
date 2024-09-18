@@ -17,6 +17,7 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import ProjectList from '../../components/Project/ProjectList';
 import ProjectListSearch from '../../components/Project/ProjectListSearch';
 import { getProjects } from '../../hooks/localStorageProject';
+import { removeProject } from '../../hooks/localStorageCurrentProject';
 
 interface Project {
   id: string;

@@ -1,35 +1,73 @@
-import React from 'react';
+import React, { useMemo, useEffect } from 'react';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import { useRoute } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import Hamburguesa from '../../components/Hamburguesa';
 import TaskList from '../../components/Task/TaskList';
 import { storeProject } from '../../hooks/localStorageCurrentProject';
+interface Project {
+  company: string;
+  id: string;
+  image: string;
+  subtitle: string;
+  title: string;
+  week: number;
+}
 
 const Drawer = createDrawerNavigator();
 
 export default function Project(props: any) {
   const route = useRoute();
-  const [ProyectoActual, setProyectoRoute] = React.useState<any>(null);
-  let { project: proyectoRoute } = route.params as { project: any };
-  React.useEffect(() => {
+
+  const hasExactProjectStructure = (obj: any): obj is Project => {
+    if (!obj) {
+      return false;
+    }
+
+    const requiredKeys = [
+      'company',
+      'id',
+      'image',
+      'subtitle',
+      'title',
+      'week',
+    ];
+
+    return requiredKeys.every((key) => key in obj);
+  };
+  const ProyectoActual = useMemo(() => {
+    console.log('------------ HAMBURGUESA ----------------');
+    console.log('route.params');
+    console.log(route.params?.project);
+    console.log('props.route?.params');
+    console.log(props.route?.params);
     if (
-      proyectoRoute !== undefined &&
-      Object.entries(proyectoRoute).length > 0
+      hasExactProjectStructure(route.params?.project) &&
+      Object.entries(route.params?.project).length > 0
     ) {
-      // console.log('Setting project from route.params');
-      setProyectoRoute(proyectoRoute);
-      storeProject(proyectoRoute);
+      console.log('guardado en route.params.project');
+      storeProject(route.params?.project);
+      return route.params?.project;
     }
     if (
-      props.route.params !== undefined &&
-      Object.entries(props.route.params).length > 0
+      hasExactProjectStructure(route?.params) &&
+      Object.entries(route?.params).length > 0
     ) {
-      // console.log('Setting project from props');
-      setProyectoRoute(props.route.params);
+      console.log('guardado en route.params');
+      storeProject(route?.params);
+      return route.params;
+    }
+    if (
+      hasExactProjectStructure(props.route?.params) &&
+      Object.entries(props.route?.params).length > 0
+    ) {
+      console.log('guardado en props.route.params');
       storeProject(props.route.params);
+      return props.route.params;
     }
-  }, [proyectoRoute, props.route.params]);
+
+    return null;
+  }, [props.route?.params, route.params]); // Solo se ejecuta cuando props.project cambie
 
   return (
     <Drawer.Navigator
