@@ -12,17 +12,12 @@ export default function Project(props: any) {
   const route = useRoute();
   const [ProyectoActual, setProyectoRoute] = React.useState<any>(null);
   let { project: proyectoRoute } = route.params as { project: any };
-  console.log('-------- Projects ------------');
   React.useEffect(() => {
-    console.log(
-      'project desde PROJECT',
-      Object.entries(props.route.params).length
-    );
     if (
       proyectoRoute !== undefined &&
       Object.entries(proyectoRoute).length > 0
     ) {
-      console.log('Setting project from route.params');
+      // console.log('Setting project from route.params');
       setProyectoRoute(proyectoRoute);
       storeProject(proyectoRoute);
     }
@@ -30,7 +25,7 @@ export default function Project(props: any) {
       props.route.params !== undefined &&
       Object.entries(props.route.params).length > 0
     ) {
-      console.log('Setting project from props');
+      // console.log('Setting project from props');
       setProyectoRoute(props.route.params);
       storeProject(props.route.params);
     }
