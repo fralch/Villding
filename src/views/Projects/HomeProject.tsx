@@ -57,6 +57,7 @@ export default function HomeProject() {
   );
 
   React.useEffect(() => {
+    removeProject();
     const filtered = projects.filter((project) => {
       if (search === '') {
         return true;
