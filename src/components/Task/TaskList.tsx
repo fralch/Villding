@@ -11,7 +11,7 @@ import { Ionicons } from '@expo/vector-icons';
 interface Task {
   id: string;
   title: string;
-  checked: boolean;
+  checked: boolean[];
 }
 
 interface Section {
@@ -23,8 +23,19 @@ const sections: Section[] = [
   {
     title: 'Primer piso - torre "A"',
     tasks: [
-      { id: '1', title: 'Bloquetas SAC', checked: true },
-      { id: '2', title: 'Piso laminado - dpt 101 Torre "B"', checked: false },
+      { id: '1', title: 'Bloquetas SAC', checked: [true, true, false] },
+      {
+        id: '2',
+        title: 'Piso laminado - dpt 101 Torre "B"',
+        checked: [true, false, false],
+      },
+    ],
+  },
+  {
+    title: 'Bloquetas SAC',
+    tasks: [
+      { id: '3', title: 'Bloquetas SAC', checked: [true, true, true] },
+      { id: '4', title: 'Bloquetas SAC', checked: [true, true, false] },
     ],
   },
   // Añadir más secciones según sea necesario
@@ -33,9 +44,6 @@ const sections: Section[] = [
 const TaskList: React.FC = () => {
   return (
     <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}></View>
-
       {/* Week Selector */}
       <View style={styles.weekSelector}>
         <TouchableOpacity>
@@ -58,12 +66,13 @@ const TaskList: React.FC = () => {
       {/* Days of the week */}
       <View style={styles.daysRow}>
         {['Lu', 'Ma', 'Mi', 'Ju', 'Vi', 'Sa', 'Do'].map((day, index) => (
-          <Text
+          <View
             key={index}
-            style={styles.dayText}
+            style={styles.dayColumn}
           >
-            {day}
-          </Text>
+            <Text style={styles.dayText}>{day}</Text>
+            <Text style={styles.dateText}>{`0${index + 5}/05`}</Text>
+          </View>
         ))}
       </View>
 
@@ -80,11 +89,17 @@ const TaskList: React.FC = () => {
                 style={styles.taskRow}
               >
                 <Text style={styles.taskTitle}>{task.title}</Text>
-                <Ionicons
-                  name={task.checked ? 'checkmark-circle' : 'ellipse-outline'}
-                  size={24}
-                  color={task.checked ? 'green' : 'gray'}
-                />
+                <View style={styles.iconRow}>
+                  {task.checked.map((isChecked, i) => (
+                    <Ionicons
+                      key={i}
+                      name={isChecked ? 'checkmark-circle' : 'ellipse-outline'}
+                      size={24}
+                      color={isChecked ? 'green' : 'gray'}
+                      style={styles.icon}
+                    />
+                  ))}
+                </View>
               </View>
             ))}
           </View>
@@ -94,10 +109,11 @@ const TaskList: React.FC = () => {
       {/* Add new task button */}
       <TouchableOpacity style={styles.addButton}>
         <Ionicons
-          name='add-circle'
-          size={60}
-          color='green'
+          name='add-circle-outline'
+          size={24}
+          color='white'
         />
+        <Text style={styles.addButtonText}>Añadir seguimiento</Text>
       </TouchableOpacity>
     </View>
   );
@@ -108,16 +124,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#07374a',
     paddingHorizontal: 20,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 10,
-  },
-  headerTitle: {
-    color: 'white',
-    fontSize: 20,
   },
   weekSelector: {
     flexDirection: 'row',
@@ -135,9 +141,16 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingVertical: 10,
   },
+  dayColumn: {
+    alignItems: 'center',
+  },
   dayText: {
     color: 'white',
     fontSize: 14,
+  },
+  dateText: {
+    color: '#7bc4c4',
+    fontSize: 12,
   },
   section: {
     marginVertical: 10,
@@ -161,10 +174,26 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 14,
   },
+  iconRow: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  icon: {
+    marginHorizontal: 5,
+  },
   addButton: {
-    position: 'absolute',
-    bottom: 20,
-    right: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 20,
+    padding: 15,
+    backgroundColor: '#006680',
+    borderRadius: 8,
+  },
+  addButtonText: {
+    color: 'white',
+    fontSize: 16,
+    marginLeft: 10,
   },
 });
 
