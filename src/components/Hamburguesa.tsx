@@ -103,11 +103,12 @@ export default function Hamburguesa(props: any) {
           style={{
             width: '100%',
             height: 200,
-            resizeMode: 'contain',
+            resizeMode: 'cover', // Cambiado a 'cover'
             paddingHorizontal: 0,
-            marginTop: 5,
+            marginTop: 0,
           }}
         />
+
         <Text
           style={{ color: '#FFF', fontWeight: 'bold', paddingHorizontal: 20 }}
         >
