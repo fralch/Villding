@@ -7,7 +7,7 @@ import {
   TouchableOpacity,
   ScrollView,
 } from 'react-native';
-import { Ionicons, AntDesign } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 
 interface Task {
   id: string;
@@ -52,7 +52,10 @@ const TaskList: React.FC = () => {
     <View style={styles.container}>
       {/* Week Selector */}
       <View style={styles.weekSelector}>
-        <TouchableOpacity onPress={handlePreviousWeek}>
+        <TouchableOpacity
+          onPress={handlePreviousWeek}
+          disabled={currentWeekIndex === 0}
+        >
           <Ionicons
             name='chevron-back'
             size={30}
@@ -60,7 +63,10 @@ const TaskList: React.FC = () => {
           />
         </TouchableOpacity>
         <Text style={styles.weekTitle}>{weeks[currentWeekIndex]}</Text>
-        <TouchableOpacity onPress={handleNextWeek}>
+        <TouchableOpacity
+          onPress={handleNextWeek}
+          disabled={currentWeekIndex === weeks.length - 1}
+        >
           <Ionicons
             name='chevron-forward'
             size={30}
@@ -97,13 +103,17 @@ const TaskList: React.FC = () => {
                 <Text style={styles.taskTitle}>{task.title}</Text>
                 <View style={styles.iconRow}>
                   {task.checked.map((isChecked, i) => (
-                    <Ionicons
+                    <View
                       key={i}
-                      name={isChecked ? 'checkmark' : 'ellipse-sharp'}
-                      size={isChecked ? 24 : 12}
-                      color={isChecked ? '#4ABA8D' : '#D1A44C'}
-                      style={styles.icon}
-                    />
+                      style={styles.iconContainer}
+                    >
+                      <Ionicons
+                        name={isChecked ? 'checkmark' : 'ellipse-sharp'}
+                        size={isChecked ? 24 : 12}
+                        color={isChecked ? '#4ABA8D' : '#D1A44C'}
+                        style={styles.icon}
+                      />
+                    </View>
                   ))}
                 </View>
               </View>
@@ -191,19 +201,24 @@ const styles = StyleSheet.create({
   },
   iconRow: {
     flexDirection: 'row',
-    gap: 0,
+    alignItems: 'center', // Centra los iconos verticalmente
     marginTop: 5,
   },
-  icon: {
+  iconContainer: {
     backgroundColor: '#0A3649',
     borderRadius: 5,
     padding: 5,
-    alignSelf: 'center',
     alignItems: 'center',
     justifyContent: 'center',
     textAlign: 'center',
     width: '14%',
     height: 40,
+  },
+  icon: {
+    alignSelf: 'center',
+    alignItems: 'center',
+    justifyContent: 'center',
+    textAlign: 'center',
   },
   addButton: {
     flexDirection: 'row',
