@@ -5,8 +5,9 @@ import {
   StyleSheet,
   FlatList,
   TouchableOpacity,
+  ScrollView,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, AntDesign } from '@expo/vector-icons';
 
 interface Task {
   id: string;
@@ -15,7 +16,7 @@ interface Task {
 }
 
 interface Section {
-  title: string;
+  id: string;
   tasks: Task[];
 }
 
@@ -23,18 +24,7 @@ const weeks = ['Semana 1', 'Semana 2', 'Semana 3', 'Semana 4'];
 
 const sections: Section[] = [
   {
-    title: 'Primer piso - torre "A"',
-    tasks: [
-      { id: '1', title: 'Bloquetas SAC', checked: [true, true, false] },
-      {
-        id: '2',
-        title: 'Piso laminado - dpt 101 Torre "B"',
-        checked: [true, false, false],
-      },
-    ],
-  },
-  {
-    title: 'Bloquetas SAC',
+    id: new Date().getTime().toString(),
     tasks: [
       { id: '3', title: 'Bloquetas SAC', checked: [true, true, true] },
       { id: '4', title: 'Bloquetas SAC', checked: [true, true, false] },
@@ -94,11 +84,11 @@ const TaskList: React.FC = () => {
 
       {/* Task sections */}
       <FlatList
+        style={styles.flatList}
         data={sections}
-        keyExtractor={(item) => item.title}
+        keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>{item.title}</Text>
+          <ScrollView style={styles.section}>
             {item.tasks.map((task) => (
               <View
                 key={task.id}
@@ -109,16 +99,16 @@ const TaskList: React.FC = () => {
                   {task.checked.map((isChecked, i) => (
                     <Ionicons
                       key={i}
-                      name={isChecked ? 'checkmark-circle' : 'ellipse-outline'}
-                      size={24}
-                      color={isChecked ? 'green' : 'gray'}
+                      name={isChecked ? 'checkmark' : 'ellipse-sharp'}
+                      size={isChecked ? 24 : 12}
+                      color={isChecked ? '#4ABA8D' : '#D1A44C'}
                       style={styles.icon}
                     />
                   ))}
                 </View>
               </View>
             ))}
-          </View>
+          </ScrollView>
         )}
       />
 
@@ -139,7 +129,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#07374a',
-    paddingHorizontal: 20,
+    paddingHorizontal: 0, // Elimina el padding horizontal para permitir que los elementos internos ocupen todo el ancho
   },
   weekSelector: {
     backgroundColor: '#05222F',
@@ -151,6 +141,7 @@ const styles = StyleSheet.create({
     alignSelf: 'stretch', // Esto asegura que ocupe todo el ancho disponible
     marginVertical: 10,
     borderRadius: 10,
+    marginHorizontal: 10,
   },
   weekTitle: {
     color: 'white',
@@ -166,6 +157,7 @@ const styles = StyleSheet.create({
   },
   dayColumn: {
     alignItems: 'center',
+    flex: 1, // Asegura que cada columna ocupe el mismo espacio
   },
   dayText: {
     color: 'white',
@@ -184,9 +176,9 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   taskRow: {
-    flexDirection: 'row',
+    flexDirection: 'column',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    height: 80,
     paddingVertical: 10,
     paddingHorizontal: 10,
     backgroundColor: '#004e66',
@@ -203,6 +195,13 @@ const styles = StyleSheet.create({
   },
   icon: {
     marginHorizontal: 5,
+    backgroundColor: 'black',
+    borderRadius: 5,
+    padding: 5,
+    alignSelf: 'center',
+    alignItems: 'center',
+    justifyContent: 'center',
+    margin: 0,
   },
   addButton: {
     flexDirection: 'row',
@@ -217,6 +216,10 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 16,
     marginLeft: 10,
+  },
+  flatList: {
+    flex: 1,
+    backgroundColor: '#07374a',
   },
 });
 
