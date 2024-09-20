@@ -168,7 +168,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
   section: {
-    marginVertical: 10,
+    marginVertical: 0,
   },
   sectionTitle: {
     color: 'white',
@@ -187,21 +187,23 @@ const styles = StyleSheet.create({
   },
   taskTitle: {
     color: 'white',
-    fontSize: 14,
+    fontSize: 16,
   },
   iconRow: {
     flexDirection: 'row',
-    gap: 10,
+    gap: 0,
+    marginTop: 5,
   },
   icon: {
-    marginHorizontal: 5,
-    backgroundColor: 'black',
+    backgroundColor: '#0A3649',
     borderRadius: 5,
     padding: 5,
     alignSelf: 'center',
     alignItems: 'center',
     justifyContent: 'center',
-    margin: 0,
+    textAlign: 'center',
+    width: '14%',
+    height: 40,
   },
   addButton: {
     flexDirection: 'row',
