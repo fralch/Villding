@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -18,6 +18,8 @@ interface Section {
   title: string;
   tasks: Task[];
 }
+
+const weeks = ['Semana 1', 'Semana 2', 'Semana 3', 'Semana 4'];
 
 const sections: Section[] = [
   {
@@ -42,23 +44,37 @@ const sections: Section[] = [
 ];
 
 const TaskList: React.FC = () => {
+  const [currentWeekIndex, setCurrentWeekIndex] = useState(2); // Empieza en la "Semana 3"
+
+  const handleNextWeek = () => {
+    if (currentWeekIndex < weeks.length - 1) {
+      setCurrentWeekIndex(currentWeekIndex + 1);
+    }
+  };
+
+  const handlePreviousWeek = () => {
+    if (currentWeekIndex > 0) {
+      setCurrentWeekIndex(currentWeekIndex - 1);
+    }
+  };
+
   return (
     <View style={styles.container}>
       {/* Week Selector */}
       <View style={styles.weekSelector}>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={handlePreviousWeek}>
           <Ionicons
             name='chevron-back'
-            size={24}
-            color='white'
+            size={30}
+            color={currentWeekIndex === 0 ? '#07374a' : 'white'} // Desactivar si es la primera semana
           />
         </TouchableOpacity>
-        <Text style={styles.weekTitle}>Semana 3</Text>
-        <TouchableOpacity>
+        <Text style={styles.weekTitle}>{weeks[currentWeekIndex]}</Text>
+        <TouchableOpacity onPress={handleNextWeek}>
           <Ionicons
             name='chevron-forward'
-            size={24}
-            color='white'
+            size={30}
+            color={currentWeekIndex === weeks.length - 1 ? '#07374a' : 'white'} // Desactivar si es la última semana
           />
         </TouchableOpacity>
       </View>
@@ -126,20 +142,27 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   weekSelector: {
+    backgroundColor: '#05222F',
     flexDirection: 'row',
-    justifyContent: 'center',
+    justifyContent: 'space-between', // Cambié a space-between para distribuir los íconos de manera adecuada
     alignItems: 'center',
-    paddingVertical: 10,
+    paddingVertical: 15,
+    paddingHorizontal: 30, // Añadí algo de padding lateral para separar los íconos de los bordes
+    alignSelf: 'stretch', // Esto asegura que ocupe todo el ancho disponible
+    marginVertical: 10,
+    borderRadius: 10,
   },
   weekTitle: {
     color: 'white',
-    fontSize: 18,
+    fontSize: 20,
     marginHorizontal: 10,
   },
   daysRow: {
+    backgroundColor: '#05222F',
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingVertical: 10,
+    alignSelf: 'stretch', // Opción alternativa para ocupar todo el ancho
   },
   dayColumn: {
     alignItems: 'center',
