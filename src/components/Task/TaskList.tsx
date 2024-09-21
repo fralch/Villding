@@ -12,7 +12,7 @@ import { Ionicons } from '@expo/vector-icons';
 interface Task {
   id: string;
   title: string;
-  checked: boolean[];
+  checked: number[];
 }
 
 interface Section {
@@ -26,8 +26,8 @@ const sections: Section[] = [
   {
     id: new Date().getTime().toString(),
     tasks: [
-      { id: '3', title: 'Bloquetas SAC', checked: [true, true, true] },
-      { id: '4', title: 'Bloquetas SAC', checked: [true, true, false] },
+      { id: '3', title: 'Bloquetas SAC', checked: [1, 1, 0, -1] },
+      { id: '4', title: 'Bloquetas SAC', checked: [1, 1, 0, -1, -1, -1] },
     ],
   },
   // Añadir más secciones según sea necesario
@@ -105,12 +105,24 @@ const TaskList: React.FC = () => {
                   {task.checked.map((isChecked, i) => (
                     <View
                       key={i}
-                      style={styles.iconContainer}
+                      style={[
+                        styles.iconContainer,
+                        {
+                          backgroundColor:
+                            isChecked === -1 ? '#004e66' : '#0A3649',
+                        },
+                      ]}
                     >
                       <Ionicons
-                        name={isChecked ? 'checkmark' : 'ellipse-sharp'}
-                        size={isChecked ? 24 : 12}
-                        color={isChecked ? '#4ABA8D' : '#D1A44C'}
+                        name={
+                          isChecked == 1
+                            ? 'checkmark'
+                            : isChecked == -1
+                            ? 'ellipse-outline'
+                            : 'ellipse-sharp'
+                        }
+                        size={isChecked === 1 ? 24 : 12}
+                        color={isChecked === 1 ? '#4ABA8D' : '#D1A44C'}
                         style={styles.icon}
                       />
                     </View>
@@ -127,7 +139,7 @@ const TaskList: React.FC = () => {
         <Ionicons
           name='add-circle-outline'
           size={24}
-          color='white'
+          color='#7bc4c4'
         />
         <Text style={styles.addButtonText}>Añadir seguimiento</Text>
       </TouchableOpacity>
@@ -226,12 +238,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginTop: 20,
     padding: 15,
-    backgroundColor: '#006680',
+    backgroundColor: '#07374a',
     borderRadius: 8,
   },
   addButtonText: {
-    color: 'white',
-    fontSize: 16,
+    color: '#7bc4c4',
+    fontSize: 18,
     marginLeft: 10,
   },
   flatList: {
