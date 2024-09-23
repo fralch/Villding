@@ -156,7 +156,11 @@ export default function Hamburguesa(props: any) {
             color='#FFF'
           />
         )}
-        onPress={() => {}}
+        onPress={() => {
+          navigate('NewProject', {
+            project: recibiendoProyecto,
+          });
+        }}
       />
       <Divider style={{ backgroundColor: '#0A455E' }} />
       {/* Ver proyectos */}

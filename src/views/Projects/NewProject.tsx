@@ -14,9 +14,25 @@ import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { Picker } from '@react-native-picker/picker';
 import * as ImagePicker from 'expo-image-picker';
 import { saveProject, deleteProject } from '../../hooks/localStorageProject';
+import { useRoute, RouteProp } from '@react-navigation/native';
+
+interface Project {
+  company: string;
+  id: string;
+  image: string;
+  subtitle: string;
+  title: string;
+  week: number;
+}
+type RouteParams = {
+  params: {
+    project?: Project;
+  };
+};
 
 const NewProject: React.FC = () => {
-  const { navigate } = useNavigation<NavigationProp<any>>();
+  const route = useRoute<RouteProp<RouteParams, 'params'>>();
+  console.log(route.params.project);
 
   const [projectName, setProjectName] = useState('');
   const [location, setLocation] = useState('');
@@ -289,6 +305,27 @@ const NewProject: React.FC = () => {
             Ingresa una imagen
           </Text>
         ) : null}
+        <TouchableOpacity
+          style={{
+            backgroundColor: '#0A3649', // Color de fondo
+            borderColor: '#ff0033', // Color del borde
+            borderWidth: 1, // Grosor del borde
+            paddingVertical: 10, // Espaciado vertical
+            paddingHorizontal: 20, // Espaciado horizontal
+            borderRadius: 8, // Esquinas redondeadas
+            alignItems: 'center', // Centrar el texto
+            marginHorizontal: 20, // Margen horizontal
+          }}
+        >
+          <Text
+            style={{
+              color: '#ff0033', // Color del texto
+              fontSize: 16, // Tamaño de la fuente
+            }}
+          >
+            Eliminar proyecto
+          </Text>
+        </TouchableOpacity>
       </View>
     </ScrollView>
   );
