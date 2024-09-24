@@ -85,7 +85,7 @@ export default function Project(props: any) {
         },
         headerStyle: {
           backgroundColor: '#05222F',
-          height: 100,
+          height: 70,
         },
         headerTintColor: '#fff',
         headerRight: () => (
@@ -104,9 +104,6 @@ export default function Project(props: any) {
       <Drawer.Screen
         name={ProyectoActual?.title || 'Project'}
         component={TaskList}
-        options={{
-          headerTitle: ProyectoActual?.title || 'Project',
-        }}
       />
     </Drawer.Navigator>
   );

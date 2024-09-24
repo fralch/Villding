@@ -110,7 +110,13 @@ export default function Hamburguesa(props: any) {
         />
 
         <Text
-          style={{ color: '#FFF', fontWeight: 'bold', paddingHorizontal: 20 }}
+          style={{
+            color: '#FFF',
+            fontWeight: 'bold',
+            paddingHorizontal: 20,
+            marginTop: 10,
+            fontSize: 20,
+          }}
         >
           {recibiendoProyecto?.title}
         </Text>
@@ -123,7 +129,7 @@ export default function Hamburguesa(props: any) {
       </View>
       {/* Opciones de administración */}
       <List.Item
-        title='Administrar acceso'
+        title='Administrar accesos'
         titleStyle={{ color: '#FFF' }}
         right={(props) => (
           <List.Icon
@@ -167,8 +173,15 @@ export default function Hamburguesa(props: any) {
       <View style={{ marginTop: 'auto' }}>
         <List.Item
           title='Ver proyectos'
+          left={(props) => (
+            <List.Icon
+              {...props}
+              icon='arrow-left'
+              color='#FFF'
+            />
+          )}
           titleStyle={{ color: '#FFF' }}
-          style={{ marginLeft: 20 }}
+          style={{ marginLeft: 10 }}
           onPress={() => {
             navigate('HomeProject');
           }}
