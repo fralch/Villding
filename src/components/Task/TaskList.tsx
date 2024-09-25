@@ -38,6 +38,7 @@ const sections: Section[] = [
 
 const TaskList: React.FC = () => {
   const [modalSeguimientoVisible, setModalSeguimientoVisible] = useState(false);
+  const [modalSinAccesoVisible, setModalSinAccesoVisible] = useState(false);
   const [currentWeekIndex, setCurrentWeekIndex] = useState(2); // Empieza en la "Semana 3"
 
   const handleNextWeek = () => {
@@ -216,6 +217,12 @@ const TaskList: React.FC = () => {
           </View>
         </View>
       </Modal>
+      <Modal
+        visible={modalSinAccesoVisible}
+        animationType='slide'
+        transparent={true}
+        onRequestClose={() => setModalSinAccesoVisible(false)}
+      ></Modal>
     </View>
   );
 };
