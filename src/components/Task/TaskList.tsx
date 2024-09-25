@@ -6,6 +6,9 @@ import {
   FlatList,
   TouchableOpacity,
   ScrollView,
+  TextInput,
+  Modal,
+  Pressable,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -34,6 +37,7 @@ const sections: Section[] = [
 ];
 
 const TaskList: React.FC = () => {
+  const [modalSeguimientoVisible, setModalSeguimientoVisible] = useState(false);
   const [currentWeekIndex, setCurrentWeekIndex] = useState(2); // Empieza en la "Semana 3"
 
   const handleNextWeek = () => {
@@ -135,7 +139,10 @@ const TaskList: React.FC = () => {
       />
 
       {/* Add new task button */}
-      <TouchableOpacity style={styles.addButton}>
+      <TouchableOpacity
+        style={styles.addButton}
+        onPress={() => setModalSeguimientoVisible(true)}
+      >
         <Ionicons
           name='add-circle-outline'
           size={24}
@@ -143,6 +150,72 @@ const TaskList: React.FC = () => {
         />
         <Text style={styles.addButtonText}>Añadir seguimiento</Text>
       </TouchableOpacity>
+
+      <Modal
+        visible={modalSeguimientoVisible}
+        animationType='slide'
+        transparent={true}
+        onRequestClose={() => setModalSeguimientoVisible(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <View style={styles.titleContainer}>
+              <Text style={styles.modalTitle}>Añadir seguimiento</Text>
+              <Pressable onPress={() => setModalSeguimientoVisible(false)}>
+                <Ionicons
+                  name='close-outline'
+                  size={30}
+                  color='white'
+                />
+              </Pressable>
+            </View>
+            <TextInput
+              style={styles.modalInput}
+              placeholder='Nombre del seguimiento'
+              placeholderTextColor='#777'
+            />
+            <View
+              style={{
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                gap: 8,
+                marginTop: 16,
+              }}
+            >
+              <TouchableOpacity
+                style={[
+                  styles.modalButton,
+                  {
+                    backgroundColor: '#004e66',
+                    borderColor: 'white',
+                    borderWidth: 1,
+                  },
+                ]}
+                onPress={() => setModalSeguimientoVisible(false)}
+              >
+                <Text
+                  style={[
+                    styles.modalButtonText,
+                    { color: 'white', paddingHorizontal: 10 },
+                  ]}
+                >
+                  Cerrar
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.modalButton}
+                onPress={() => setModalSeguimientoVisible(false)}
+              >
+                <Text
+                  style={[styles.modalButtonText, { paddingHorizontal: 10 }]}
+                >
+                  Guardar
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -176,6 +249,15 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingVertical: 10,
     alignSelf: 'stretch', // Opción alternativa para ocupar todo el ancho
+    // Sombra en iOS
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+
+    // Sombra en Android
+    elevation: 15,
+    zIndex: 1,
   },
   dayColumn: {
     alignItems: 'center',
@@ -249,6 +331,62 @@ const styles = StyleSheet.create({
   flatList: {
     flex: 1,
     backgroundColor: '#07374a',
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalContent: {
+    backgroundColor: '#0A3649',
+    borderRadius: 8,
+    padding: 20,
+    alignItems: 'center',
+    width: '90%',
+  },
+  modalTitle: {
+    color: 'white',
+    fontSize: 22,
+    fontWeight: 'bold',
+    marginBottom: 20,
+  },
+
+  modalButton: {
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    padding: 10,
+    alignItems: 'center',
+  },
+  modalButtonText: {
+    color: '#0A3649',
+    fontSize: 16,
+  },
+  modalInput: {
+    backgroundColor: '#05222F',
+    color: 'white',
+    fontSize: 16,
+    width: '80%',
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    marginBottom: 10,
+    borderColor: '#0A3649',
+    borderWidth: 1,
+    // Sombra en iOS
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+
+    // Sombra en Android
+    elevation: 5,
+  },
+  titleContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 10,
+    width: '100%',
   },
 });
 
