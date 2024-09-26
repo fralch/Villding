@@ -101,9 +101,10 @@ const TaskList: React.FC = () => {
         renderItem={({ item }) => (
           <ScrollView style={styles.section}>
             {item.tasks.map((task) => (
-              <View
+              <TouchableOpacity
                 key={task.id}
                 style={styles.taskRow}
+                onPress={() => setModalSinAccesoVisible(true)}
               >
                 <Text style={styles.taskTitle}>{task.title}</Text>
                 <View style={styles.iconRow}>
@@ -133,13 +134,12 @@ const TaskList: React.FC = () => {
                     </View>
                   ))}
                 </View>
-              </View>
+              </TouchableOpacity>
             ))}
           </ScrollView>
         )}
       />
 
-      {/* Add new task button */}
       <TouchableOpacity
         style={styles.addButton}
         onPress={() => setModalSeguimientoVisible(true)}
@@ -222,7 +222,19 @@ const TaskList: React.FC = () => {
         animationType='slide'
         transparent={true}
         onRequestClose={() => setModalSinAccesoVisible(false)}
-      ></Modal>
+      >
+        <Pressable
+          style={[styles.modalContainer, { justifyContent: 'flex-end' }]}
+          onPress={() => setModalSinAccesoVisible(false)}
+        >
+          <View style={styles.modalContent}>
+            <View style={styles.titleContainer}>
+              <Text style={styles.modalTitle}>Sin acceso</Text>
+            </View>
+            <Text>No tienes acceso a esta sección</Text>
+          </View>
+        </Pressable>
+      </Modal>
     </View>
   );
 };

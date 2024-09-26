@@ -31,6 +31,7 @@ type RouteParams = {
 };
 
 const NewProject: React.FC = () => {
+  const { navigate } = useNavigation<NavigationProp<any>>();
   const route = useRoute<RouteProp<RouteParams, 'params'>>();
   console.log(route.params.project);
 
@@ -305,27 +306,29 @@ const NewProject: React.FC = () => {
             Ingresa una imagen
           </Text>
         ) : null}
-        <TouchableOpacity
-          style={{
-            backgroundColor: '#0A3649', // Color de fondo
-            borderColor: '#ff0033', // Color del borde
-            borderWidth: 1, // Grosor del borde
-            paddingVertical: 10, // Espaciado vertical
-            paddingHorizontal: 20, // Espaciado horizontal
-            borderRadius: 8, // Esquinas redondeadas
-            alignItems: 'center', // Centrar el texto
-            marginHorizontal: 20, // Margen horizontal
-          }}
-        >
-          <Text
+        {route.params.project ? (
+          <TouchableOpacity
             style={{
-              color: '#ff0033', // Color del texto
-              fontSize: 16, // Tamaño de la fuente
+              backgroundColor: '#0A3649', // Color de fondo
+              borderColor: '#ff0033', // Color del borde
+              borderWidth: 1, // Grosor del borde
+              paddingVertical: 10, // Espaciado vertical
+              paddingHorizontal: 20, // Espaciado horizontal
+              borderRadius: 8, // Esquinas redondeadas
+              alignItems: 'center', // Centrar el texto
+              marginHorizontal: 20, // Margen horizontal
             }}
           >
-            Eliminar proyecto
-          </Text>
-        </TouchableOpacity>
+            <Text
+              style={{
+                color: '#ff0033', // Color del texto
+                fontSize: 16, // Tamaño de la fuente
+              }}
+            >
+              Eliminar proyecto
+            </Text>
+          </TouchableOpacity>
+        ) : null}
       </View>
     </ScrollView>
   );
