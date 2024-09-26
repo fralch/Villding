@@ -11,6 +11,7 @@ import {
   Pressable,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useNavigation, NavigationProp } from '@react-navigation/native';
 
 interface Task {
   id: string;
@@ -37,6 +38,8 @@ const sections: Section[] = [
 ];
 
 const TaskList: React.FC = () => {
+  const navigation = useNavigation<NavigationProp<any>>();
+
   const [modalSeguimientoVisible, setModalSeguimientoVisible] = useState(false);
   const [modalSinAccesoVisible, setModalSinAccesoVisible] = useState(false);
   const [currentWeekIndex, setCurrentWeekIndex] = useState(2); // Empieza en la "Semana 3"
@@ -105,6 +108,7 @@ const TaskList: React.FC = () => {
                 key={task.id}
                 style={styles.taskRow}
                 onPress={() => setModalSinAccesoVisible(true)}
+                onLongPress={() => navigation.navigate('Task')}
               >
                 <Text style={styles.taskTitle}>{task.title}</Text>
                 <View style={styles.iconRow}>
@@ -227,11 +231,25 @@ const TaskList: React.FC = () => {
           style={[styles.modalContainer, { justifyContent: 'flex-end' }]}
           onPress={() => setModalSinAccesoVisible(false)}
         >
-          <View style={styles.modalContent}>
+          <View style={[styles.modalContent, { backgroundColor: '#CFA54A' }]}>
             <View style={styles.titleContainer}>
-              <Text style={styles.modalTitle}>Sin acceso</Text>
+              <Text
+                style={[
+                  styles.modalTitle,
+                  { color: '#07374a', marginBottom: 0 },
+                ]}
+              >
+                No tienes acceso
+              </Text>
             </View>
-            <Text>No tienes acceso a esta sección</Text>
+            <Text
+              style={{
+                color: '#07374a',
+                fontSize: 16,
+              }}
+            >
+              Pídele al administrador que te comparta esta actividad
+            </Text>
           </View>
         </Pressable>
       </Modal>

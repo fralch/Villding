@@ -85,7 +85,7 @@ export default function Project(props: any) {
         },
         headerStyle: {
           backgroundColor: '#05222F',
-          height: 70,
+          height: 90, // Ajusta la altura de la barra de encabezado
         },
         headerTintColor: '#fff',
         headerRight: () => (

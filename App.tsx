@@ -11,6 +11,7 @@ import CreacionCuenta from './src/views/Login/CreacionCuenta';
 import HomeProject from './src/views/Projects/HomeProject';
 import NewProject from './src/views/Projects/NewProject';
 import Project from './src/views/Projects/Project';
+import Task from './src/components/Task/Task';
 
 SplashScreen.preventAutoHideAsync(); // Evita que el splash screen desaparezca automáticamente
 
@@ -29,6 +30,7 @@ export default function RootNavigator() {
     { name: 'HomeProject', component: HomeProject },
     { name: 'NewProject', component: NewProject },
     { name: 'Project', component: Project },
+    { name: 'Task', component: Task },
   ];
 
   const handleLogin = async () => {
