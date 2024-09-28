@@ -107,8 +107,8 @@ const TaskList: React.FC = () => {
               <TouchableOpacity
                 key={task.id}
                 style={styles.taskRow}
-                onPress={() => setModalSinAccesoVisible(true)}
-                onLongPress={() => navigation.navigate('Task')}
+                onLongPress={() => setModalSinAccesoVisible(true)}
+                onPress={() => navigation.navigate('Task')}
               >
                 <Text style={styles.taskTitle}>{task.title}</Text>
                 <View style={styles.iconRow}>

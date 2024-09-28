@@ -138,6 +138,14 @@ export default function TaskScreen() {
             },
           ]}
         />
+        <DayTasks
+          day='Jueves 16, Junio'
+          tasks={[]}
+        />
+        <DayTasks
+          day='Jueves 17, Junio'
+          tasks={[]}
+        />
       </ScrollView>
     </View>
   );
