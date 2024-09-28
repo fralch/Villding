@@ -8,6 +8,8 @@ import {
   ScrollView,
   Animated,
   Dimensions,
+  Modal,
+  Pressable,
 } from 'react-native';
 import { StatusBar as ExpoStatusBar } from 'expo-status-bar';
 import { useFocusEffect } from '@react-navigation/native';
@@ -30,6 +32,7 @@ export default function TaskScreen() {
   const screenWidth = Dimensions.get('window').width;
   const headerWidth = React.useRef(new Animated.Value(screenWidth)).current;
   const [currentWeekIndex, setCurrentWeekIndex] = useState(2);
+  const [modalOptionsVisible, setModalOptionsVisible] = useState(false);
 
   const weeks = ['Semana 1', 'Semana 2', 'Semana 3', 'Semana 4'];
   const handleNextWeek = () => {
@@ -54,11 +57,13 @@ export default function TaskScreen() {
           color='white'
         />
         <Text style={styles.headerTitle}>Primer piso - torre "A"</Text>
-        <MaterialIcons
-          name='more-vert'
-          size={24}
-          color='white'
-        />
+        <TouchableOpacity onPress={() => setModalOptionsVisible(true)}>
+          <MaterialIcons
+            name='more-vert'
+            size={24}
+            color='white'
+          />
+        </TouchableOpacity>
       </View>
 
       {/* Semana selector */}
@@ -147,6 +152,33 @@ export default function TaskScreen() {
           tasks={[]}
         />
       </ScrollView>
+      <Modal
+        visible={modalOptionsVisible}
+        animationType='fade'
+        transparent={true}
+        onRequestClose={() => setModalOptionsVisible(false)}
+      >
+        <Pressable
+          style={styles.modalContainerOptions}
+          onPressOut={() => setModalOptionsVisible(false)}
+        >
+          <Text
+            style={{
+              fontSize: 18,
+              fontWeight: 'bold',
+              marginBottom: 10,
+              color: 'white',
+            }}
+          >
+            Seguimiento
+          </Text>
+          <View style={{ marginLeft: 10 }}>
+            <Text style={{ color: 'white' }}>Compartir enlace</Text>
+            <Text style={{ color: 'white' }}>Renombrar</Text>
+            <Text style={{ color: 'white' }}>Configurar seguimiento</Text>
+          </View>
+        </Pressable>
+      </Modal>
     </View>
   );
 }
@@ -301,5 +333,14 @@ const styles = StyleSheet.create({
   addNewTaskText: {
     color: '#F4C724',
     fontSize: 16,
+  },
+  modalContainerOptions: {
+    backgroundColor: '#0A3649',
+    padding: 16,
+    marginTop: 63,
+    marginRight: 8,
+    borderRadius: 8,
+    width: '80%',
+    alignSelf: 'flex-end',
   },
 });
