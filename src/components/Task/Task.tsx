@@ -168,6 +168,7 @@ export default function TaskScreen() {
         transparent={true}
         onRequestClose={() => setModalOptionsVisible(false)}
       >
+        <View style={styles.modalContainer}>
         <Pressable
           style={styles.modalContainerOptions}
           onPressOut={() => setModalOptionsVisible(false)}
@@ -198,6 +199,7 @@ export default function TaskScreen() {
 
           </View>
         </Pressable>
+        </View>
       </Modal>
     </View>
   );
@@ -362,5 +364,10 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     width: '60%',
     alignSelf: 'flex-end',
+  },
+  modalContainer: {
+    flex: 1,
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
 });
