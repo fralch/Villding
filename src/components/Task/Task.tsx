@@ -48,6 +48,7 @@ export default function TaskScreen() {
   };
   return (
     <View style={styles.container}>
+      
       <ExpoStatusBar style='light' />
       {/* Header */}
       <View style={[styles.header, { width: headerWidth }]}>
@@ -65,7 +66,7 @@ export default function TaskScreen() {
           />
         </TouchableOpacity>
       </View>
-
+      <ScrollView style={styles.scrollContainer}>
       {/* Semana selector */}
       <View style={{ backgroundColor: '#034757' }}>
         <View style={styles.weekContainer}>
@@ -112,7 +113,7 @@ export default function TaskScreen() {
         </View>
       </View>
       {/* Lista de tareas */}
-      <ScrollView style={styles.scrollContainer}>
+      
         <DayTasks
           day='Miércoles 14, Junio'
           tasks={[
