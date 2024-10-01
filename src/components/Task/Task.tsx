@@ -13,10 +13,11 @@ import {
 } from 'react-native';
 import { StatusBar as ExpoStatusBar } from 'expo-status-bar';
 import { useFocusEffect } from '@react-navigation/native';
+import { useNavigation, NavigationProp } from '@react-navigation/native';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import Feather from '@expo/vector-icons/Feather';
 import { Ionicons } from '@expo/vector-icons';
-
 interface Task {
   title: string;
   time: string;
@@ -29,6 +30,8 @@ interface DayTasksProps {
 }
 
 export default function TaskScreen() {
+  const navigation = useNavigation<NavigationProp<any>>();
+
   const screenWidth = Dimensions.get('window').width;
   const headerWidth = React.useRef(new Animated.Value(screenWidth)).current;
   const [currentWeekIndex, setCurrentWeekIndex] = useState(2);
@@ -46,17 +49,23 @@ export default function TaskScreen() {
       setCurrentWeekIndex(currentWeekIndex - 1);
     }
   };
+
+  const goBack = () => {
+    navigation.goBack();
+  };
   return (
     <View style={styles.container}>
-      
+
       <ExpoStatusBar style='light' />
       {/* Header */}
       <View style={[styles.header, { width: headerWidth }]}>
-        <MaterialIcons
-          name='arrow-back'
-          size={24}
-          color='white'
-        />
+        <TouchableOpacity onPress={goBack}>
+          <MaterialIcons
+            name='arrow-back'
+            size={24}
+            color='white'
+          />
+        </TouchableOpacity>
         <Text style={styles.headerTitle}>Primer piso - torre "A"</Text>
         <TouchableOpacity onPress={() => setModalOptionsVisible(true)}>
           <MaterialIcons
@@ -67,53 +76,53 @@ export default function TaskScreen() {
         </TouchableOpacity>
       </View>
       <ScrollView style={styles.scrollContainer}>
-      {/* Semana selector */}
-      <View style={{ backgroundColor: '#034757' }}>
-        <View style={styles.weekContainer}>
-          <Text
-            style={{
-              fontSize: 40,
-              color: 'white',
-              width: '80%',
-              fontWeight: 'bold',
-              alignSelf: 'flex-start',
-            }}
-          >
-            Primer piso - torre "A"
-          </Text>
-          <Text style={styles.weekText}>Semana 03</Text>
-          <Text style={styles.pendingText}>3 pendientes</Text>
-        </View>
+        {/* Semana selector */}
+        <View style={{ backgroundColor: '#034757' }}>
+          <View style={styles.weekContainer}>
+            <Text
+              style={{
+                fontSize: 40,
+                color: 'white',
+                width: '80%',
+                fontWeight: 'bold',
+                alignSelf: 'flex-start',
+              }}
+            >
+              Primer piso - torre "A"
+            </Text>
+            <Text style={styles.weekText}>Semana 03</Text>
+            <Text style={styles.pendingText}>3 pendientes</Text>
+          </View>
 
-        {/* Selector de semana con flechas */}
-        <View style={styles.weekSelector}>
-          <TouchableOpacity
-            onPress={handlePreviousWeek}
-            disabled={currentWeekIndex === 0}
-          >
-            <Ionicons
-              name='chevron-back'
-              size={30}
-              color={currentWeekIndex === 0 ? '#07374a' : 'white'} // Desactivar si es la primera semana
-            />
-          </TouchableOpacity>
-          <Text style={styles.weekTitle}>{weeks[currentWeekIndex]}</Text>
-          <TouchableOpacity
-            onPress={handleNextWeek}
-            disabled={currentWeekIndex === weeks.length - 1}
-          >
-            <Ionicons
-              name='chevron-forward'
-              size={30}
-              color={
-                currentWeekIndex === weeks.length - 1 ? '#07374a' : 'white'
-              } // Desactivar si es la última semana
-            />
-          </TouchableOpacity>
+          {/* Selector de semana con flechas */}
+          <View style={styles.weekSelector}>
+            <TouchableOpacity
+              onPress={handlePreviousWeek}
+              disabled={currentWeekIndex === 0}
+            >
+              <Ionicons
+                name='chevron-back'
+                size={30}
+                color={currentWeekIndex === 0 ? '#07374a' : 'white'} // Desactivar si es la primera semana
+              />
+            </TouchableOpacity>
+            <Text style={styles.weekTitle}>{weeks[currentWeekIndex]}</Text>
+            <TouchableOpacity
+              onPress={handleNextWeek}
+              disabled={currentWeekIndex === weeks.length - 1}
+            >
+              <Ionicons
+                name='chevron-forward'
+                size={30}
+                color={
+                  currentWeekIndex === weeks.length - 1 ? '#07374a' : 'white'
+                } // Desactivar si es la última semana
+              />
+            </TouchableOpacity>
+          </View>
         </View>
-      </View>
-      {/* Lista de tareas */}
-      
+        {/* Lista de tareas */}
+
         <DayTasks
           day='Miércoles 14, Junio'
           tasks={[
@@ -173,10 +182,20 @@ export default function TaskScreen() {
           >
             Seguimiento
           </Text>
-          <View style={{ marginLeft: 10 }}>
-            <Text style={{ color: 'white' }}>Compartir enlace</Text>
-            <Text style={{ color: 'white' }}>Renombrar</Text>
-            <Text style={{ color: 'white' }}>Configurar seguimiento</Text>
+          <View style={{ marginLeft: 0 }}>
+            <TouchableOpacity style={{ flexDirection: 'row', height: 40, alignItems: 'center' }}>
+              <Ionicons name="share-social-sharp" size={18} color="white" />
+              <Text style={{ marginLeft: 10, color: 'white' }}>Compartir enlace</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={{  flexDirection: 'row', height: 40, alignItems: 'center' }}>
+              <MaterialCommunityIcons name="pencil" size={18} color="white" />
+              <Text style={{ marginLeft: 10, color: 'white'}}>Renombrar</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={{  flexDirection: 'row', height: 40, alignItems: 'center' }}>
+            <Ionicons name="settings" size={18} color="white" />
+              <Text style={{ marginLeft: 10, color: 'white'}}>Configurar seguimiento</Text>
+            </TouchableOpacity>
+
           </View>
         </Pressable>
       </Modal>
@@ -341,7 +360,7 @@ const styles = StyleSheet.create({
     marginTop: 63,
     marginRight: 8,
     borderRadius: 8,
-    width: '80%',
+    width: '60%',
     alignSelf: 'flex-end',
   },
 });
