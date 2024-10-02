@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -10,6 +10,7 @@ import {
   Dimensions,
   Modal,
   Pressable,
+   PanResponder
 } from 'react-native';
 import { StatusBar as ExpoStatusBar } from 'expo-status-bar';
 import { useFocusEffect } from '@react-navigation/native';
@@ -18,6 +19,9 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import Feather from '@expo/vector-icons/Feather';
 import { Ionicons } from '@expo/vector-icons';
+import TaskItemCreate from './TaskItemCreate';
+
+
 interface Task {
   title: string;
   time: string;
@@ -27,7 +31,10 @@ interface Task {
 interface DayTasksProps {
   day: string;
   tasks: Task[];
+  showModal: () => void;
 }
+
+const { height } = Dimensions.get('window');
 
 export default function TaskScreen() {
   const navigation = useNavigation<NavigationProp<any>>();
@@ -37,22 +44,66 @@ export default function TaskScreen() {
   const [currentWeekIndex, setCurrentWeekIndex] = useState(2);
   const [modalOptionsVisible, setModalOptionsVisible] = useState(false);
 
+  const [isVisible, setIsVisible] = useState(false);
+  const slideAnim = useRef(new Animated.Value(height)).current;
+
   const weeks = ['Semana 1', 'Semana 2', 'Semana 3', 'Semana 4'];
   const handleNextWeek = () => {
     if (currentWeekIndex < weeks.length - 1) {
       setCurrentWeekIndex(currentWeekIndex + 1);
     }
   };
-
   const handlePreviousWeek = () => {
     if (currentWeekIndex > 0) {
       setCurrentWeekIndex(currentWeekIndex - 1);
     }
   };
-
   const goBack = () => {
     navigation.goBack();
   };
+
+  // MODAL 
+  const showModal = () => {
+    setIsVisible(true);
+    Animated.timing(slideAnim, {
+      toValue: 0, // Aparece desde el fondo
+      duration: 300,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  // Ocultar el modal con animación hacia abajo
+  const hideModal = () => {
+    Animated.timing(slideAnim, {
+      toValue: height, // Deslizar hacia abajo para salir
+      duration: 300,
+      useNativeDriver: true,
+    }).start(() => setIsVisible(false));
+  };
+
+  // PanResponder para detectar el gesto de deslizamiento hacia abajo
+  const panResponder = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponder: (_, gestureState) => {
+        return gestureState.dy > 0; // Solo responde a movimientos hacia abajo
+      },
+      onPanResponderMove: (_, gestureState) => {
+        if (gestureState.dy > 0) {
+          slideAnim.setValue(gestureState.dy); // Mueve el modal con el gesto
+        }
+      },
+      onPanResponderRelease: (_, gestureState) => {
+        if (gestureState.dy > 100) {
+          hideModal(); // Cierra el modal si se desliza lo suficiente hacia abajo
+        } else {
+          Animated.spring(slideAnim, {
+            toValue: 0, // Regresa el modal a su posición original si el deslizamiento no fue suficiente
+            useNativeDriver: true,
+          }).start();
+        }
+      },
+    })
+  ).current;
   return (
     <View style={styles.container}>
 
@@ -137,6 +188,7 @@ export default function TaskScreen() {
               status: 'Pendiente',
             },
           ]}
+          showModal={showModal}  // Aquí pasamos showModal como prop
         />
         <DayTasks
           day='Jueves 15, Junio'
@@ -152,14 +204,17 @@ export default function TaskScreen() {
               status: 'Programado',
             },
           ]}
+          showModal={showModal}  // Aquí pasamos showModal como prop
         />
         <DayTasks
           day='Jueves 16, Junio'
           tasks={[]}
+          showModal={showModal}  // Aquí pasamos showModal como prop
         />
         <DayTasks
           day='Jueves 17, Junio'
           tasks={[]}
+          showModal={showModal}  // Aquí pasamos showModal como prop
         />
       </ScrollView>
       <Modal
@@ -201,12 +256,31 @@ export default function TaskScreen() {
         </Pressable>
         </View>
       </Modal>
+      {/*  MODAL INFERIOR */}
+     
+
+      <Modal transparent visible={isVisible} animationType="none">
+        <View style={styles.modalBackground}>
+          <Animated.View
+            style={[
+              styles.modalContainerInferior,
+              { transform: [{ translateY: slideAnim }] },
+            ]}
+            {...panResponder.panHandlers}
+          >
+            <TouchableOpacity onPress={hideModal} style={styles.closeButton}>
+              <Text style={styles.closeButtonText}>Cerrar</Text>
+            </TouchableOpacity>
+            <TaskItemCreate />
+          </Animated.View>
+        </View>
+      </Modal>
     </View>
   );
 }
 
 // Componente que agrupa las tareas por día
-const DayTasks: React.FC<DayTasksProps> = ({ day, tasks }) => (
+const DayTasks: React.FC<DayTasksProps> = ({ day, tasks, showModal }) => (
   <View style={styles.dayContainer}>
     <Text style={[styles.dayTitle, { width: '100%', textAlign: 'right' }]}>
       {day}
@@ -218,7 +292,7 @@ const DayTasks: React.FC<DayTasksProps> = ({ day, tasks }) => (
         {...task}
       />
     ))}
-    <TouchableOpacity style={styles.addNewTaskButton}>
+    <TouchableOpacity style={styles.addNewTaskButton} onPress={showModal}> 
       <Text style={styles.addNewTaskText}>+ Nuevo</Text>
     </TouchableOpacity>
   </View>
@@ -371,5 +445,43 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  // Estilos para el modal inferior 
+  button: {
+    padding: 15,
+    backgroundColor: '#007bff',
+    borderRadius: 10,
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: 16,
+  },
+  modalBackground: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Fondo semi-transparente
+  },
+  modalContainerInferior: {
+    backgroundColor: '#05222f',
+    padding: 20,
+    borderTopLeftRadius: 0,
+    borderTopRightRadius: 0,
+    maxHeight: '100%',
+    height: '95%',
+  },
+  modalText: {
+    fontSize: 18,
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  closeButton: {
+    padding: 15,
+    backgroundColor: '#ff5c5c',
+    borderRadius: 10,
+  },
+  closeButtonText: {
+    color: '#fff',
+    textAlign: 'center',
+    fontSize: 16,
   },
 });
