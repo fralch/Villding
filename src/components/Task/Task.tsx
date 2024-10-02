@@ -21,7 +21,7 @@ import { Ionicons } from '@expo/vector-icons';
 interface Task {
   title: string;
   time: string;
-  status: 'Pendiente' | 'Programado';
+  status: 'Pendiente' | 'Completado' | 'Programado';
 }
 
 interface DayTasksProps {
@@ -144,7 +144,7 @@ export default function TaskScreen() {
             {
               title: 'Descarga de afirmado',
               time: '11:00 - 12:00',
-              status: 'Programado',
+              status: 'Completado',
             },
             {
               title: 'Compactación sector 05',
@@ -232,8 +232,10 @@ const TaskCard: React.FC<Task> = ({ title, time, status }) => (
         style={[
           styles.taskStatus,
           {
-            backgroundColor: status === 'Pendiente' ? '#F4C724' : '#28A745',
-            color: status === 'Pendiente' ? '#05222F' : 'white',
+            backgroundColor: status === 'Pendiente' ? '#F4C724' : status === 'Completado'?  '#4ec291' :'#056375'  ,
+            color: status === 'Programado' ? '#F4C724' : '#0D465E',
+            borderColor: status === 'Programado' ? '#F4C724' : 'white',
+            borderWidth: status === 'Programado' ? 1 : 0,
           },
         ]}
       >
