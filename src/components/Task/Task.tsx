@@ -268,9 +268,14 @@ export default function TaskScreen() {
             ]}
             {...panResponder.panHandlers}
           >
-            <TouchableOpacity onPress={hideModal} style={styles.closeButton}>
-              <Text style={styles.closeButtonText}>Cerrar</Text>
+            <View style={{ backgroundColor: '#05222f', flexDirection: 'row', justifyContent: 'space-between' }}>
+            <TouchableOpacity onPress={hideModal}  style={{  width: '50%', paddingVertical: 10 , paddingLeft: 10}}>
+              <Text style={{ color: 'white' }} >Cancelar</Text>
             </TouchableOpacity>
+              <TouchableOpacity  style={{ width: '50%', paddingVertical: 10 , paddingRight: 10, alignItems: 'flex-end'}}>
+                <Text  style={{ color: 'white' }}>Guardar</Text>
+              </TouchableOpacity>
+            </View>
             <TaskItemCreate />
           </Animated.View>
         </View>
@@ -463,7 +468,6 @@ const styles = StyleSheet.create({
   },
   modalContainerInferior: {
     backgroundColor: '#05222f',
-    padding: 20,
     borderTopLeftRadius: 0,
     borderTopRightRadius: 0,
     maxHeight: '100%',
@@ -474,14 +478,5 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 20,
   },
-  closeButton: {
-    padding: 15,
-    backgroundColor: '#ff5c5c',
-    borderRadius: 10,
-  },
-  closeButtonText: {
-    color: '#fff',
-    textAlign: 'center',
-    fontSize: 16,
-  },
+  
 });
