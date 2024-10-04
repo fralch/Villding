@@ -27,7 +27,7 @@ const TaskItemCreate: React.FC = (tipo) => {
       <ExpoStatusBar style="dark" />
       <ScrollView>
         <View>
-          <TouchableOpacity style={styles.uploadBox}>
+          <Pressable style={styles.uploadBox}>
             <Image
               source={require("../../assets/images/add_img.png")}
               style={{ width: 30, height: 30 }}
@@ -39,7 +39,7 @@ const TaskItemCreate: React.FC = (tipo) => {
                 color="#d1a44c"
               />
             </View>
-          </TouchableOpacity>
+          </Pressable>
           <View style={styles.statusProgramado}>
             <Text style={{ fontSize: 14, color: "#d1a44c" }}>Programado</Text>
           </View>
@@ -110,6 +110,27 @@ const TaskItemCreate: React.FC = (tipo) => {
                 placeholderTextColor="#888"
               />
             </View>
+          </View>
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              borderBottomWidth: 1, // Línea de borde abajo
+              borderBottomColor: "#05222f",
+            }}
+          >
+            <Text style={{ fontSize: 17, color: "#dedede", padding: 15 }}>
+              Seleccionar un ícono
+            </Text>
+            <MaterialIcons
+              name="arrow-forward-ios"
+              size={15}
+              color="#dedede"
+              style={{ marginTop: 5 }}
+            />
+          </View>
+          <View style={{ backgroundColor: "#0a3649" }}>
+            <View><Text style={{ fontSize: 17, color: "#dedede", padding: 15 }}> Recientes</Text></View>
           </View>
         </View>
       </ScrollView>
