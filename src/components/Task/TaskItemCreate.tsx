@@ -22,6 +22,32 @@ import {
 } from "@expo/vector-icons";
 
 const TaskItemCreate: React.FC = (tipo) => {
+  const recentIcons = ["local-shipping", "directions-car"];
+
+  // Arreglo de íconos para "Todos los íconos"
+  const allIcons = [
+    "local-shipping",
+    "directions-car",
+    "ac-unit",
+    "adb",
+    "agriculture",
+    "local-shipping",
+    "directions-car",
+    "ac-unit",
+    "adb",
+    "agriculture",
+    "local-shipping",
+    "directions-car",
+    "ac-unit",
+    "adb",
+    "agriculture",
+    "local-shipping",
+    "directions-car",
+    "ac-unit",
+    "adb",
+    "agriculture",
+  ];
+
   return (
     <View style={{ backgroundColor: "#0a3649" }}>
       <ExpoStatusBar style="dark" />
@@ -130,7 +156,43 @@ const TaskItemCreate: React.FC = (tipo) => {
             />
           </View>
           <View style={{ backgroundColor: "#0a3649" }}>
-            <View><Text style={{ fontSize: 17, color: "#dedede", padding: 15 }}> Recientes</Text></View>
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Recientes</Text>
+              <View style={styles.iconRow}>
+                {recentIcons.map((icon, index) => (
+                  <MaterialIcons
+                    key={index}
+                    name={icon}
+                    size={40}
+                    color="grey"
+                    style={styles.icon}
+                  />
+                ))}
+              </View>
+            </View>
+
+            {/* Sección de Todos los íconos */}
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Todos los íconos</Text>
+              <View style={styles.iconRow}>
+                {allIcons.map((icon, index) => (
+                  <MaterialIcons
+                    key={index}
+                    name={icon}
+                    size={40}
+                    color="grey"
+                    style={styles.icon}
+                  />
+                ))}
+              </View>
+            </View>
+
+            {/* Sección de Pie de página */}
+            <View style={styles.footer}>
+              <Text style={styles.footerText}>
+                Ult edición: Gerardo el 14/05/2024
+              </Text>
+            </View>
           </View>
         </View>
       </ScrollView>
@@ -192,6 +254,39 @@ const styles = StyleSheet.create({
     color: "#fff", // Color del texto
     fontSize: 16,
     marginLeft: 10,
+  },
+
+  // -----
+  section: {
+    marginVertical: 20,
+    paddingHorizontal: 20,
+  },
+  sectionTitle: {
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+  iconRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "flex-start",
+    marginTop: 10,
+    gap: 10,
+  },
+  icon: {
+    marginVertical: 10,
+  },
+  footer: {
+    marginTop: 20,
+    paddingHorizontal: 20,
+    borderTopWidth: 1,
+    borderTopColor: "#ccc",
+    paddingTop: 10,
+  },
+  footerText: {
+    color: "#ccc",
+    fontSize: 12,
+    textAlign: "center",
   },
 });
 
