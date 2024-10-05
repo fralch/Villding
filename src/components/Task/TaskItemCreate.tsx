@@ -22,10 +22,10 @@ import {
 } from "@expo/vector-icons";
 
 const TaskItemCreate: React.FC = (tipo) => {
-  const recentIcons = ["local-shipping", "directions-car"];
+  const recentIcons: Array<keyof typeof MaterialIcons.glyphMap> = ["local-shipping", "directions-car"];
 
   // Arreglo de íconos para "Todos los íconos"
-  const allIcons = [
+  const allIcons: Array<keyof typeof MaterialIcons.glyphMap> = [
     "local-shipping",
     "directions-car",
     "ac-unit",
@@ -69,7 +69,7 @@ const TaskItemCreate: React.FC = (tipo) => {
           <View style={styles.statusProgramado}>
             <Text style={{ fontSize: 14, color: "#d1a44c" }}>Programado</Text>
           </View>
-          <TouchableOpacity style={{ backgroundColor: "#0a3649", padding: 20 }}>
+          <View style={{ backgroundColor: "#0a3649", padding: 20 }}>
             <Text
               style={{
                 fontSize: 35,
@@ -94,7 +94,7 @@ const TaskItemCreate: React.FC = (tipo) => {
                 Finalizar
               </Text>
             </TouchableOpacity>
-          </TouchableOpacity>
+          </View>
           <View>
             <View style={styles.inputContainer}>
               <Entypo name="text" size={24} color="white" />
