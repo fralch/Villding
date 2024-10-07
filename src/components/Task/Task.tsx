@@ -34,6 +34,7 @@ interface DayTasksProps {
   showModal: () => void;
 }
 
+
 const { height } = Dimensions.get('window');
 
 export default function TaskScreen() {
@@ -43,6 +44,8 @@ export default function TaskScreen() {
   const headerWidth = React.useRef(new Animated.Value(screenWidth)).current;
   const [currentWeekIndex, setCurrentWeekIndex] = useState(2);
   const [modalOptionsVisible, setModalOptionsVisible] = useState(false);
+  const [TaskItemCreateType , setTaskItemCreateType] = useState('programado');
+
 
   const [isVisible, setIsVisible] = useState(false);
   const slideAnim = useRef(new Animated.Value(height)).current;
@@ -276,7 +279,7 @@ export default function TaskScreen() {
                 <Text  style={{ color: 'white' }}>Guardar</Text>
               </TouchableOpacity>
             </View>
-            <TaskItemCreate />
+            <TaskItemCreate tipo={TaskItemCreateType} />
           </Animated.View>
         </View>
       </Modal>

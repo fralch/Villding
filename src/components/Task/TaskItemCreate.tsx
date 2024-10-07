@@ -20,8 +20,11 @@ import {
   Entypo,
   MaterialIcons,
 } from "@expo/vector-icons";
+interface TaskItemCreateProps {
+  tipo: string;
+}
 
-const TaskItemCreate: React.FC = (tipo) => {
+const TaskItemCreate: React.FC<TaskItemCreateProps> = ({ tipo }) => {
   const recentIcons: Array<keyof typeof MaterialIcons.glyphMap> = ["local-shipping", "directions-car"];
 
   // Arreglo de íconos para "Todos los íconos"
