@@ -19,16 +19,19 @@ import {
   MaterialCommunityIcons,
   Entypo,
   MaterialIcons,
+  AntDesign, 
 } from "@expo/vector-icons";
 interface TaskItemCreateProps {
   tipo: string;
 }
 
 const TaskItemCreate: React.FC<TaskItemCreateProps> = ({ tipo }) => {
+  const recentIcons: Array<keyof typeof MaterialIcons.glyphMap> = [
+    "local-shipping",
+    "directions-car",
+  ];
 
-  const recentIcons: Array<keyof typeof MaterialIcons.glyphMap> = ["local-shipping", "directions-car"];
-  
-  const [tipoTask,  setTipoTask] = useState(tipo);
+  const [tipoTask, setTipoTask] = useState(tipo);
 
   // Arreglo de íconos para "Todos los íconos"
   const allIcons: Array<keyof typeof MaterialIcons.glyphMap> = [
@@ -65,23 +68,52 @@ const TaskItemCreate: React.FC<TaskItemCreateProps> = ({ tipo }) => {
               style={{ width: 30, height: 30 }}
             />
             <View style={styles.iconStatus}>
-              <MaterialCommunityIcons
+              {tipoTask === "Programado" ? (
+                <MaterialCommunityIcons
                 name="progress-clock"
                 size={20}
                 color="#d1a44c"
-              />
+              />): tipoTask === "Pendiente" ? (
+                <View style={{ flexDirection: "row", gap: 5 }}>
+                  <MaterialIcons name="agriculture" size={24} color="#eee" />
+                  <AntDesign name="clockcircle" size={24} color="#d1a44c" />
+                </View>
+              ):(
+                <View style={{ flexDirection: "row", gap: 5 }}>
+                  <MaterialIcons name="agriculture" size={24} color="#eee" />
+                  <MaterialCommunityIcons name="clock-check" size={24} color="#4ec291" />
+                </View>
+              )
+            }
             </View>
           </Pressable>
-          <View style={styles.statusProgramado}>
-            <Text style={{ fontSize: 14, 
-              color: tipoTask === 'Programado' ? "#d1a44c" : "#0a3649",
-              backgroundColor: tipoTask === 'Programado' ? "#d1a44c" : "#0a3649",
-
-             }}>{tipoTask}</Text>
+          <View
+            style={[
+              styles.statusProgramado,
+              {
+                backgroundColor:
+                  tipoTask === "Programado"
+                    ? "#0a3649"
+                    : tipoTask === "Pendiente"
+                    ? "#d1a44c"
+                    : "#4ec291",
+                borderTopColor: tipoTask === "Completado" ? "#0a3649" : "#d1a44c",  
+                borderBottomColor:  tipoTask === "Completado" ? "#0a3649" : "#d1a44c",  
+              },
+            ]}
+          >
+            <Text
+              style={{
+                fontSize: 14,
+                color: tipoTask === "Programado" ? "#d1a44c" : "#0a3649",
+              }}
+            >
+              {tipoTask}
+            </Text>
           </View>
           <View style={{ backgroundColor: "#0a3649", padding: 20 }}>
             <Text
-              style={{  
+              style={{
                 fontSize: 35,
                 width: "70%",
                 color: "white",
