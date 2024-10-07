@@ -25,7 +25,10 @@ interface TaskItemCreateProps {
 }
 
 const TaskItemCreate: React.FC<TaskItemCreateProps> = ({ tipo }) => {
+
   const recentIcons: Array<keyof typeof MaterialIcons.glyphMap> = ["local-shipping", "directions-car"];
+  
+  const [tipoTask,  setTipoTask] = useState(tipo);
 
   // Arreglo de íconos para "Todos los íconos"
   const allIcons: Array<keyof typeof MaterialIcons.glyphMap> = [
@@ -70,11 +73,15 @@ const TaskItemCreate: React.FC<TaskItemCreateProps> = ({ tipo }) => {
             </View>
           </Pressable>
           <View style={styles.statusProgramado}>
-            <Text style={{ fontSize: 14, color: "#d1a44c" }}>Programado</Text>
+            <Text style={{ fontSize: 14, 
+              color: tipoTask === 'Programado' ? "#d1a44c" : "#0a3649",
+              backgroundColor: tipoTask === 'Programado' ? "#d1a44c" : "#0a3649",
+
+             }}>{tipoTask}</Text>
           </View>
           <View style={{ backgroundColor: "#0a3649", padding: 20 }}>
             <Text
-              style={{
+              style={{  
                 fontSize: 35,
                 width: "70%",
                 color: "white",
