@@ -60,7 +60,7 @@ function CreacionCuenta(): JSX.Element {
     >
       <SafeAreaView style={styles.container}>
         <View style={styles.header}>
-          <Text style={styles.title}>Confirma la creación de tu cuenta</Text>
+          <Text style={styles.title}>Creación de tu cuenta</Text>
           <View style={styles.mainCircle}>
             <View style={styles.mainCircle}>
               <Image
