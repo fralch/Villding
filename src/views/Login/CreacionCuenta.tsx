@@ -247,7 +247,7 @@ function CreacionCuenta(): JSX.Element {
               </Text>
             ) : null}
             {clave.length < 8 ? (
-              <Text style={{ color: '#79ffd0', marginTop: 0 }}>
+              <Text style={{ color: '#79ffd0', marginTop: 0, fontStyle: 'italic' }}>
                 Debe tener más de 8 caracteres
               </Text>
             ) : null}
