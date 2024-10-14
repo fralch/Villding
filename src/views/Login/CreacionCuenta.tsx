@@ -11,6 +11,7 @@ import {
   SafeAreaView,
   TextInput,
 } from 'react-native';
+import axios from 'axios';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 const { width, height } = Dimensions.get('window');
 
@@ -43,13 +44,55 @@ function CreacionCuenta(): JSX.Element {
       //   }
       // );
 
-      navigate('Verificacion', {
-        nombres: nombres,
-        apellidos: apellidos,
+
+
+      //--------------------
+
+      /*
+        {
+          "name": "Bob",
+          "last_name": "Johnson2",
+          "email": "bob.johnson2@example.com",
+          "password": "password456",
+          "password_confirmation": "password456",
+          "is_paid_user": false,
+          "role": "user"
+        }
+       */
+
+      const JsonNewUser = {
+        name: nombres,
+        last_name: apellidos,
         email: email,
-        clave: clave,
-        rol: 'user',
-      });
+        password: clave,
+        password_confirmation: clave,
+        is_paid_user: false,
+        role: 'user',
+      };
+      const fetchData = async () => {
+        try {
+          const response = await axios.get('https://jsonplaceholder.typicode.com/posts');
+          console.log(response.data);
+        } catch (error) {
+          console.log(error);
+        }
+      };
+      
+      fetchData();
+       
+
+      // if (response.ok) {
+      //   navigate('Verificacion', {
+      //     nombres: nombres,
+      //     apellidos: apellidos,
+      //     email: email,
+      //     clave: clave,
+      //     rol: 'user',
+      //   });
+      // } else {
+      //   setErrorBoolean(true);
+      // }
+
     }
     setErrorBoolean(true);
   };
