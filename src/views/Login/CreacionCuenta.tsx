@@ -26,7 +26,7 @@ function CreacionCuenta(): JSX.Element {
   const [clave, setClave] = useState('');
 
   const handleCreateAccount = async () => {
-    if (nombres !== '' && apellidos !== '' && email !== '' && clave !== '') {
+    if (nombres !== '' && apellidos !== '' && email !== '' && clave !== '' ) {
       // const response = await fetch(
       //   'http://186.64.113.100:3000/api/whatsapp/text',
       //   {
@@ -44,54 +44,53 @@ function CreacionCuenta(): JSX.Element {
       //   }
       // );
 
-
-
-      //--------------------
-
-      /*
-        {
-          "name": "Bob",
-          "last_name": "Johnson2",
-          "email": "bob.johnson2@example.com",
-          "password": "password456",
-          "password_confirmation": "password456",
-          "is_paid_user": false,
-          "role": "user"
+      //-------------------------------------
+        if(clave.length < 8){
+          console.log(clave.length)
+          setErrorBoolean(true);
+          return;
         }
-       */
 
-      const JsonNewUser = {
-        name: nombres,
-        last_name: apellidos,
-        email: email,
-        password: clave,
-        password_confirmation: clave,
-        is_paid_user: false,
-        role: 'user',
-      };
-      const fetchData = async () => {
-        try {
-          const response = await axios.get('https://jsonplaceholder.typicode.com/posts');
-          console.log(response.data);
-        } catch (error) {
-          console.log(error);
-        }
-      };
-      
-      fetchData();
+        const fetchData = async () => {
+          const JsonNewUser = {
+            name: nombres,
+            last_name: apellidos,
+            email: email,
+            password: clave,
+            password_confirmation: clave,
+            is_paid_user: false,
+            role: 'user',
+          };
+        
+          let reqOptions = {
+            url: "https://www.centroesteticoedith.com/endpoint/user/create",
+            method: "POST",
+            data: JsonNewUser, // No necesitas usar JSON.stringify aquí
+          };
+        
+          try {
+            const response = await axios(reqOptions);
+            console.log(response.data);
+            navigate('Verificacion', {
+                  nombres: nombres,
+                  apellidos: apellidos,
+                  email: email,
+                  clave: clave,
+                  rol: 'user',
+                });
+
+          } catch (error: any) {
+            if (error.response) {
+              console.log(error.response.data); // Imprime la respuesta completa del servidor
+            } else {
+              console.log(error.message);
+            }
+            setErrorBoolean(true);
+          }
+        };
+        
+        fetchData();
        
-
-      // if (response.ok) {
-      //   navigate('Verificacion', {
-      //     nombres: nombres,
-      //     apellidos: apellidos,
-      //     email: email,
-      //     clave: clave,
-      //     rol: 'user',
-      //   });
-      // } else {
-      //   setErrorBoolean(true);
-      // }
 
     }
     setErrorBoolean(true);
@@ -238,9 +237,9 @@ function CreacionCuenta(): JSX.Element {
               value={clave}
               onChangeText={setClave}
             />
-            {errorBoolean && clave === '' ? (
+            {errorBoolean && clave === '' || clave.length < 8 ? (
               <Text style={{ color: '#ff7979', marginTop: 10 }}>
-                Ingresa tu contraseña
+                Ingresa tu contraseña con más de 8 caracteres
               </Text>
             ) : null}
           </View>
