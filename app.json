@@ -19,8 +19,7 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#0A3649"
       },
-      "package": "com.fralch.Villding", 
-      "usesCleartextTraffic": true
+      "package": "com.fralch.Villding"
     },
     "web": {
       "favicon": "./assets/favicon.png"
