@@ -11,8 +11,11 @@ import {
   SafeAreaView,
   TextInput,
 } from 'react-native';
+import axios from 'axios';
 import { useRoute } from '@react-navigation/native';
 import {storeSesion} from '../../hooks/localStorageUser';
+import ConfirmModal from '../../components/Alerta/ConfirmationModal';
+import LoadingModal from '../../components/Alerta/LoadingModal';
 
 const { width, height } = Dimensions.get('window');
 interface User {
@@ -35,20 +38,50 @@ function Password(): JSX.Element {
   const [secureText, setSecureText] = useState(true);
   const [clave, setClave] = useState('');
   const [errorBoolean, setErrorBoolean] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [showModalLoading, setShowModalLoading] = useState(false);
+  const [msjeModal, setMsjeModal] = useState('Login correcto.');
 
   const handleLogin = () => {
+    setShowModalLoading(true);
     if (clave !== '') {
-      navigation.navigate('Verificacion', { 
-        id : Date.now().toString(),
-        nombre: 'Bruno',
-        Apellidos: 'Cairampoma',
-        email: email,
-        password: clave,
-        rol: 'admin'
-      });
-      setErrorBoolean(false);
+      const fetchData = async () => {
+        const JsonLogin = {
+          email: email,
+          password: clave,
+        };
+      
+        let reqOptions = {
+          url: "https://www.centroesteticoedith.com/endpoint/user/login",
+          method: "POST",
+          data: JsonLogin, // No necesitas usar JSON.stringify aquí
+        };
+        try {
+          const response = await axios(reqOptions);
+          console.log(response.data);
+          navigation.navigate('Verificacion', { 
+            id : Date.now().toString(),
+            nombre: 'Bruno',
+            Apellidos: 'Cairampoma',
+            email: email,
+            password: clave,
+            rol: 'admin'
+          });
+          setErrorBoolean(false);
+          setShowModalLoading(false);
+
+        } catch (error) {
+          console.error(error);
+        }
+      
+      };
+
+      fetchData();
+
+      
     } else {
       setErrorBoolean(true);
+      setShowModalLoading(false);
     }
   };
   return (
@@ -122,6 +155,8 @@ function Password(): JSX.Element {
           </TouchableOpacity>
         </View>
       </SafeAreaView>
+      <ConfirmModal visible={showModal} message={msjeModal} onClose={() => setShowModal(false)} />
+      <LoadingModal visible={showModalLoading} />
     </ScrollView>
   );
 }

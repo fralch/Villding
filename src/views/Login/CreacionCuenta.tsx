@@ -10,10 +10,13 @@ import {
   TouchableOpacity,
   SafeAreaView,
   TextInput,
-  Modal
+  Modal, 
+  ActivityIndicator
 } from 'react-native';
 import axios from 'axios';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import ConfirmModal from '../../components/Alerta/ConfirmationModal';
+import LoadingModal from '../../components/Alerta/LoadingModal';
 const { width, height } = Dimensions.get('window');
 
 function CreacionCuenta(): JSX.Element {
@@ -26,27 +29,13 @@ function CreacionCuenta(): JSX.Element {
   const [email, setEmail] = useState('');
   const [clave, setClave] = useState('');
   const [showModal, setShowModal] = useState(false);
+  const [showModalLoading, setShowModalLoading] = useState(false);
+  const [msjeModal, setMsjeModal] = useState('El usuario se ha registrado correctamente.');
 
   const handleCreateAccount = async () => {
+    setShowModalLoading(true);
     if (nombres !== '' && apellidos !== '' && email !== '' && clave !== '' ) {
-      // const response = await fetch(
-      //   'http://186.64.113.100:3000/api/whatsapp/text',
-      //   {
-      //     method: 'POST',
-      //     headers: {
-      //       'Content-Type': 'application/json',
-      //     },
-      //     body: JSON.stringify({
-      //       nombre: nombres,
-      //       Apellidos: apellidos,
-      //       email: email,
-      //       password: clave,
-      //       rol: 'user',
-      //     }),
-      //   }
-      // );
-
-      //-------------------------------------
+     
         if(clave.length < 8){
           console.log(clave.length)
           setErrorBoolean(true);
@@ -73,31 +62,44 @@ function CreacionCuenta(): JSX.Element {
           try {
             const response = await axios(reqOptions);
             console.log(response.data);
-            // navigate('Verificacion', {
-            //       nombres: nombres,
-            //       apellidos: apellidos,
-            //       email: email,
-            //       clave: clave,
-            //       rol: 'user',
-            //     });
-
+           
+            
+            setShowModalLoading(false);
             setShowModal(true);
+            navigate('Verificacion', {
+              nombres: nombres,
+              apellidos: apellidos,
+              email: email,
+              clave: clave,
+              rol: 'user',
+            });
+
 
           } catch (error: any) {
             if (error.response) {
-              console.log(error.response.data); // Imprime la respuesta completa del servidor
+              //{"errors": {"email": ["The email has already been taken."]}, "message": "The email has already been taken."}
+              console.log(error.response.data.message);
+              setMsjeModal(error.response.data.message);
             } else {
               console.log(error.message);
+              setMsjeModal(error.message);
             }
             setErrorBoolean(true);
+            setShowModalLoading(false);
+            setShowModal(true);
           }
         };
         
         fetchData();
-       
 
+
+    }else{
+      setErrorBoolean(true);
+      setShowModalLoading(false);
+      setMsjeModal('Por favor, rellene todos los campos.');
+      setShowModal(true);
     }
-    setErrorBoolean(true);
+   
   };
 
   return (
@@ -288,16 +290,9 @@ function CreacionCuenta(): JSX.Element {
           </TouchableOpacity>
         </View>
       </SafeAreaView>
-      <Modal transparent={true} animationType="slide" visible={showModal}>
-      <View style={styles.modalContainer}>
-        <View style={styles.modalContent}>
-          <Text style={styles.modalText}>El usuario se ha registrado correctamente.</Text>
-          <TouchableOpacity style={styles.button} onPress={ () => setShowModal(false)}>
-            <Text style={styles.buttonText}>OK</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    </Modal>
+
+      <ConfirmModal visible={showModal} message={msjeModal} onClose={() => setShowModal(false)} />
+      <LoadingModal visible={showModalLoading} />
     </ScrollView>
   );
 }
@@ -360,36 +355,7 @@ const styles = StyleSheet.create({
     top: 0,
   },
 
-  //-------------
-  modalContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Fondo semi-transparente
-  },
-  modalContent: {
-    width: 300,
-    padding: 20,
-    backgroundColor: '#0A3649',
-    borderRadius: 10,
-    alignItems: 'center',
-  },
-  modalText: {
-    fontSize: 18,
-    marginBottom: 20,
-    color:"white", 
-    textAlign: 'center',
-  },
-  button: {
-    backgroundColor: '#33baba',
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 5,
-  },
-  buttonText: {
-    color: 'white',
-    fontSize: 16,
-  },
+  
 });
 
 export default CreacionCuenta;
