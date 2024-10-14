@@ -10,6 +10,7 @@ import {
   TouchableOpacity,
   SafeAreaView,
   TextInput,
+  Modal
 } from 'react-native';
 import axios from 'axios';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
@@ -24,6 +25,7 @@ function CreacionCuenta(): JSX.Element {
   const [apellidos, setApellidos] = useState('');
   const [email, setEmail] = useState('');
   const [clave, setClave] = useState('');
+  const [showModal, setShowModal] = useState(false);
 
   const handleCreateAccount = async () => {
     if (nombres !== '' && apellidos !== '' && email !== '' && clave !== '' ) {
@@ -71,13 +73,15 @@ function CreacionCuenta(): JSX.Element {
           try {
             const response = await axios(reqOptions);
             console.log(response.data);
-            navigate('Verificacion', {
-                  nombres: nombres,
-                  apellidos: apellidos,
-                  email: email,
-                  clave: clave,
-                  rol: 'user',
-                });
+            // navigate('Verificacion', {
+            //       nombres: nombres,
+            //       apellidos: apellidos,
+            //       email: email,
+            //       clave: clave,
+            //       rol: 'user',
+            //     });
+
+            setShowModal(true);
 
           } catch (error: any) {
             if (error.response) {
@@ -237,9 +241,14 @@ function CreacionCuenta(): JSX.Element {
               value={clave}
               onChangeText={setClave}
             />
-            {errorBoolean && clave === '' || clave.length < 8 ? (
-              <Text style={{ color: '#ff7979', marginTop: 10 }}>
-                Ingresa tu contraseña con más de 8 caracteres
+            {errorBoolean && clave === '' ? (
+              <Text style={{ color: '#ff7979', marginTop: 0 }}>
+                Ingresa tu contraseña  
+              </Text>
+            ) : null}
+            {clave.length < 8 ? (
+              <Text style={{ color: '#79ffd0', marginTop: 0 }}>
+                Debe tener más de 8 caracteres
               </Text>
             ) : null}
           </View>
@@ -279,6 +288,16 @@ function CreacionCuenta(): JSX.Element {
           </TouchableOpacity>
         </View>
       </SafeAreaView>
+      <Modal transparent={true} animationType="slide" visible={showModal}>
+      <View style={styles.modalContainer}>
+        <View style={styles.modalContent}>
+          <Text style={styles.modalText}>El usuario se ha registrado correctamente.</Text>
+          <TouchableOpacity style={styles.button} onPress={ () => setShowModal(false)}>
+            <Text style={styles.buttonText}>OK</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </Modal>
     </ScrollView>
   );
 }
@@ -339,6 +358,37 @@ const styles = StyleSheet.create({
     position: 'absolute',
     right: 0,
     top: 0,
+  },
+
+  //-------------
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Fondo semi-transparente
+  },
+  modalContent: {
+    width: 300,
+    padding: 20,
+    backgroundColor: '#0A3649',
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  modalText: {
+    fontSize: 18,
+    marginBottom: 20,
+    color:"white", 
+    textAlign: 'center',
+  },
+  button: {
+    backgroundColor: '#33baba',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+  },
+  buttonText: {
+    color: 'white',
+    fontSize: 16,
   },
 });
 
