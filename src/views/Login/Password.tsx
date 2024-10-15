@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useNavigation, NavigationProp } from '@react-navigation/native';
+import { useState } from "react";
+import { useNavigation, NavigationProp } from "@react-navigation/native";
 import {
   View,
   Text,
@@ -10,14 +10,14 @@ import {
   TouchableOpacity,
   SafeAreaView,
   TextInput,
-} from 'react-native';
-import axios from 'axios';
-import { useRoute } from '@react-navigation/native';
-import {storeSesion} from '../../hooks/localStorageUser';
-import ConfirmModal from '../../components/Alerta/ConfirmationModal';
-import LoadingModal from '../../components/Alerta/LoadingModal';
+} from "react-native";
+import axios from "axios";
+import { useRoute } from "@react-navigation/native";
+import { storeSesion } from "../../hooks/localStorageUser";
+import ConfirmModal from "../../components/Alerta/ConfirmationModal";
+import LoadingModal from "../../components/Alerta/LoadingModal";
 
-const { width, height } = Dimensions.get('window');
+const { width, height } = Dimensions.get("window");
 interface User {
   id: string;
   nombre: string;
@@ -28,29 +28,27 @@ interface User {
   uri?: string;
 }
 
-
 function Password(): JSX.Element {
   const navigation = useNavigation<NavigationProp<any>>();
   const route = useRoute();
   const { email } = route.params as { email: any };
 
-
   const [secureText, setSecureText] = useState(true);
-  const [clave, setClave] = useState('');
+  const [clave, setClave] = useState("");
   const [errorBoolean, setErrorBoolean] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [showModalLoading, setShowModalLoading] = useState(false);
-  const [msjeModal, setMsjeModal] = useState('Login correcto.');
+  const [msjeModal, setMsjeModal] = useState("Login correcto.");
 
   const handleLogin = () => {
     setShowModalLoading(true);
-    if (clave !== '') {
+    if (clave !== "") {
       const fetchData = async () => {
         const JsonLogin = {
           email: email,
           password: clave,
         };
-      
+
         let reqOptions = {
           url: "https://www.centroesteticoedith.com/endpoint/user/login",
           method: "POST",
@@ -58,27 +56,31 @@ function Password(): JSX.Element {
         };
         try {
           const response = await axios(reqOptions);
-          console.log(response.data);
-          navigation.navigate('Verificacion', { 
-            id : Date.now().toString(),
-            nombre: 'Bruno',
-            Apellidos: 'Cairampoma',
-            email: email,
-            password: clave,
-            rol: 'admin'
-          });
-          setErrorBoolean(false);
-          setShowModalLoading(false);
+          console.log(response.data.message);
 
+          if (response.data.message === "Login successful") {
+            navigation.navigate("Verificacion", {
+              id: Date.now().toString(),
+              nombre: "Bruno",
+              Apellidos: "Cairampoma",
+              email: email,
+              password: clave,
+              rol: "admin",
+            });
+            setErrorBoolean(false);
+            setShowModalLoading(false);
+          }else{
+            setMsjeModal("Contraseña incorrecta.");
+            setErrorBoolean(true);
+            setShowModalLoading(false);
+            setShowModal(true);
+          }
         } catch (error) {
           console.error(error);
         }
-      
       };
 
       fetchData();
-
-      
     } else {
       setErrorBoolean(true);
       setShowModalLoading(false);
@@ -86,31 +88,31 @@ function Password(): JSX.Element {
   };
   return (
     <ScrollView
-      contentContainerStyle={{ flexGrow: 1, backgroundColor: '#0A3649' }}
+      contentContainerStyle={{ flexGrow: 1, backgroundColor: "#0A3649" }}
     >
       <SafeAreaView style={styles.container}>
         <Image
           style={{
             width: width * 0.35,
             height: width * 0.35,
-            resizeMode: 'contain',
+            resizeMode: "contain",
             marginTop: height * 0.2,
-            alignSelf: 'center',
-            tintColor: 'white',
+            alignSelf: "center",
+            tintColor: "white",
             marginBottom: 0,
           }}
-          source={require('../../assets/images/logo-icon_white.png')}
+          source={require("../../assets/images/logo-icon_white.png")}
         />
         <Image
-          source={require('../../assets/images/logo-text_white.png')}
-          style={{ width: width * 0.5, resizeMode: 'contain', marginTop: -10 }}
+          source={require("../../assets/images/logo-text_white.png")}
+          style={{ width: width * 0.5, resizeMode: "contain", marginTop: -10 }}
         />
-        <View style={{ width: '90%', maxWidth: 300 }}>
+        <View style={{ width: "90%", maxWidth: 300 }}>
           <Text
             style={{
-              color: 'grey',
+              color: "grey",
               fontSize: 15,
-              textAlign: 'center',
+              textAlign: "center",
               marginBottom: 10,
             }}
           >
@@ -119,34 +121,34 @@ function Password(): JSX.Element {
           <TextInput
             style={{
               height: 50,
-              backgroundColor: '#05222F',
+              backgroundColor: "#05222F",
               borderRadius: 5,
-              color: 'white',
+              color: "white",
               paddingHorizontal: 10,
               fontSize: 17,
             }}
-            placeholder='Escribe tu contraseña '
-            placeholderTextColor='grey'
-            autoCapitalize='none'
+            placeholder="Escribe tu contraseña "
+            placeholderTextColor="grey"
+            autoCapitalize="none"
             secureTextEntry={true}
             value={clave}
             onChangeText={setClave}
           />
           {errorBoolean ? (
-            <Text style={{ color: '#ff7979', marginTop: 10 }}>
+            <Text style={{ color: "#ff7979", marginTop: 10 }}>
               Ingresa una contraseña para continuar
             </Text>
           ) : null}
           <TouchableOpacity style={{ marginTop: 20 }}>
             <Text
               style={{
-                color: '#05222F',
+                color: "#05222F",
                 fontSize: 17,
-                textAlign: 'center',
-                backgroundColor: '#DEDEDE',
+                textAlign: "center",
+                backgroundColor: "#DEDEDE",
                 padding: 10,
                 borderRadius: 5,
-                width: '100%',
+                width: "100%",
               }}
               onPress={() => handleLogin()}
             >
@@ -155,7 +157,11 @@ function Password(): JSX.Element {
           </TouchableOpacity>
         </View>
       </SafeAreaView>
-      <ConfirmModal visible={showModal} message={msjeModal} onClose={() => setShowModal(false)} />
+      <ConfirmModal
+        visible={showModal}
+        message={msjeModal}
+        onClose={() => setShowModal(false)}
+      />
       <LoadingModal visible={showModalLoading} />
     </ScrollView>
   );
@@ -163,8 +169,8 @@ function Password(): JSX.Element {
 
 const styles = StyleSheet.create({
   container: {
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
 });
 
