@@ -11,22 +11,57 @@ import {
   SafeAreaView,
   TextInput,
 } from 'react-native';
-
+import axios from "axios";
+import ConfirmModal from "../../components/Alerta/ConfirmationModal";
+import LoadingModal from "../../components/Alerta/LoadingModal";
 const { width, height } = Dimensions.get('window');
 
 function Login(): JSX.Element {
   const { navigate } = useNavigation<NavigationProp<any>>();
+  const [showModal, setShowModal] = useState(false);
+  const [showModalLoading, setShowModalLoading] = useState(false);
+  const [msjeModal, setMsjeModal] = useState("Email correcto.");
 
   const [correo, setCorreo] = useState('');
   const [errorBoolean, setErrorBoolean] = useState(false);
 
   const handleLogin = () => {
+    setShowModalLoading(true);
     if (correo !== '') {
-     
-      navigate('Password',
-        { email: correo }
-      );
-      setErrorBoolean(false);
+      const fetchData = async () => {
+      const JsonLogin = {
+        email: correo,
+      };
+
+      let reqOptions = {
+        url: "https://www.centroesteticoedith.com/endpoint/user/email_exists",
+        method: "POST",
+        data: JsonLogin, // No necesitas usar JSON.stringify aquí
+      };
+      try {
+        const response = await axios(reqOptions);
+        console.log(response.data.message);
+
+        if (response.data.message === "User already exists") {
+          navigate('Password',
+            { email: correo }
+          );
+          setErrorBoolean(false);
+        }else{
+          setMsjeModal("Email incorrecto.");
+          setErrorBoolean(true);
+          setShowModalLoading(false);
+          setShowModal(true);
+        }
+      } catch (error) {
+        console.error(error);
+       
+      }
+      
+    }
+
+    fetchData();
+      
     } else {
       setErrorBoolean(true);
     }
@@ -118,6 +153,12 @@ function Login(): JSX.Element {
           </TouchableOpacity>
         </View>
       </SafeAreaView>
+      <ConfirmModal
+        visible={showModal}
+        message={msjeModal}
+        onClose={() => setShowModal(false)}
+      />
+      <LoadingModal visible={showModalLoading} />
     </ScrollView>
   );
 }
