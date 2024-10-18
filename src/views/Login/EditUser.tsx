@@ -31,7 +31,6 @@ const UserProfileScreen = () => {
         <View style={{
           alignItems: "center",
           marginTop: 20,
-          marginBottom: 20,
           backgroundColor: "#0a3649",
           padding: 10,
           paddingBottom: 20,
@@ -52,41 +51,47 @@ const UserProfileScreen = () => {
         </View>
         {/* Personal Information */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Información personal</Text>
-          <TouchableOpacity style={styles.item}>
-            <Text style={styles.itemLabel}>Nombre</Text>
-            <Text style={styles.itemValue}>Piero</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.item}>
-            <Text style={styles.itemLabel}>Apellido</Text>
-            <Text style={styles.itemValue}>Rodríguez</Text>
-          </TouchableOpacity>
+          <View style={{ marginHorizontal: 20, marginVertical: 10 }}>
+            <Text style={styles.sectionTitle}>Información personal</Text>
+            <TouchableOpacity style={styles.item}>
+              <Text style={styles.itemLabel}>Nombre</Text>
+              <Text style={styles.itemValue}>Piero</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.item}>
+              <Text style={styles.itemLabel}>Apellido</Text>
+              <Text style={styles.itemValue}>Rodríguez</Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* Contact Email */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Correo de contacto</Text>
-          <TouchableOpacity style={styles.item}>
-            <Text style={styles.itemLabel}>Correo de registro</Text>
-            <Text style={styles.itemValue}>icemail@gmail.com</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.addEmailButton}>
-            <Text style={styles.addEmailText}>+ Añadir correo de contacto</Text>
-          </TouchableOpacity>
+          <View style={{ marginHorizontal: 20, marginVertical: 10 }}>
+            <Text style={styles.sectionTitle}>Correo de contacto</Text>
+            <TouchableOpacity style={styles.item}>
+              <Text style={styles.itemLabel}>Correo de registro</Text>
+              <Text style={styles.itemValue}>icemail@gmail.com</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.addEmailButton}>
+              <Text style={styles.addEmailText}>+ Añadir correo de contacto</Text>
+            </TouchableOpacity>
+         </View>
         </View>
 
         {/* Customization */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Personalización</Text>
-          <TouchableOpacity style={styles.item}>
-            <Text style={styles.itemLabel}>Vista de proyectos</Text>
-            <Text style={styles.itemValue}>Lista</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.item}>
-            <Text style={styles.itemLabel}>Tema</Text>
-            <Text style={styles.itemValue}>Por defecto</Text>
-          </TouchableOpacity>
-        </View>
+        {/* <View style={styles.section}>
+          <View style={{ marginHorizontal: 20, marginVertical: 10 }}>
+            <Text style={styles.sectionTitle}>Personalización</Text>
+            <TouchableOpacity style={styles.item}>
+              <Text style={styles.itemLabel}>Vista de proyectos</Text>
+              <Text style={styles.itemValue}>Lista</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.item}>
+              <Text style={styles.itemLabel}>Tema</Text>
+              <Text style={styles.itemValue}>Por defecto</Text>
+            </TouchableOpacity>
+          </View>
+        </View> */}
 
         {/* Footer */}
         <View style={styles.footer}>
@@ -153,6 +158,7 @@ const styles = StyleSheet.create({
   item: {
     flexDirection: "row",
     justifyContent: "space-between",
+    marginVertical: 10,
   
   },
   itemLabel: {
