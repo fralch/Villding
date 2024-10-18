@@ -8,6 +8,7 @@ import Login from './src/views/Login/Login';
 import Password from './src/views/Login/Password';
 import Verificacion from './src/views/Login/Verificacion';
 import CreacionCuenta from './src/views/Login/CreacionCuenta';
+import EditUser from './src/views/Login/EditUser';
 import HomeProject from './src/views/Projects/HomeProject';
 import NewProject from './src/views/Projects/NewProject';
 import Project from './src/views/Projects/Project';
@@ -31,6 +32,7 @@ export default function RootNavigator() {
     { name: 'NewProject', component: NewProject },
     { name: 'Project', component: Project },
     { name: 'Task', component: Task },
+    { name: 'EditUser', component: EditUser },
   ];
 
   const handleLogin = async () => {

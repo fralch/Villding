@@ -7,7 +7,6 @@ import {
   Image,
   TextInput,
   TouchableOpacity,
-  Animated,
   Dimensions,
 } from 'react-native';
 import { StatusBar as ExpoStatusBar } from 'expo-status-bar';
@@ -18,6 +17,7 @@ import ProjectList from '../../components/Project/ProjectList';
 import ProjectListSearch from '../../components/Project/ProjectListSearch';
 import { getProjects } from '../../hooks/localStorageProject';
 import { removeProject } from '../../hooks/localStorageCurrentProject';
+import { useNavigation, NavigationProp } from '@react-navigation/native';
 
 interface Project {
   id: string;
@@ -29,21 +29,15 @@ interface Project {
 }
 
 export default function HomeProject() {
+  const { navigate } = useNavigation<NavigationProp<any>>();
   const [search, setSearch] = React.useState<string>('');
   const [viewSearch, setViewSearch] = React.useState<boolean>(false);
   const [projects, setProjects] = React.useState<Project[]>([]);
   const [filteredProjects, setFilteredProjects] = React.useState<Project[]>([]);
 
   const screenWidth = Dimensions.get('window').width;
-  const headerWidth = React.useRef(new Animated.Value(screenWidth)).current;
+  const headerWidth = Dimensions.get('window').width;
 
-  React.useEffect(() => {
-    Animated.timing(headerWidth, {
-      toValue: viewSearch ? screenWidth * 1.01 : screenWidth,
-      duration: 300,
-      useNativeDriver: false,
-    }).start();
-  }, [viewSearch]);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -73,10 +67,10 @@ export default function HomeProject() {
 
   return (
     <View style={[styles.container]}>
-      <ExpoStatusBar style='light' />
+      <ExpoStatusBar style='dark' />
 
       {!viewSearch ? (
-        <Animated.View style={[styles.header, { width: headerWidth }]}>
+        <View style={[styles.header, { width: headerWidth }]}>
           <Image
             source={require('../../assets/images/logo-tex-simple_white.png')}
             style={styles.title}
@@ -91,16 +85,18 @@ export default function HomeProject() {
               />
             </TouchableOpacity>
 
+            <TouchableOpacity onPress={() =>  navigate('EditUser')}>
             <Image
               source={require('../../assets/images/user.png')}
               style={styles.avatar}
             />
+            </TouchableOpacity>
           </View>
-        </Animated.View>
+        </View>
       ) : null}
 
       {viewSearch ? (
-        <Animated.View
+        <View
           style={[
             styles.header,
             {
@@ -130,7 +126,7 @@ export default function HomeProject() {
               />
             </TouchableOpacity>
           </View>
-        </Animated.View>
+        </View>
       ) : null}
 
       {!viewSearch ? (
