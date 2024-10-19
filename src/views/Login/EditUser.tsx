@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -6,16 +6,47 @@ import {
   TouchableOpacity,
   ScrollView,
   StyleSheet,
+  TextInput, 
+  Modal, 
 } from "react-native";
-import { Ionicons, MaterialCommunityIcons, Feather  } from "@expo/vector-icons"; // Para íconos
+import {
+  Ionicons,
+  MaterialCommunityIcons,
+  Feather,
+  Entypo,
+  AntDesign,
+} from "@expo/vector-icons"; // Para íconos
 import { StatusBar as ExpoStatusBar } from "expo-status-bar";
+import { useNavigation, NavigationProp } from "@react-navigation/native";
 
 const EditUser = () => {
+  const navigation = useNavigation<NavigationProp<any>>();
+  const [editBool, setEditBool] = useState(false);
+  const [modalEdit, setModalEdit] = useState(false);
+  const [modalData, setModalData] = useState({
+    titulo: "",
+    texto: "",
+  });
+  const [Data, setData] = useState({
+    name: "Piero",
+    last_name: "Rodriguez",
+    email: "icemail@gmail.com",
+  });
+
+const OpenEdit = (titulo : string, texto: string) => {
+  setEditBool(true)
+  setModalEdit(true)
+  setModalData({titulo, texto})
+
+}
+
   return (
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <Ionicons name="chevron-back-outline" size={24} color="white" />
+        <TouchableOpacity onPress={() => navigation.goBack()}>
+          <Ionicons name="chevron-back-outline" size={24} color="white" />
+        </TouchableOpacity>
         <Image
           source={require("../../assets/images/logo-tex-simple_white.png")}
           style={{ width: 120, height: 40, resizeMode: "contain" }}
@@ -62,15 +93,15 @@ const EditUser = () => {
           </View>
           {/* Personal Information */}
           <View style={styles.section}>
-            <View style={{ marginHorizontal: 20, marginVertical: 10 }}>
-              <Text style={styles.sectionTitle}>Información personal</Text>
-              <TouchableOpacity style={styles.item}>
+            <View style={{ marginHorizontal: 20, marginVertical: 15 }}>
+            <Text style={[styles.sectionTitle, { marginVertical: 15 }]}>Información personal</Text>
+              <TouchableOpacity style={styles.item} onPress={() => { OpenEdit("Nombre", "Piero")}}>
                 <Text style={styles.itemLabel}>Nombre</Text>
-                <Text style={styles.itemValue}>Piero</Text>
+                <Text style={styles.itemValue}>{Data.name}</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.item}>
+              <TouchableOpacity style={styles.item} onPress={() => { OpenEdit("Apellido", "Rodriguez")}}>
                 <Text style={styles.itemLabel}>Apellido</Text>
-                <Text style={styles.itemValue}>Rodríguez</Text>
+                <Text style={styles.itemValue}>{Data.last_name}</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -78,12 +109,16 @@ const EditUser = () => {
           {/* Contact Email */}
           <View style={styles.section}>
             <View style={{ marginHorizontal: 20, marginVertical: 10 }}>
-              <Text style={[styles.sectionTitle, { marginVertical: 10 }]}>Correo de contacto</Text>
-              <TouchableOpacity style={[styles.item , {marginVertical: 10 }]}>
+              <Text style={[styles.sectionTitle, { marginVertical: 10 }]}>
+                Correo de contacto
+              </Text>
+              <TouchableOpacity style={[styles.item, { marginVertical: 10 }]}  onPress={() => { OpenEdit("Correo de registro", "icemail@gmail.com")}}>
                 <Text style={styles.itemLabel}>Correo de registro</Text>
-                <Text style={styles.itemValue}>icemail@gmail.com</Text>
+                <Text style={styles.itemValue}>{Data.email}</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={[styles.addEmailButton, {marginVertical: 10 }]}>
+              <TouchableOpacity
+                style={[styles.addEmailButton, { marginVertical: 10 }]}
+              >
                 <Text style={styles.addEmailText}>
                   + Añadir correo de contacto
                 </Text>
@@ -93,16 +128,73 @@ const EditUser = () => {
         </View>
         {/* Footer */}
         <View style={styles.footer}>
-          <TouchableOpacity style={styles.logoutButton}>
-            <Ionicons name="power" size={25} color="#fff" />
-            <Text style={styles.logoutText}>Cerrar sesión</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.deleteButton}>
-            <Feather name="trash" size={24} color="red" />
-            <Text style={styles.deleteText}>Eliminar cuenta</Text>
-          </TouchableOpacity>
+          {editBool ? (
+            <View style={{ alignItems: "center" }}>
+              <TouchableOpacity
+                style={[styles.logoutButton, { marginBottom: 0 }]}
+              >
+                <Entypo name="save" size={24} color="white" />
+                <Text style={styles.logoutText}>Guardar</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.deleteButton, { marginTop: 0, marginLeft: 10 }]}
+                onPress={() => setEditBool(false)}
+              >
+                <AntDesign name="close" size={24} color="#c92a42" />
+                <Text
+                  style={[
+                    styles.deleteText,
+                    {
+                      marginLeft: 0,
+                      paddingHorizontal: 10,
+                      paddingVertical: 5,
+                      color: "#c92a42",
+                    },
+                  ]}
+                >
+                  Cancelar
+                </Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <View>
+              <TouchableOpacity style={styles.logoutButton}>
+                <Ionicons name="power" size={25} color="#fff" />
+                <Text style={styles.logoutText}>Cerrar sesión</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.deleteButton}>
+                <Feather name="trash" size={24} color="#c92a42" />
+                <Text style={styles.deleteText}>Eliminar cuenta</Text>
+              </TouchableOpacity>
+            </View>
+          )}
         </View>
       </ScrollView>
+      <Modal
+        visible={modalEdit}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() =>  setModalEdit(false)}
+      >
+        <View style={styles.modalContainer}>
+        <View style={styles.modalContent}>
+          <Text style={styles.modalText}>{modalData.titulo}</Text>
+          <TextInput
+            style={styles.modalInput}
+            value={modalData.texto}
+            onChangeText={(text : string) => setModalData({ ...modalData, texto: text })}
+          />
+          <View style={{ flexDirection: "row", justifyContent: "space-between", gap: 30}}>
+            <TouchableOpacity style={[styles.button, { backgroundColor: "#05222F" }]} onPress={() =>  setModalEdit(false)}>
+              <Text style={styles.buttonText}>Cancel</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.button} onPress={() =>  setModalEdit(false)}>
+              <Text style={styles.buttonText}>OK</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+      </Modal>
     </View>
   );
 };
@@ -153,11 +245,12 @@ const styles = StyleSheet.create({
   sectionTitle: {
     color: "#fff",
     fontSize: 16,
+    fontWeight: "bold",
   },
   item: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginVertical: 10,
+    marginVertical: 15,
   },
   itemLabel: {
     color: "#ccc",
@@ -194,7 +287,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   deleteText: {
-    color: "red",
+    color: "#c92a42",
     marginLeft: 10,
     fontSize: 18,
   },
@@ -222,6 +315,46 @@ const styles = StyleSheet.create({
     right: 0,
     top: 0,
   },
+  //----------------------
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalContent: {
+    width: 300,
+    padding: 20,
+    backgroundColor: '#0A3649',
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  modalText: {
+    fontSize: 18,
+    marginBottom: 20,
+    color: 'white',
+    textAlign: 'center',
+  },
+  button: {
+    backgroundColor: '#33baba',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+  },
+  buttonText: {
+    color: 'white',
+    fontSize: 16,
+  },
+  modalInput: {
+    backgroundColor: '#05222F',
+    width: '80%',
+    color: '#fff',
+    fontSize: 16,
+    borderRadius: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 12,
+    marginBottom: 16,
+  }
 });
 
 export default EditUser;
