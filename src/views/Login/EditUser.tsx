@@ -98,9 +98,9 @@ const EditUser = () => {
                   style={styles.profileImage}
                 />
               </View>
-              <View style={styles.iconCircle}>
+              <TouchableOpacity style={styles.iconCircle}>
                 <MaterialCommunityIcons name="pencil" size={24} color="black" />
-              </View>
+              </TouchableOpacity>
             </View>
           </View>
           {/* Personal Information */}
