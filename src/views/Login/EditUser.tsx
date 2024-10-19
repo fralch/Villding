@@ -7,38 +7,47 @@ import {
   ScrollView,
   StyleSheet,
 } from "react-native";
-import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons"; // Para íconos
+import { Ionicons, MaterialCommunityIcons, Feather  } from "@expo/vector-icons"; // Para íconos
 import { StatusBar as ExpoStatusBar } from "expo-status-bar";
 
 const EditUser = () => {
   return (
     <View style={styles.container}>
-      <ScrollView >
-        {/* Header */}
-        <View style={styles.header}>
-          <Ionicons name="chevron-back-outline" size={24} color="white" />
+      {/* Header */}
+      <View style={styles.header}>
+        <Ionicons name="chevron-back-outline" size={24} color="white" />
+        <Image
+          source={require("../../assets/images/logo-tex-simple_white.png")}
+          style={{ width: 120, height: 40, resizeMode: "contain" }}
+        />
+        <View style={{ flexDirection: "row", alignItems: "center" }}>
           <Image
-            source={require("../../assets/images/logo-tex-simple_white.png")}
-            style={{ width: 120, height: 40, resizeMode: "contain" }}
+            source={require("../../assets/images/user.png")}
+            style={styles.avatar}
           />
-          <View style={{ flexDirection: "row", alignItems: "center" }}>
-            <Image
-              source={require("../../assets/images/user.png")}
-              style={styles.avatar}
-            />
-          </View>
         </View>
+      </View>
+      <ScrollView
+        contentContainerStyle={{
+          flexDirection: "column",
+          justifyContent: "space-between",
+          flex: 1,
+          backgroundColor: "#0a3649",
+        }}
+      >
         <View style={{ backgroundColor: "#0a3649" }}>
           {/* Profile Image */}
-          <View style={{
-            alignItems: "center",
-            marginTop: 20,
-            backgroundColor: "#0a3649",
-            padding: 10,
-            paddingBottom: 20,
-            borderBottomWidth: 1, // Esto agrega el borde solo en la parte inferior
-            borderBottomColor: "#05222f", // Color del borde
-          }}>
+          <View
+            style={{
+              alignItems: "center",
+              marginTop: 20,
+              backgroundColor: "#0a3649",
+              padding: 10,
+              paddingBottom: 20,
+              borderBottomWidth: 1, // Esto agrega el borde solo en la parte inferior
+              borderBottomColor: "#05222f", // Color del borde
+            }}
+          >
             <View style={styles.mainCircle}>
               <View style={styles.mainCircle}>
                 <Image
@@ -69,30 +78,31 @@ const EditUser = () => {
           {/* Contact Email */}
           <View style={styles.section}>
             <View style={{ marginHorizontal: 20, marginVertical: 10 }}>
-              <Text style={styles.sectionTitle}>Correo de contacto</Text>
-              <TouchableOpacity style={styles.item}>
+              <Text style={[styles.sectionTitle, { marginVertical: 10 }]}>Correo de contacto</Text>
+              <TouchableOpacity style={[styles.item , {marginVertical: 10 }]}>
                 <Text style={styles.itemLabel}>Correo de registro</Text>
                 <Text style={styles.itemValue}>icemail@gmail.com</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.addEmailButton}>
-                <Text style={styles.addEmailText}>+ Añadir correo de contacto</Text>
+              <TouchableOpacity style={[styles.addEmailButton, {marginVertical: 10 }]}>
+                <Text style={styles.addEmailText}>
+                  + Añadir correo de contacto
+                </Text>
               </TouchableOpacity>
             </View>
           </View>
         </View>
+        {/* Footer */}
+        <View style={styles.footer}>
+          <TouchableOpacity style={styles.logoutButton}>
+            <Ionicons name="power" size={25} color="#fff" />
+            <Text style={styles.logoutText}>Cerrar sesión</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.deleteButton}>
+            <Feather name="trash" size={24} color="red" />
+            <Text style={styles.deleteText}>Eliminar cuenta</Text>
+          </TouchableOpacity>
+        </View>
       </ScrollView>
-
-      {/* Footer */}
-      <View style={styles.footer}>
-        <TouchableOpacity style={styles.logoutButton}>
-          <Ionicons name="power" size={20} color="#fff" />
-          <Text style={styles.logoutText}>Cerrar sesión</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.deleteButton}>
-          <Ionicons name="trash" size={20} color="red" />
-          <Text style={styles.deleteText}>Eliminar cuenta</Text>
-        </TouchableOpacity>
-      </View>
     </View>
   );
 };
@@ -102,7 +112,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#05222F", // Background color of the app
   },
- 
+
   header: {
     backgroundColor: "#05222F",
     flexDirection: "row",
@@ -157,8 +167,7 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 14,
   },
-  addEmailButton: {
-  },
+  addEmailButton: {},
   addEmailText: {
     color: "#34c6eb",
     fontSize: 14,
@@ -166,6 +175,7 @@ const styles = StyleSheet.create({
   footer: {
     padding: 20,
     backgroundColor: "#0a3649",
+    alignItems: "center",
   },
   logoutButton: {
     flexDirection: "row",
@@ -177,6 +187,7 @@ const styles = StyleSheet.create({
   logoutText: {
     color: "#fff",
     marginLeft: 10,
+    fontSize: 18,
   },
   deleteButton: {
     flexDirection: "row",
@@ -185,6 +196,7 @@ const styles = StyleSheet.create({
   deleteText: {
     color: "red",
     marginLeft: 10,
+    fontSize: 18,
   },
   mainCircle: {
     width: 100,
