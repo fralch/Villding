@@ -33,12 +33,24 @@ const EditUser = () => {
     email: "icemail@gmail.com",
   });
 
-const OpenEdit = (titulo : string, texto: string) => {
-  setEditBool(true)
-  setModalEdit(true)
-  setModalData({titulo, texto})
+  const OpenEdit = (titulo: string, texto: string) => {
+    setEditBool(true);
+    setModalEdit(true);
+    setModalData({ titulo, texto });
+  };
 
-}
+  const handleSave = () => {
+    // Actualiza los datos dependiendo de cuál campo se está editando
+    if (modalData.titulo === "Nombre") {
+      setData({ ...Data, name: modalData.texto });
+    } else if (modalData.titulo === "Apellido") {
+      setData({ ...Data, last_name: modalData.texto });
+    } else if (modalData.titulo === "Correo de registro") {
+      setData({ ...Data, email: modalData.texto });
+    }
+    setModalEdit(false); // Cierra el modal después de guardar
+  };
+
 
   return (
     <View style={styles.container}>
@@ -174,26 +186,33 @@ const OpenEdit = (titulo : string, texto: string) => {
         visible={modalEdit}
         animationType="slide"
         transparent={true}
-        onRequestClose={() =>  setModalEdit(false)}
+        onRequestClose={() => setModalEdit(false)}
       >
         <View style={styles.modalContainer}>
-        <View style={styles.modalContent}>
-          <Text style={styles.modalText}>{modalData.titulo}</Text>
-          <TextInput
-            style={styles.modalInput}
-            value={modalData.texto}
-            onChangeText={(text : string) => setModalData({ ...modalData, texto: text })}
-          />
-          <View style={{ flexDirection: "row", justifyContent: "space-between", gap: 30}}>
-            <TouchableOpacity style={[styles.button, { backgroundColor: "#05222F" }]} onPress={() =>  setModalEdit(false)}>
-              <Text style={styles.buttonText}>Cancel</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.button} onPress={() =>  setModalEdit(false)}>
-              <Text style={styles.buttonText}>OK</Text>
-            </TouchableOpacity>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalText}>{modalData.titulo}</Text>
+            <TextInput
+              style={styles.modalInput}
+              value={modalData.texto}
+              onChangeText={(text: string) =>
+                setModalData({ ...modalData, texto: text })
+              }
+            />
+            <View
+              style={{ flexDirection: "row", justifyContent: "space-between", gap: 30 }}
+            >
+              <TouchableOpacity
+                style={[styles.button, { backgroundColor: "#05222F" }]}
+                onPress={() => setModalEdit(false)}
+              >
+                <Text style={styles.buttonText}>Cancelar</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.button} onPress={handleSave}>
+                <Text style={styles.buttonText}>OK</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
-      </View>
       </Modal>
     </View>
   );
