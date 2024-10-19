@@ -17,6 +17,7 @@ import {
   AntDesign,
 } from "@expo/vector-icons"; // Para íconos
 import { StatusBar as ExpoStatusBar } from "expo-status-bar";
+import * as ImagePicker from 'expo-image-picker';
 import { useNavigation, NavigationProp } from "@react-navigation/native";
 
 const EditUser = () => {
@@ -32,6 +33,9 @@ const EditUser = () => {
     last_name: "Rodriguez",
     email: "icemail@gmail.com",
   });
+
+  const [profileImage, setProfileImage] = useState<string | null>(null);
+
 
   const OpenEdit = (titulo: string, texto: string) => {
     setEditBool(true);
@@ -51,7 +55,28 @@ const EditUser = () => {
     setModalEdit(false); // Cierra el modal después de guardar
   };
 
+  const pickImage = async () => {
+    setEditBool(true);
+    // Solicitar permisos para acceder a la galería
+    let result = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (result.granted === false) {
+      alert("Permiso para acceder a las fotos es necesario.");
+      return;
+    }
 
+    // Abrir selector de imágenes
+    let pickerResult = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 1,
+    });
+
+    // Verificar si el usuario seleccionó una imagen o canceló la acción
+    if (!pickerResult.canceled && pickerResult.assets && pickerResult.assets.length > 0) {
+      setProfileImage(pickerResult.assets[0].uri); // Actualizar imagen seleccionada
+    }
+  };
   return (
     <View style={styles.container}>
       {/* Header */}
@@ -94,11 +119,11 @@ const EditUser = () => {
             <View style={styles.mainCircle}>
               <View style={styles.mainCircle}>
                 <Image
-                  source={require("../../assets/images/user.png")}
+                  source={profileImage ? { uri: profileImage } : require("../../assets/images/user.png")} // Usar la imagen seleccionada o la predeterminada
                   style={styles.profileImage}
                 />
               </View>
-              <TouchableOpacity style={styles.iconCircle}>
+              <TouchableOpacity style={styles.iconCircle} onPress={pickImage}>
                 <MaterialCommunityIcons name="pencil" size={24} color="black" />
               </TouchableOpacity>
             </View>
@@ -314,7 +339,7 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     borderRadius: 50,
-    backgroundColor: "#FFDBAC", // Color de fondo similar al círculo principal
+    backgroundColor: "#0D465E", // Color de fondo similar al círculo principal
     justifyContent: "center",
     alignItems: "center",
   },
