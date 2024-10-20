@@ -18,6 +18,7 @@ import {
 } from "@expo/vector-icons"; // Para íconos
 import { StatusBar as ExpoStatusBar } from "expo-status-bar";
 import * as ImagePicker from 'expo-image-picker';
+import { getSesion } from '../../hooks/localStorageUser';
 import { useNavigation, NavigationProp } from "@react-navigation/native";
 
 const EditUser = () => {
@@ -36,6 +37,15 @@ const EditUser = () => {
   });
 
   const [profileImage, setProfileImage] = useState<string | null>(null);
+  
+
+  React.useEffect(() => {
+    getSesion().then((StoredSesion : any) => {
+      let sesion = JSON.parse(StoredSesion);
+       console.log(sesion.uri);
+       setProfileImage(sesion.uri);
+    });
+  }, [])
 
 
   const OpenEdit = (titulo: string, texto: string) => {
@@ -97,7 +107,7 @@ const EditUser = () => {
         />
         <View style={{ flexDirection: "row", alignItems: "center" }}>
           <Image
-            source={require("../../assets/images/user.png")}
+            source={profileImage ? { uri: profileImage } : require("../../assets/images/user.png")}
             style={styles.avatar}
           />
         </View>

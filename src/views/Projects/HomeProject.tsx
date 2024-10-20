@@ -17,6 +17,7 @@ import ProjectList from '../../components/Project/ProjectList';
 import ProjectListSearch from '../../components/Project/ProjectListSearch';
 import { getProjects } from '../../hooks/localStorageProject';
 import { removeProject } from '../../hooks/localStorageCurrentProject';
+import { getSesion } from '../../hooks/localStorageUser';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 
 interface Project {
@@ -34,10 +35,12 @@ export default function HomeProject() {
   const [viewSearch, setViewSearch] = React.useState<boolean>(false);
   const [projects, setProjects] = React.useState<Project[]>([]);
   const [filteredProjects, setFilteredProjects] = React.useState<Project[]>([]);
+  const [imageUserSesion , setImageUserSesion] = React.useState<string>();
 
   const screenWidth = Dimensions.get('window').width;
   const headerWidth = Dimensions.get('window').width;
 
+  
 
   useFocusEffect(
     React.useCallback(() => {
@@ -49,6 +52,15 @@ export default function HomeProject() {
       });
     }, [])
   );
+
+  React.useEffect(() => {
+    getSesion().then((StoredSesion : any) => {
+      let sesion = JSON.parse(StoredSesion);
+       console.log(sesion.uri);
+       setImageUserSesion(sesion.uri);
+    });
+  }, [])
+
 
   React.useEffect(() => {
     removeProject();
@@ -87,7 +99,7 @@ export default function HomeProject() {
 
             <TouchableOpacity onPress={() =>  navigate('EditUser')}>
             <Image
-              source={require('../../assets/images/user.png')}
+              source={ imageUserSesion ? { uri: imageUserSesion } : require('../../assets/images/user.png')}
               style={styles.avatar}
             />
             </TouchableOpacity>

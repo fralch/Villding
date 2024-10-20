@@ -43,6 +43,7 @@ function Verificacion(props: any): JSX.Element {
         email: propsUser.email,
         password: propsUser.password,
         rol: 'user',
+        uri: propsUser.uri == undefined ? '' : propsUser.uri,
       });
 
       navigation.navigate('HomeProject');

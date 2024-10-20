@@ -111,6 +111,7 @@ function CreacionCuenta(): JSX.Element {
           email: email,
           clave: clave,
           rol: 'user',
+          uri: profileImage
         });
 
       } catch (error: any) {
