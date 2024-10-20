@@ -57,75 +57,85 @@ function CreacionCuenta(): JSX.Element {
   
   
   const handleCreateAccount = async () => {
-    setShowModalLoading(true);
-    if (nombres !== '' && apellidos !== '' && email !== '' && clave !== '' ) {
-     
-        if(clave.length < 8){
-          console.log(clave.length)
-          setErrorBoolean(true);
-          return;
-        }
+  setShowModalLoading(true);
 
-        const fetchData = async () => {
-          const JsonNewUser = {
-            name: nombres,
-            last_name: apellidos,
-            email: email,
-            password: clave,
-            password_confirmation: clave,
-            is_paid_user: false,
-            role: 'user',
-            uri: profileImage || '',
-          };
-        
-          let reqOptions = {
-            url: "https://www.centroesteticoedith.com/endpoint/user/create",
-            method: "POST",
-            data: JsonNewUser, // No necesitas usar JSON.stringify aquí
-          };
-        
-          try {
-            const response = await axios(reqOptions);
-            console.log(response.data);
-           
-            
-            setShowModalLoading(false);
-            setShowModal(true);
-            navigate('Verificacion', {
-              nombres: nombres,
-              apellidos: apellidos,
-              email: email,
-              clave: clave,
-              rol: 'user',
-            });
+  if (nombres !== '' && apellidos !== '' && email !== '' && clave !== '') {
 
-
-          } catch (error: any) {
-            if (error.response) {
-              //{"errors": {"email": ["The email has already been taken."]}, "message": "The email has already been taken."}
-              console.log(error.response.data.message);
-              setMsjeModal(error.response.data.message);
-            } else {
-              console.log(error.message);
-              setMsjeModal(error.message);
-            }
-            setErrorBoolean(true);
-            setShowModalLoading(false);
-            setShowModal(true);
-          }
-        };
-        
-        fetchData();
-
-
-    }else{
+    if (clave.length < 8) {
       setErrorBoolean(true);
-      setShowModalLoading(false);
-      setMsjeModal('Por favor, rellene todos los campos.');
-      setShowModal(true);
+      return;
     }
-   
-  };
+
+    const fetchData = async () => {
+      // Crear un nuevo FormData para adjuntar la imagen
+      const formData = new FormData();
+
+      // Agregar los campos de texto
+      formData.append('name', nombres);
+      formData.append('last_name', apellidos);
+      formData.append('email', email);
+      formData.append('password', clave);
+      formData.append('is_paid_user', '0');
+      formData.append('role', 'user');
+
+      // Si hay una imagen seleccionada, la agregamos al FormData
+      if (profileImage) {
+        const uriParts = profileImage.split('.');
+        const fileType = uriParts[uriParts.length - 1];
+
+        formData.append('uri', {
+          uri: profileImage,
+          name: `profile_image.${fileType}`,
+          type: `image/${fileType}`, // Tipo de imagen
+        } as any); // Especificar el tipo como 'any' para evitar errores de tipado en TypeScript
+      }
+
+      let reqOptions = {
+        url: "https://www.centroesteticoedith.com/endpoint/user/create",
+        method: "POST",
+        data: formData, // Enviar el FormData
+        headers: {
+          'Content-Type': 'multipart/form-data', // Asegurarse de usar el tipo correcto de contenido
+        },
+      };
+
+      try {
+        const response = await axios(reqOptions);
+        console.log(response.data);
+
+        setShowModalLoading(false);
+        setShowModal(true);
+        navigate('Verificacion', {
+          nombres: nombres,
+          apellidos: apellidos,
+          email: email,
+          clave: clave,
+          rol: 'user',
+        });
+
+      } catch (error: any) {
+        if (error.response) {
+          console.log(error.response.data.message);
+          setMsjeModal(error.response.data.message);
+        } else {
+          console.log(error.message);
+          setMsjeModal(error.message);
+        }
+        setErrorBoolean(true);
+        setShowModalLoading(false);
+        setShowModal(true);
+      }
+    };
+
+    fetchData();
+
+  } else {
+    setErrorBoolean(true);
+    setShowModalLoading(false);
+    setMsjeModal('Por favor, rellene todos los campos.');
+    setShowModal(true);
+  }
+};
 
   return (
     <ScrollView
