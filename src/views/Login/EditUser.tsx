@@ -32,6 +32,7 @@ const EditUser = () => {
     name: "Piero",
     last_name: "Rodriguez",
     email: "icemail@gmail.com",
+    uri: ''
   });
 
   const [profileImage, setProfileImage] = useState<string | null>(null);
@@ -75,8 +76,14 @@ const EditUser = () => {
     // Verificar si el usuario seleccionó una imagen o canceló la acción
     if (!pickerResult.canceled && pickerResult.assets && pickerResult.assets.length > 0) {
       setProfileImage(pickerResult.assets[0].uri); // Actualizar imagen seleccionada
+      setData({ ...Data, uri: pickerResult.assets[0].uri });
     }
   };
+
+  const handleEditAcount = () => {  
+    
+  }
+
   return (
     <View style={styles.container}>
       {/* Header */}

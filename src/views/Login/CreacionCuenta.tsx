@@ -17,13 +17,14 @@ import axios from 'axios';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import ConfirmModal from '../../components/Alerta/ConfirmationModal';
 import LoadingModal from '../../components/Alerta/LoadingModal';
+import * as ImagePicker from 'expo-image-picker';
 const { width, height } = Dimensions.get('window');
 
 function CreacionCuenta(): JSX.Element {
   const { navigate } = useNavigation<NavigationProp<any>>();
   const [secureText, setSecureText] = useState(true);
   const [errorBoolean, setErrorBoolean] = useState(false);
-
+  const [profileImage, setProfileImage] = useState<string | null>(null); // Estado para la imagen seleccionada
   const [nombres, setNombres] = useState('');
   const [apellidos, setApellidos] = useState('');
   const [email, setEmail] = useState('');
@@ -31,7 +32,30 @@ function CreacionCuenta(): JSX.Element {
   const [showModal, setShowModal] = useState(false);
   const [showModalLoading, setShowModalLoading] = useState(false);
   const [msjeModal, setMsjeModal] = useState('El usuario se ha registrado correctamente.');
-
+  
+  const pickImage = async () => {
+    // Solicitar permisos para acceder a la galería
+    let result = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (result.granted === false) {
+      alert("Permiso para acceder a las fotos es necesario.");
+      return;
+    }
+  
+    // Abrir selector de imágenes
+    let pickerResult = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 1,
+    });
+  
+    // Verificar si el usuario seleccionó una imagen
+    if (!pickerResult.canceled && pickerResult.assets && pickerResult.assets.length > 0) {
+      setProfileImage(pickerResult.assets[0].uri); // Actualizar imagen seleccionada
+    }
+  };
+  
+  
   const handleCreateAccount = async () => {
     setShowModalLoading(true);
     if (nombres !== '' && apellidos !== '' && email !== '' && clave !== '' ) {
@@ -51,6 +75,7 @@ function CreacionCuenta(): JSX.Element {
             password_confirmation: clave,
             is_paid_user: false,
             role: 'user',
+            uri: profileImage || '',
           };
         
           let reqOptions = {
@@ -112,17 +137,13 @@ function CreacionCuenta(): JSX.Element {
           <View style={styles.mainCircle}>
             <View style={styles.mainCircle}>
               <Image
-                source={require('../../assets/images/user.png')}
+                source={profileImage ? { uri: profileImage } : require("../../assets/images/user.png")} 
                 style={styles.profileImage}
               />
             </View>
-            <View style={styles.iconCircle}>
-              <MaterialCommunityIcons
-                name='pencil'
-                size={24}
-                color='black'
-              />
-            </View>
+           <TouchableOpacity style={styles.iconCircle} onPress={pickImage}>
+                <MaterialCommunityIcons name="pencil" size={24} color="black" />
+              </TouchableOpacity>
           </View>
           <View style={{ width: '90%', maxWidth: 300, marginTop: 30 }}>
             <Text
@@ -334,7 +355,7 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     borderRadius: 50,
-    backgroundColor: '#FFDBAC', // Color de fondo similar al círculo principal
+    backgroundColor: '#0D465E', // Color de fondo similar al círculo principal
     justifyContent: 'center',
     alignItems: 'center',
   },
