@@ -13,7 +13,7 @@ import {
 } from "react-native";
 import axios from "axios";
 import { useRoute } from "@react-navigation/native";
-import { storeSesion } from "../../hooks/localStorageUser";
+import { storeSesion } from '../../hooks/localStorageUser';
 import ConfirmModal from "../../components/Alerta/ConfirmationModal";
 import LoadingModal from "../../components/Alerta/LoadingModal";
 
@@ -60,12 +60,13 @@ function Password(): JSX.Element {
 
           if (response.data.message === "Login successful") {
             navigation.navigate("Verificacion", {
-              id: Date.now().toString(),
-              nombre: "Bruno",
-              Apellidos: "Cairampoma",
-              email: email,
-              password: clave,
-              rol: "admin",
+              id: response.data.user.id,
+              nombres: response.data.user.name,
+              apellidos: response.data.user.last_name,
+              email: response.data.user.email,
+              clave: '',
+              rol: response.data.user.role,
+              uri: response.data.user.uri ? ("https://www.centroesteticoedith.com/endpoint/images/profile/"+response.data.user.uri) : "",
             });
             setErrorBoolean(false);
             setShowModalLoading(false);

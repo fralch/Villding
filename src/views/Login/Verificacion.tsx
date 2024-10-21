@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { useNavigation, NavigationProp } from '@react-navigation/native';
+import { useState, useEffect } from "react";
+import { useNavigation, NavigationProp } from "@react-navigation/native";
 import {
   View,
   Text,
@@ -10,10 +10,11 @@ import {
   TouchableOpacity,
   SafeAreaView,
   TextInput,
-} from 'react-native';
-import { storeSesion } from '../../hooks/localStorageUser';
+} from "react-native";
+import { storeSesion } from "../../hooks/localStorageUser";
+import * as FileSystem from "expo-file-system";
 
-const { width, height } = Dimensions.get('window');
+const { width, height } = Dimensions.get("window");
 interface User {
   id: string;
   nombres: string;
@@ -27,26 +28,44 @@ interface User {
 function Verificacion(props: any): JSX.Element {
   const navigation = useNavigation<NavigationProp<any>>();
   const [propsUser, setPropsUser] = useState(props.route.params as User);
-  const [codigo, setCodigo] = useState('');
+  const [codigo, setCodigo] = useState("");
   const [errorBoolean, setErrorBoolean] = useState(false);
 
   useEffect(() => {
     console.log(propsUser);
   }, []);
 
-  const handleLogin = () => {
-    if (codigo !== '') {
+  const handleLogin = async () => {
+    if (codigo !== "") {
+      const imageUri = propsUser.uri == undefined ? "" : propsUser.uri;
+      let localUri = "";
+      if (imageUri) {
+        // Descargar la imagen y guardarla en local
+        const fileName = imageUri.split("/").pop(); // Obtener nombre de archivo
+        const fileUri = `${FileSystem.documentDirectory}${fileName}`;
+        const downloadResumable = FileSystem.createDownloadResumable(
+          imageUri,
+          fileUri
+        );
+
+        const downloadResult = await downloadResumable.downloadAsync();
+
+        if (downloadResult && downloadResult.uri) {
+          localUri = downloadResult.uri; // Guardar la URI local
+        }
+      }
+
       storeSesion({
         id: propsUser.id,
         nombres: propsUser.nombres,
         apellidos: propsUser.apellidos,
         email: propsUser.email,
         password: propsUser.password,
-        rol: 'user',
-        uri: propsUser.uri == undefined ? '' : propsUser.uri,
+        rol: "user",
+        uri: localUri,
       });
 
-      navigation.navigate('HomeProject');
+      navigation.navigate("HomeProject");
       setErrorBoolean(false);
     } else {
       setErrorBoolean(true);
@@ -55,31 +74,31 @@ function Verificacion(props: any): JSX.Element {
 
   return (
     <ScrollView
-      contentContainerStyle={{ flexGrow: 1, backgroundColor: '#0A3649' }}
+      contentContainerStyle={{ flexGrow: 1, backgroundColor: "#0A3649" }}
     >
       <SafeAreaView style={styles.container}>
         <Image
           style={{
             width: width * 0.35,
             height: width * 0.35,
-            resizeMode: 'contain',
+            resizeMode: "contain",
             marginTop: height * 0.2,
-            alignSelf: 'center',
-            tintColor: 'white',
+            alignSelf: "center",
+            tintColor: "white",
             marginBottom: 0,
           }}
-          source={require('../../assets/images/logo-icon_white.png')}
+          source={require("../../assets/images/logo-icon_white.png")}
         />
         <Image
-          source={require('../../assets/images/logo-text_white.png')}
-          style={{ width: width * 0.5, resizeMode: 'contain', marginTop: -10 }}
+          source={require("../../assets/images/logo-text_white.png")}
+          style={{ width: width * 0.5, resizeMode: "contain", marginTop: -10 }}
         />
-        <View style={{ width: '90%', maxWidth: 300 }}>
+        <View style={{ width: "90%", maxWidth: 300 }}>
           <Text
             style={{
-              color: 'grey',
+              color: "grey",
               fontSize: 15,
-              textAlign: 'center',
+              textAlign: "center",
               marginBottom: 10,
             }}
           >
@@ -88,40 +107,40 @@ function Verificacion(props: any): JSX.Element {
           <TextInput
             style={{
               height: 50,
-              backgroundColor: '#05222F',
+              backgroundColor: "#05222F",
               borderRadius: 5,
-              color: 'white',
+              color: "white",
               paddingHorizontal: 10,
               fontSize: 17,
             }}
-            placeholder='Ingresa código'
-            placeholderTextColor='grey'
-            keyboardType='number-pad'
-            autoCapitalize='none'
+            placeholder="Ingresa código"
+            placeholderTextColor="grey"
+            keyboardType="number-pad"
+            autoCapitalize="none"
             value={codigo}
             onChangeText={setCodigo}
           />
           {errorBoolean ? (
-            <Text style={{ color: '#ff7979', marginTop: 10 }}>
+            <Text style={{ color: "#ff7979", marginTop: 10 }}>
               Ingresa un código para continuar
             </Text>
           ) : null}
-          <Text style={{ color: 'grey', marginTop: 10 }}>
+          <Text style={{ color: "grey", marginTop: 10 }}>
             Ingresa el código que enviamos a tu correo.
           </Text>
-          <Text style={{ color: 'grey', marginTop: 5 }}>
+          <Text style={{ color: "grey", marginTop: 5 }}>
             Recuerda revisar Spam o Notificaciones.
           </Text>
           <TouchableOpacity style={{ marginTop: 20 }}>
             <Text
               style={{
-                color: '#05222F',
+                color: "#05222F",
                 fontSize: 17,
-                textAlign: 'center',
-                backgroundColor: '#DEDEDE',
+                textAlign: "center",
+                backgroundColor: "#DEDEDE",
                 padding: 10,
                 borderRadius: 5,
-                width: '100%',
+                width: "100%",
               }}
               onPress={() => handleLogin()}
             >
@@ -131,16 +150,16 @@ function Verificacion(props: any): JSX.Element {
         </View>
         <TouchableOpacity
           style={{ marginTop: 20 }}
-          onPress={() => navigation.navigate('Login')}
+          onPress={() => navigation.navigate("Login")}
         >
           <Text
             style={{
-              color: '#ddd',
+              color: "#ddd",
               fontSize: 17,
-              textAlign: 'center',
+              textAlign: "center",
               padding: 10,
               borderRadius: 5,
-              width: '100%',
+              width: "100%",
             }}
           >
             Cancelar
@@ -153,8 +172,8 @@ function Verificacion(props: any): JSX.Element {
 
 const styles = StyleSheet.create({
   container: {
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
 });
 
