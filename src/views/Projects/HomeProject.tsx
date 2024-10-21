@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback} from 'react';
 import {
   View,
   Text,
@@ -43,7 +43,7 @@ export default function HomeProject() {
   
 
   useFocusEffect(
-    React.useCallback(() => {
+    useCallback(() => {
       getProjects().then((StoredProjects) => {
         if (StoredProjects) {
           setProjects(StoredProjects);
@@ -59,8 +59,22 @@ export default function HomeProject() {
        console.log(sesion.uri);
        setImageUserSesion(sesion.uri);
     });
-  }, [])
+  }, [ ])
 
+  useFocusEffect(
+    useCallback(() => {
+      // Esto se ejecuta cada vez que vuelves a la pantalla
+      getSesion().then((StoredSesion: any) => {
+        let sesion = JSON.parse(StoredSesion);
+        console.log(sesion.uri);
+        setImageUserSesion(sesion.uri);
+      });
+  
+      return () => {
+        // Limpieza si es necesario
+      };
+    }, [])
+  );
 
   React.useEffect(() => {
     removeProject();

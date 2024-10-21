@@ -19,12 +19,17 @@ import {
 import { StatusBar as ExpoStatusBar } from "expo-status-bar";
 import * as ImagePicker from 'expo-image-picker';
 import axios from 'axios';
-import { getSesion, removeSesion } from '../../hooks/localStorageUser';
+import { getSesion, removeSesion , updateSesion } from '../../hooks/localStorageUser';
 import { useNavigation, NavigationProp } from "@react-navigation/native";
+import ConfirmModal from '../../components/Alerta/ConfirmationModal';
+import LoadingModal from '../../components/Alerta/LoadingModal';
 
 const EditUser = () => {
   const navigation = useNavigation<NavigationProp<any>>();
   const [editBool, setEditBool] = useState(false);
+  const [showModalConfirm, setShowModalConfirm] = useState(false);
+  const [showModalLoading, setShowModalLoading] = useState(false);
+  const [msjeModal, setMsjeModal] = useState('');
   const [modalEdit, setModalEdit] = useState(false);
   const [modalData, setModalData] = useState({
     titulo: "",
@@ -44,7 +49,7 @@ const EditUser = () => {
   React.useEffect(() => {
     getSesion().then((StoredSesion : any) => {
       let sesion = JSON.parse(StoredSesion);
-      console.log(sesion);
+      // console.log(sesion);
       setProfileImage(sesion.uri);
       setData(sesion);
         
@@ -54,7 +59,7 @@ const EditUser = () => {
 
    
   const logout = () => {
-    removeSesion(Data.id).then(() => {
+    removeSesion().then(() => {
       navigation.navigate('Login');
     })
   }
@@ -102,7 +107,8 @@ const EditUser = () => {
     }
   };
 
-  const handleEditAcount = () => {  
+  const handleEditAcount = () => { 
+    setShowModalLoading(true);
     const fetchData = async () => {
       // Crear un nuevo FormData para adjuntar la imagen
       const formData = new FormData();
@@ -135,14 +141,21 @@ const EditUser = () => {
       };
 
       try {
-        const response = await axios(reqOptions);
-        console.log(response.data);
-
-      
+        await axios(reqOptions);
+        await updateSesion(Data);
+        setEditBool(false);
+        setShowModalLoading(false);
+        setMsjeModal("Se ha actualizado el perfil con exito") ;
+        setShowModalConfirm (true);
 
       } catch (error: any) {
         if (error.response) {
           console.log(error.response.data.message);
+          setEditBool(false);
+          setShowModalLoading(false);
+          setMsjeModal(error.response.data.message);
+          setShowModalConfirm (true);
+
         } else {
           console.log(error.message);
         }
@@ -244,6 +257,7 @@ const EditUser = () => {
             <View style={{ alignItems: "center" }}>
               <TouchableOpacity
                 style={[styles.logoutButton, { marginBottom: 0 }]}
+                onPress={handleEditAcount}
               >
                 <Entypo name="save" size={24} color="white" />
                 <Text style={styles.logoutText}>Guardar</Text>
@@ -316,6 +330,8 @@ const EditUser = () => {
           </View>
         </View>
       </Modal>
+      <ConfirmModal visible={showModalConfirm} message={msjeModal} onClose={() => setShowModalConfirm(false)} />
+      <LoadingModal visible={showModalLoading} />
     </View>
   );
 };
