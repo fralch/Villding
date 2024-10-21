@@ -288,7 +288,7 @@ const EditUser = () => {
                 <Ionicons name="power" size={25} color="#fff" />
                 <Text style={styles.logoutText}>Cerrar sesión</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.deleteButton}>
+              <TouchableOpacity style={styles.deleteButton} onPress={logout}>
                 <Feather name="trash" size={24} color="#c92a42" />
                 <Text style={styles.deleteText}>Eliminar cuenta</Text>
               </TouchableOpacity>
