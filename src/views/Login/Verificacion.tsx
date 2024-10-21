@@ -16,8 +16,8 @@ import { storeSesion } from '../../hooks/localStorageUser';
 const { width, height } = Dimensions.get('window');
 interface User {
   id: string;
-  nombre: string;
-  Apellidos: string;
+  nombres: string;
+  apellidos: string;
   email: string;
   password: string;
   rol: string;
@@ -38,8 +38,8 @@ function Verificacion(props: any): JSX.Element {
     if (codigo !== '') {
       storeSesion({
         id: Date.now().toString(),
-        nombre: propsUser.nombre,
-        Apellidos: propsUser.Apellidos,
+        nombres: propsUser.nombres,
+        apellidos: propsUser.apellidos,
         email: propsUser.email,
         password: propsUser.password,
         rol: 'user',

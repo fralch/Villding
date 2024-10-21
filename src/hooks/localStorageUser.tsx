@@ -2,8 +2,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface User {
   id: string;
-  nombre: string;
-  Apellidos: string;
+  nombres: string;
+  apellidos: string;
   email: string;
   password: string;
   rol: string;
@@ -35,5 +35,7 @@ const getSesion = async (): Promise<string | null> => {
     return null;
   }
 };
+
+
 
 export { storeSesion, removeSesion, getSesion };

@@ -18,7 +18,7 @@ import {
 } from "@expo/vector-icons"; // Para íconos
 import { StatusBar as ExpoStatusBar } from "expo-status-bar";
 import * as ImagePicker from 'expo-image-picker';
-import { getSesion } from '../../hooks/localStorageUser';
+import { getSesion, removeSesion } from '../../hooks/localStorageUser';
 import { useNavigation, NavigationProp } from "@react-navigation/native";
 
 const EditUser = () => {
@@ -30,8 +30,9 @@ const EditUser = () => {
     texto: "",
   });
   const [Data, setData] = useState({
-    name: "Piero",
-    last_name: "Rodriguez",
+    id: "1",
+    nombres: "Piero",
+    apellidos: "Rodriguez",
     email: "icemail@gmail.com",
     uri: ''
   });
@@ -42,10 +43,20 @@ const EditUser = () => {
   React.useEffect(() => {
     getSesion().then((StoredSesion : any) => {
       let sesion = JSON.parse(StoredSesion);
-       console.log(sesion.uri);
-       setProfileImage(sesion.uri);
+      // console.log(sesion);
+      setProfileImage(sesion.uri);
+      setData(sesion);
+        
     });
-  }, [])
+  }, [ editBool === false]);
+
+
+   
+  const logout = () => {
+    removeSesion(Data.id).then(() => {
+      navigation.navigate('Login');
+    })
+  }
 
 
   const OpenEdit = (titulo: string, texto: string) => {
@@ -57,9 +68,9 @@ const EditUser = () => {
   const handleSave = () => {
     // Actualiza los datos dependiendo de cuál campo se está editando
     if (modalData.titulo === "Nombre") {
-      setData({ ...Data, name: modalData.texto });
+      setData({ ...Data, nombres: modalData.texto });
     } else if (modalData.titulo === "Apellido") {
-      setData({ ...Data, last_name: modalData.texto });
+      setData({ ...Data, apellidos: modalData.texto });
     } else if (modalData.titulo === "Correo de registro") {
       setData({ ...Data, email: modalData.texto });
     }
@@ -149,13 +160,13 @@ const EditUser = () => {
           <View style={styles.section}>
             <View style={{ marginHorizontal: 20, marginVertical: 15 }}>
             <Text style={[styles.sectionTitle, { marginVertical: 15 }]}>Información personal</Text>
-              <TouchableOpacity style={styles.item} onPress={() => { OpenEdit("Nombre", "Piero")}}>
+              <TouchableOpacity style={styles.item} onPress={() => { OpenEdit("Nombre", Data.nombres)}}>
                 <Text style={styles.itemLabel}>Nombre</Text>
-                <Text style={styles.itemValue}>{Data.name}</Text>
+                <Text style={styles.itemValue}>{Data.nombres}</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.item} onPress={() => { OpenEdit("Apellido", "Rodriguez")}}>
+              <TouchableOpacity style={styles.item} onPress={() => { OpenEdit("Apellido", Data.apellidos)}}>
                 <Text style={styles.itemLabel}>Apellido</Text>
-                <Text style={styles.itemValue}>{Data.last_name}</Text>
+                <Text style={styles.itemValue}>{Data.apellidos}</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -166,7 +177,7 @@ const EditUser = () => {
               <Text style={[styles.sectionTitle, { marginVertical: 10 }]}>
                 Correo de contacto
               </Text>
-              <TouchableOpacity style={[styles.item, { marginVertical: 10 }]}  onPress={() => { OpenEdit("Correo de registro", "icemail@gmail.com")}}>
+              <TouchableOpacity style={[styles.item, { marginVertical: 10 }]}  onPress={() => { OpenEdit("Correo de registro", Data.email)}}>
                 <Text style={styles.itemLabel}>Correo de registro</Text>
                 <Text style={styles.itemValue}>{Data.email}</Text>
               </TouchableOpacity>
@@ -212,7 +223,7 @@ const EditUser = () => {
             </View>
           ) : (
             <View>
-              <TouchableOpacity style={styles.logoutButton}>
+              <TouchableOpacity style={styles.logoutButton} onPress={logout}>
                 <Ionicons name="power" size={25} color="#fff" />
                 <Text style={styles.logoutText}>Cerrar sesión</Text>
               </TouchableOpacity>
@@ -245,7 +256,9 @@ const EditUser = () => {
             >
               <TouchableOpacity
                 style={[styles.button, { backgroundColor: "#05222F" }]}
-                onPress={() => setModalEdit(false)}
+                onPress={() => {
+                  setModalEdit(false);
+                }}
               >
                 <Text style={styles.buttonText}>Cancelar</Text>
               </TouchableOpacity>
