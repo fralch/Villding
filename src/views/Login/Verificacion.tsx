@@ -37,7 +37,7 @@ function Verificacion(props: any): JSX.Element {
   const handleLogin = () => {
     if (codigo !== '') {
       storeSesion({
-        id: Date.now().toString(),
+        id: propsUser.id,
         nombres: propsUser.nombres,
         apellidos: propsUser.apellidos,
         email: propsUser.email,

@@ -106,6 +106,7 @@ function CreacionCuenta(): JSX.Element {
         setShowModalLoading(false);
         setShowModal(true);
         navigate('Verificacion', {
+          id: response.data.user.id,
           nombres: nombres,
           apellidos: apellidos,
           email: email,

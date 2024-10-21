@@ -18,6 +18,7 @@ import {
 } from "@expo/vector-icons"; // Para íconos
 import { StatusBar as ExpoStatusBar } from "expo-status-bar";
 import * as ImagePicker from 'expo-image-picker';
+import axios from 'axios';
 import { getSesion, removeSesion } from '../../hooks/localStorageUser';
 import { useNavigation, NavigationProp } from "@react-navigation/native";
 
@@ -43,7 +44,7 @@ const EditUser = () => {
   React.useEffect(() => {
     getSesion().then((StoredSesion : any) => {
       let sesion = JSON.parse(StoredSesion);
-      // console.log(sesion);
+      console.log(sesion);
       setProfileImage(sesion.uri);
       setData(sesion);
         
@@ -102,7 +103,53 @@ const EditUser = () => {
   };
 
   const handleEditAcount = () => {  
-    
+    const fetchData = async () => {
+      // Crear un nuevo FormData para adjuntar la imagen
+      const formData = new FormData();
+
+      // Agregar los campos de texto
+      formData.append('id', Data.id);
+      formData.append('name', Data.nombres);
+      formData.append('last_name', Data.apellidos);
+      formData.append('email', Data.email);
+
+      // Si hay una imagen seleccionada, la agregamos al FormData
+      if (profileImage) {
+        const uriParts = profileImage.split('.');
+        const fileType = uriParts[uriParts.length - 1];
+
+        formData.append('uri', {
+          uri: profileImage,
+          name: `profile_image.${fileType}`,
+          type: `image/${fileType}`, // Tipo de imagen
+        } as any); // Especificar el tipo como 'any' para evitar errores de tipado en TypeScript
+      }
+
+      let reqOptions = {
+        url: "https://www.centroesteticoedith.com/endpoint/user/update",
+        method: "POST",
+        data: formData, // Enviar el FormData
+        headers: {
+          'Content-Type': 'multipart/form-data', // Asegurarse de usar el tipo correcto de contenido
+        },
+      };
+
+      try {
+        const response = await axios(reqOptions);
+        console.log(response.data);
+
+      
+
+      } catch (error: any) {
+        if (error.response) {
+          console.log(error.response.data.message);
+        } else {
+          console.log(error.message);
+        }
+      }
+    };
+
+    fetchData();
   }
 
   return (
