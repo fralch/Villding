@@ -11,6 +11,7 @@ import {
   SafeAreaView,
   TextInput,
 } from "react-native";
+import { Ionicons } from '@expo/vector-icons'; // Importa el ícono
 import axios from "axios";
 import { useRoute } from "@react-navigation/native";
 import { storeSesion } from '../../hooks/localStorageUser';
@@ -18,15 +19,6 @@ import ConfirmModal from "../../components/Alerta/ConfirmationModal";
 import LoadingModal from "../../components/Alerta/LoadingModal";
 
 const { width, height } = Dimensions.get("window");
-interface User {
-  id: string;
-  nombre: string;
-  Apellidos: string;
-  email: string;
-  password: string;
-  rol: string;
-  uri?: string;
-}
 
 function Password(): JSX.Element {
   const navigation = useNavigation<NavigationProp<any>>();
@@ -52,12 +44,10 @@ function Password(): JSX.Element {
         let reqOptions = {
           url: "https://www.centroesteticoedith.com/endpoint/user/login",
           method: "POST",
-          data: JsonLogin, // No necesitas usar JSON.stringify aquí
+          data: JsonLogin,
         };
         try {
           const response = await axios(reqOptions);
-          console.log(response.data.message);
-
           if (response.data.message === "Login successful") {
             navigation.navigate("Verificacion", {
               id: response.data.user.id,
@@ -70,7 +60,7 @@ function Password(): JSX.Element {
             });
             setErrorBoolean(false);
             setShowModalLoading(false);
-          }else{
+          } else {
             setMsjeModal("Contraseña incorrecta.");
             setErrorBoolean(true);
             setShowModalLoading(false);
@@ -87,10 +77,9 @@ function Password(): JSX.Element {
       setShowModalLoading(false);
     }
   };
+
   return (
-    <ScrollView
-      contentContainerStyle={{ flexGrow: 1, backgroundColor: "#0A3649" }}
-    >
+    <ScrollView contentContainerStyle={{ flexGrow: 1, backgroundColor: "#0A3649" }}>
       <SafeAreaView style={styles.container}>
         <Image
           style={{
@@ -119,28 +108,41 @@ function Password(): JSX.Element {
           >
             Ingresa tu contraseña
           </Text>
-          <TextInput
-            style={{
-              height: 50,
-              backgroundColor: "#05222F",
-              borderRadius: 5,
-              color: "white",
-              paddingHorizontal: 10,
-              fontSize: 17,
-            }}
-            placeholder="Escribe tu contraseña "
-            placeholderTextColor="grey"
-            autoCapitalize="none"
-            secureTextEntry={true}
-            value={clave}
-            onChangeText={setClave}
-          />
+          <View style={{ position: 'relative', width: '100%' }}>
+            <TextInput
+              style={{
+                height: 50,
+                backgroundColor: "#05222F",
+                borderRadius: 5,
+                color: "white",
+                paddingHorizontal: 10,
+                fontSize: 17,
+                paddingRight: 40, // Espacio para el ícono
+              }}
+              placeholder="Escribe tu contraseña"
+              placeholderTextColor="grey"
+              autoCapitalize="none"
+              secureTextEntry={secureText} // Usar el estado
+              value={clave}
+              onChangeText={setClave}
+            />
+            <TouchableOpacity
+              onPress={() => setSecureText(!secureText)}
+              style={styles.eyeIcon}
+            >
+              <Ionicons
+                name={secureText ? "eye-off" : "eye"}
+                size={24}
+                color="white"
+              />
+            </TouchableOpacity>
+          </View>
           {errorBoolean ? (
             <Text style={{ color: "#ff7979", marginTop: 10 }}>
               Ingresa una contraseña para continuar
             </Text>
           ) : null}
-          <TouchableOpacity style={{ marginTop: 20 }}>
+          <TouchableOpacity style={{ marginTop: 20 }} onPress={handleLogin}>
             <Text
               style={{
                 color: "#05222F",
@@ -151,7 +153,6 @@ function Password(): JSX.Element {
                 borderRadius: 5,
                 width: "100%",
               }}
-              onPress={() => handleLogin()}
             >
               Ingresar
             </Text>
@@ -172,6 +173,11 @@ const styles = StyleSheet.create({
   container: {
     alignItems: "center",
     justifyContent: "center",
+  },
+  eyeIcon: {
+    position: 'absolute',
+    right: 10,
+    top: 12,
   },
 });
 
