@@ -99,6 +99,7 @@ function CreacionCuenta(): JSX.Element {
           const uriParts = profileImage.split(".");
           const fileType = uriParts[uriParts.length - 1];
 
+          // es importante comprobar en el php y en nginx que puedan subir imagenes grandes 
           formData.append("uri", {
             uri: profileImage,
             name: `profile_image.${fileType}`,
@@ -131,6 +132,7 @@ function CreacionCuenta(): JSX.Element {
             uri: profileImage,
           });
         } catch (error: any) {
+          console.log(error);
           if (error.response) {
             console.log(error.response.data.message);
             setMsjeModal(error.response.data.message);
