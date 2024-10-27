@@ -15,6 +15,7 @@ import {
 } from "react-native";
 import axios from "axios";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons"; // Importa el ícono
+import { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
 import ConfirmModal from "../../components/Alerta/ConfirmationModal";
 import LoadingModal from "../../components/Alerta/LoadingModal";
 import * as ImagePicker from "expo-image-picker";
@@ -30,6 +31,7 @@ function CreacionCuenta(): JSX.Element {
   const [celular, setCelular] = useState("");
   const [genero, setGenero] = useState("");
   const [nacimiento, setNacimiento] = useState("");
+  const [edad , setEdad] = useState(0);
   const [email, setEmail] = useState("");
   const [clave, setClave] = useState("");
   const [claveAgain, setClaveAgain] = useState("");
@@ -161,6 +163,27 @@ function CreacionCuenta(): JSX.Element {
     }
   };
 
+  const showDataTimePicker = () => {
+    DateTimePickerAndroid.open({
+      value: new Date(),
+      onChange: (event, date) => {
+        if (event.type === "set" && date) {
+          const formattedDate = new Date(date).toLocaleDateString("es-ES");
+          setNacimiento(formattedDate);
+
+          // Calcular la edad
+          const birthYear = new Date(date).getFullYear();
+          const currentYear = new Date().getFullYear();
+          const calculatedAge = currentYear - birthYear;
+          setEdad(calculatedAge);
+        }
+      },
+      mode: "date",
+      is24Hour: true,
+    });
+  };
+
+
   return (
     <ScrollView
       contentContainerStyle={{ flexGrow: 1, backgroundColor: "#0A3649" }}
@@ -256,22 +279,21 @@ function CreacionCuenta(): JSX.Element {
             >
               Fecha de nacimiento
             </Text>
-            <TextInput
+            <TouchableOpacity
+              onPress={showDataTimePicker}
               style={{
                 height: 50,
                 backgroundColor: "#05222F",
                 borderRadius: 5,
-                color: "white",
                 paddingHorizontal: 10,
-                fontSize: 17,
+                justifyContent: "center",
                 marginBottom: 10,
               }}
-              placeholder="Fecha de nacimiento"
-              placeholderTextColor="grey"
-              autoCapitalize="none"
-              value={nacimiento}
-              onChangeText={setNacimiento}
-            />
+            >
+              <Text style={{ color: nacimiento ? "white" : "grey", fontSize: 17 }}>
+                {nacimiento || "Fecha de nacimiento"}
+              </Text>
+            </TouchableOpacity>
             <Text
               style={{
                 color: "grey",
