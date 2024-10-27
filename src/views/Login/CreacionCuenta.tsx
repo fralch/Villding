@@ -27,6 +27,9 @@ function CreacionCuenta(): JSX.Element {
   const [profileImage, setProfileImage] = useState<string | null>(null); // Estado para la imagen seleccionada
   const [nombres, setNombres] = useState("");
   const [apellidos, setApellidos] = useState("");
+  const [celular, setCelular] = useState("");
+  const [genero, setGenero] = useState("");
+  const [nacimiento, setNacimiento] = useState("");
   const [email, setEmail] = useState("");
   const [clave, setClave] = useState("");
   const [claveAgain, setClaveAgain] = useState("");
@@ -90,6 +93,9 @@ function CreacionCuenta(): JSX.Element {
         formData.append("name", nombres);
         formData.append("last_name", apellidos);
         formData.append("email", email);
+        formData.append("telefono", celular);
+        formData.append("genero", genero);
+        formData.append("edad", nacimiento);
         formData.append("password", clave);
         formData.append("is_paid_user", "0");
         formData.append("role", "user");
@@ -227,6 +233,7 @@ function CreacionCuenta(): JSX.Element {
                 color: "white",
                 paddingHorizontal: 10,
                 fontSize: 17,
+                marginBottom: 10,
               }}
               placeholder="Escribe tus apellidos "
               placeholderTextColor="grey"
@@ -247,6 +254,83 @@ function CreacionCuenta(): JSX.Element {
                 marginBottom: 10,
               }}
             >
+              Fecha de nacimiento
+            </Text>
+            <TextInput
+              style={{
+                height: 50,
+                backgroundColor: "#05222F",
+                borderRadius: 5,
+                color: "white",
+                paddingHorizontal: 10,
+                fontSize: 17,
+                marginBottom: 10,
+              }}
+              placeholder="Fecha de nacimiento"
+              placeholderTextColor="grey"
+              autoCapitalize="none"
+              value={nacimiento}
+              onChangeText={setNacimiento}
+            />
+            <Text
+              style={{
+                color: "grey",
+                fontSize: 15,
+                textAlign: "left",
+                marginBottom: 10,
+              }}
+            >
+              Genero
+            </Text>
+            <TextInput
+              style={{
+                height: 50,
+                backgroundColor: "#05222F",
+                borderRadius: 5,
+                color: "white",
+                paddingHorizontal: 10,
+                fontSize: 17,
+                marginBottom: 10,
+              }}
+              placeholder="Escribe tu genero "
+              placeholderTextColor="grey"
+              autoCapitalize="none"
+              value={genero}
+              onChangeText={setGenero}
+            />
+            <Text
+              style={{
+                color: "grey",
+                fontSize: 15,
+                textAlign: "left",
+                marginBottom: 10,
+              }}
+            >
+              Celular
+            </Text>
+            <TextInput
+              style={{
+                height: 50,
+                backgroundColor: "#05222F",
+                borderRadius: 5,
+                color: "white",
+                paddingHorizontal: 10,
+                fontSize: 17,
+              }}
+              placeholder="Escribe tu celular "
+              placeholderTextColor="grey"
+              autoCapitalize="none"
+              value={celular}
+              onChangeText={ setCelular }
+            />
+            <Text
+              style={{
+                color: "grey",
+                fontSize: 15,
+                textAlign: "left",
+                marginBottom: 10,
+              }}
+            >
               Correo
             </Text>
             <TextInput
@@ -257,6 +341,7 @@ function CreacionCuenta(): JSX.Element {
                 color: "white",
                 paddingHorizontal: 10,
                 fontSize: 17,
+                marginBottom: 10,
               }}
               placeholder="Escribe tu correo "
               placeholderTextColor="grey"
