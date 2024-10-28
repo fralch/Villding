@@ -48,6 +48,7 @@ function Password(): JSX.Element {
         };
         try {
           const response = await axios(reqOptions);
+          console.log(response.data);
           if (response.data.message === "Login successful") {
             navigation.navigate("Verificacion", {
               id: response.data.user.id,
@@ -55,6 +56,7 @@ function Password(): JSX.Element {
               apellidos: response.data.user.last_name,
               email: response.data.user.email,
               clave: '',
+              telefono: response.data.user.telefono ? response.data.user.telefono : '',
               rol: response.data.user.role,
               uri: response.data.user.uri ? ("https://www.centroesteticoedith.com/endpoint/images/profile/"+response.data.user.uri) : "",
             });

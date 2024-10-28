@@ -7,6 +7,7 @@ interface User {
   email: string;
   password: string;
   rol: string;
+  telefono?: string;
   uri?: string;
 }
 
@@ -36,6 +37,7 @@ const updateSesion = async (updatedUser: any): Promise<void> => {
       // Mantenemos los valores actuales si no se están actualizando
       parsedUser.password = parsedUser.password;
       parsedUser.rol = parsedUser.rol;
+      parsedUser.telefono = updatedUser.telefono;
       parsedUser.uri = updatedUser.uri ?? parsedUser.uri; // Si `uri` es undefined, se mantiene la existente
 
       // Guardar el usuario actualizado en AsyncStorage

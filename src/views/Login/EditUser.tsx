@@ -40,6 +40,7 @@ const EditUser = () => {
     nombres: "Piero",
     apellidos: "Rodriguez",
     email: "icemail@gmail.com",
+    telefono: "123456789",
     uri: ''
   });
 
@@ -49,7 +50,7 @@ const EditUser = () => {
   React.useEffect(() => {
     getSesion().then((StoredSesion : any) => {
       let sesion = JSON.parse(StoredSesion);
-      // console.log(sesion);
+      console.log(sesion);
       setProfileImage(sesion.uri);
       setData(sesion);
         
@@ -79,6 +80,8 @@ const EditUser = () => {
       setData({ ...Data, apellidos: modalData.texto });
     } else if (modalData.titulo === "Correo de registro") {
       setData({ ...Data, email: modalData.texto });
+    }else if (modalData.titulo === "Teléfono") {
+      setData({ ...Data, telefono: modalData.texto });
     }
     setModalEdit(false); // Cierra el modal después de guardar
   };
@@ -117,6 +120,7 @@ const EditUser = () => {
       formData.append('id', Data.id);
       formData.append('name', Data.nombres);
       formData.append('last_name', Data.apellidos);
+      if (Data.telefono) formData.append('telefono', Data.telefono);   
       formData.append('email', Data.email);
 
       // Si hay una imagen seleccionada, la agregamos al FormData
@@ -141,6 +145,7 @@ const EditUser = () => {
       };
 
       try {
+        console.log(Data); 
         await axios(reqOptions);
         await updateSesion(Data);
         setEditBool(false);
@@ -241,13 +246,11 @@ const EditUser = () => {
                 <Text style={styles.itemLabel}>Correo de registro</Text>
                 <Text style={styles.itemValue}>{Data.email}</Text>
               </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.addEmailButton, { marginVertical: 10 }]}
-              >
-                <Text style={styles.addEmailText}>
-                  + Añadir correo de contacto
-                </Text>
+              <TouchableOpacity style={[styles.item, { marginVertical: 10}]}  onPress={() => { OpenEdit("Teléfono", Data.telefono)}}>
+                <Text style={[styles.itemLabel, {color: "#34c6eb"}]}>Celular</Text>
+                <Text style={[styles.itemValue, {color: "#34c6eb"}]}>{Data.telefono}</Text>
               </TouchableOpacity>
+              
             </View>
           </View>
         </View>

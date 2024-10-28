@@ -347,6 +347,7 @@ function CreacionCuenta(): JSX.Element {
             placeholder="Escribe tu celular "
             placeholderTextColor="grey"
             autoCapitalize="none"
+            keyboardType="phone-pad"
             value={celular}
             onChangeText={setCelular}
           />
