@@ -15,7 +15,7 @@ import {
 } from "react-native";
 import axios from "axios";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons"; // Importa el ícono
-import { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
+import { DateTimePickerAndroid } from "@react-native-community/datetimepicker";
 import ConfirmModal from "../../components/Alerta/ConfirmationModal";
 import LoadingModal from "../../components/Alerta/LoadingModal";
 import * as ImagePicker from "expo-image-picker";
@@ -31,7 +31,7 @@ function CreacionCuenta(): JSX.Element {
   const [celular, setCelular] = useState("");
   const [genero, setGenero] = useState("");
   const [nacimiento, setNacimiento] = useState("");
-  const [edad , setEdad] = useState(0);
+  const [edad, setEdad] = useState(0);
   const [email, setEmail] = useState("");
   const [clave, setClave] = useState("");
   const [claveAgain, setClaveAgain] = useState("");
@@ -107,7 +107,7 @@ function CreacionCuenta(): JSX.Element {
           const uriParts = profileImage.split(".");
           const fileType = uriParts[uriParts.length - 1];
 
-          // es importante comprobar en el php y en nginx que puedan subir imagenes grandes 
+          // es importante comprobar en el php y en nginx que puedan subir imagenes grandes
           formData.append("uri", {
             uri: profileImage,
             name: `profile_image.${fileType}`,
@@ -183,40 +183,213 @@ function CreacionCuenta(): JSX.Element {
     });
   };
 
-
   return (
-    <ScrollView
-      contentContainerStyle={{ flexGrow: 1, backgroundColor: "#0A3649" }}
-    >
-      <SafeAreaView style={styles.container}>
-        <View style={styles.header}>
-          <Text style={styles.title}>Creación de tu cuenta</Text>
+    <SafeAreaView style={styles.container}>
+      <View style={styles.header}>
+        <Text style={styles.title}>Creación de tu cuenta</Text>
+        <View style={styles.mainCircle}>
           <View style={styles.mainCircle}>
-            <View style={styles.mainCircle}>
-              <Image
-                source={
-                  profileImage
-                    ? { uri: profileImage }
-                    : require("../../assets/images/user.png")
-                }
-                style={styles.profileImage}
-              />
-            </View>
-            <TouchableOpacity style={styles.iconCircle} onPress={pickImage}>
-              <MaterialCommunityIcons name="pencil" size={24} color="black" />
-            </TouchableOpacity>
+            <Image
+              source={
+                profileImage
+                  ? { uri: profileImage }
+                  : require("../../assets/images/user.png")
+              }
+              style={styles.profileImage}
+            />
           </View>
-          <View style={{ width: "90%", maxWidth: 300, marginTop: 30 }}>
-            <Text
-              style={{
-                color: "grey",
-                fontSize: 15,
-                textAlign: "left",
-                marginBottom: 10,
-              }}
-            >
-              Nombres
+          <TouchableOpacity style={styles.iconCircle} onPress={pickImage}>
+            <MaterialCommunityIcons name="pencil" size={24} color="black" />
+          </TouchableOpacity>
+        </View>
+      </View>
+      <ScrollView
+        contentContainerStyle={{ flexGrow: 1, backgroundColor: "#0A3649",  alignItems: "center" }}
+      >
+        <View style={{ width: "100%", maxWidth: 300, marginTop: 30 }}>
+          <Text
+            style={{
+              color: "grey",
+              fontSize: 15,
+              textAlign: "left",
+              marginBottom: 10,
+            }}
+          >
+            Nombres
+          </Text>
+          <TextInput
+            style={{
+              height: 50,
+              backgroundColor: "#05222F",
+              borderRadius: 5,
+              color: "white",
+              paddingHorizontal: 10,
+              fontSize: 17,
+              marginBottom: 10,
+            }}
+            placeholder="Escribe tus nombres "
+            placeholderTextColor="grey"
+            autoCapitalize="none"
+            value={nombres}
+            onChangeText={setNombres}
+          />
+          {errorBoolean && nombres === "" ? (
+            <Text style={{ color: "#ff7979", marginTop: 10 }}>
+              Ingresa tus nombres
             </Text>
+          ) : null}
+          <Text
+            style={{
+              color: "grey",
+              fontSize: 15,
+              textAlign: "left",
+              marginBottom: 10,
+            }}
+          >
+            Apellidos
+          </Text>
+          <TextInput
+            style={{
+              height: 50,
+              backgroundColor: "#05222F",
+              borderRadius: 5,
+              color: "white",
+              paddingHorizontal: 10,
+              fontSize: 17,
+              marginBottom: 10,
+            }}
+            placeholder="Escribe tus apellidos "
+            placeholderTextColor="grey"
+            autoCapitalize="none"
+            value={apellidos}
+            onChangeText={setApellidos}
+          />
+          {errorBoolean && apellidos === "" ? (
+            <Text style={{ color: "#ff7979", marginTop: 10 }}>
+              Ingresa tus apellidos
+            </Text>
+          ) : null}
+          <Text
+            style={{
+              color: "grey",
+              fontSize: 15,
+              textAlign: "left",
+              marginBottom: 10,
+            }}
+          >
+            Fecha de nacimiento
+          </Text>
+          <TouchableOpacity
+            onPress={showDataTimePicker}
+            style={{
+              height: 50,
+              backgroundColor: "#05222F",
+              borderRadius: 5,
+              paddingHorizontal: 10,
+              justifyContent: "center",
+              marginBottom: 10,
+            }}
+          >
+            <Text
+              style={{ color: nacimiento ? "white" : "grey", fontSize: 17 }}
+            >
+              {nacimiento || "Fecha de nacimiento"}
+            </Text>
+          </TouchableOpacity>
+          <Text
+            style={{
+              color: "grey",
+              fontSize: 15,
+              textAlign: "left",
+              marginBottom: 10,
+            }}
+          >
+            Genero
+          </Text>
+          <TextInput
+            style={{
+              height: 50,
+              backgroundColor: "#05222F",
+              borderRadius: 5,
+              color: "white",
+              paddingHorizontal: 10,
+              fontSize: 17,
+              marginBottom: 10,
+            }}
+            placeholder="Escribe tu genero "
+            placeholderTextColor="grey"
+            autoCapitalize="none"
+            value={genero}
+            onChangeText={setGenero}
+          />
+          <Text
+            style={{
+              color: "grey",
+              fontSize: 15,
+              textAlign: "left",
+              marginBottom: 10,
+            }}
+          >
+            Celular
+          </Text>
+          <TextInput
+            style={{
+              height: 50,
+              backgroundColor: "#05222F",
+              borderRadius: 5,
+              color: "white",
+              paddingHorizontal: 10,
+              fontSize: 17,
+            }}
+            placeholder="Escribe tu celular "
+            placeholderTextColor="grey"
+            autoCapitalize="none"
+            value={celular}
+            onChangeText={setCelular}
+          />
+          <Text
+            style={{
+              color: "grey",
+              fontSize: 15,
+              textAlign: "left",
+              marginBottom: 10,
+            }}
+          >
+            Correo
+          </Text>
+          <TextInput
+            style={{
+              height: 50,
+              backgroundColor: "#05222F",
+              borderRadius: 5,
+              color: "white",
+              paddingHorizontal: 10,
+              fontSize: 17,
+              marginBottom: 10,
+            }}
+            placeholder="Escribe tu correo "
+            placeholderTextColor="grey"
+            autoCapitalize="none"
+            keyboardType="email-address"
+            value={email}
+            onChangeText={setEmail}
+          />
+          {errorBoolean && email === "" ? (
+            <Text style={{ color: "#ff7979", marginTop: 10 }}>
+              Ingresa tu correo
+            </Text>
+          ) : null}
+          <Text
+            style={{
+              color: "grey",
+              fontSize: 15,
+              textAlign: "left",
+              marginBottom: 10,
+            }}
+          >
+            Contraseña
+          </Text>
+          <View style={{ position: "relative" }}>
             <TextInput
               style={{
                 height: 50,
@@ -225,244 +398,72 @@ function CreacionCuenta(): JSX.Element {
                 color: "white",
                 paddingHorizontal: 10,
                 fontSize: 17,
-                marginBottom: 10,
               }}
-              placeholder="Escribe tus nombres "
+              placeholder="Escribe tu contraseña"
               placeholderTextColor="grey"
               autoCapitalize="none"
-              value={nombres}
-              onChangeText={setNombres}
+              secureTextEntry={secureText}
+              value={clave}
+              onChangeText={setClave}
             />
-            {errorBoolean && nombres === "" ? (
-              <Text style={{ color: "#ff7979", marginTop: 10 }}>
-                Ingresa tus nombres
-              </Text>
-            ) : null}
-            <Text
-              style={{
-                color: "grey",
-                fontSize: 15,
-                textAlign: "left",
-                marginBottom: 10,
-              }}
-            >
-              Apellidos
-            </Text>
-            <TextInput
-              style={{
-                height: 50,
-                backgroundColor: "#05222F",
-                borderRadius: 5,
-                color: "white",
-                paddingHorizontal: 10,
-                fontSize: 17,
-                marginBottom: 10,
-              }}
-              placeholder="Escribe tus apellidos "
-              placeholderTextColor="grey"
-              autoCapitalize="none"
-              value={apellidos}
-              onChangeText={setApellidos}
-            />
-            {errorBoolean && apellidos === "" ? (
-              <Text style={{ color: "#ff7979", marginTop: 10 }}>
-                Ingresa tus apellidos
-              </Text>
-            ) : null}
-            <Text
-              style={{
-                color: "grey",
-                fontSize: 15,
-                textAlign: "left",
-                marginBottom: 10,
-              }}
-            >
-              Fecha de nacimiento
-            </Text>
             <TouchableOpacity
-              onPress={showDataTimePicker}
-              style={{
-                height: 50,
-                backgroundColor: "#05222F",
-                borderRadius: 5,
-                paddingHorizontal: 10,
-                justifyContent: "center",
-                marginBottom: 10,
-              }}
+              onPress={() => setSecureText(!secureText)}
+              style={styles.eyeIcon}
             >
-              <Text style={{ color: nacimiento ? "white" : "grey", fontSize: 17 }}>
-                {nacimiento || "Fecha de nacimiento"}
-              </Text>
+              <Ionicons
+                name={secureText ? "eye-off" : "eye"}
+                size={24}
+                color="white"
+              />
             </TouchableOpacity>
-            <Text
-              style={{
-                color: "grey",
-                fontSize: 15,
-                textAlign: "left",
-                marginBottom: 10,
-              }}
-            >
-              Genero
-            </Text>
-            <TextInput
-              style={{
-                height: 50,
-                backgroundColor: "#05222F",
-                borderRadius: 5,
-                color: "white",
-                paddingHorizontal: 10,
-                fontSize: 17,
-                marginBottom: 10,
-              }}
-              placeholder="Escribe tu genero "
-              placeholderTextColor="grey"
-              autoCapitalize="none"
-              value={genero}
-              onChangeText={setGenero}
-            />
-            <Text
-              style={{
-                color: "grey",
-                fontSize: 15,
-                textAlign: "left",
-                marginBottom: 10,
-              }}
-            >
-              Celular
-            </Text>
-            <TextInput
-              style={{
-                height: 50,
-                backgroundColor: "#05222F",
-                borderRadius: 5,
-                color: "white",
-                paddingHorizontal: 10,
-                fontSize: 17,
-              }}
-              placeholder="Escribe tu celular "
-              placeholderTextColor="grey"
-              autoCapitalize="none"
-              value={celular}
-              onChangeText={ setCelular }
-            />
-            <Text
-              style={{
-                color: "grey",
-                fontSize: 15,
-                textAlign: "left",
-                marginBottom: 10,
-              }}
-            >
-              Correo
-            </Text>
-            <TextInput
-              style={{
-                height: 50,
-                backgroundColor: "#05222F",
-                borderRadius: 5,
-                color: "white",
-                paddingHorizontal: 10,
-                fontSize: 17,
-                marginBottom: 10,
-              }}
-              placeholder="Escribe tu correo "
-              placeholderTextColor="grey"
-              autoCapitalize="none"
-              keyboardType="email-address"
-              value={email}
-              onChangeText={setEmail}
-            />
-            {errorBoolean && email === "" ? (
-              <Text style={{ color: "#ff7979", marginTop: 10 }}>
-                Ingresa tu correo
-              </Text>
-            ) : null}
-            <Text
-              style={{
-                color: "grey",
-                fontSize: 15,
-                textAlign: "left",
-                marginBottom: 10,
-              }}
-            >
-              Contraseña
-            </Text>
-            <View style={{ position: "relative" }}>
-              <TextInput
-                style={{
-                  height: 50,
-                  backgroundColor: "#05222F",
-                  borderRadius: 5,
-                  color: "white",
-                  paddingHorizontal: 10,
-                  fontSize: 17,
-                }}
-                placeholder="Escribe tu contraseña"
-                placeholderTextColor="grey"
-                autoCapitalize="none"
-                secureTextEntry={secureText}
-                value={clave}
-                onChangeText={setClave}
-              />
-              <TouchableOpacity
-                onPress={() => setSecureText(!secureText)}
-                style={styles.eyeIcon}
-              >
-                <Ionicons
-                  name={secureText ? "eye-off" : "eye"}
-                  size={24}
-                  color="white"
-                />
-              </TouchableOpacity>
-            </View>
-            {errorBoolean && clave === "" ? (
-              <Text style={{ color: "#ff7979", marginTop: 0 }}>
-                Ingresa tu contraseña
-              </Text>
-            ) : null}
-            {clave.length < 8 ? (
-              <Text
-                style={{ color: "#79ffd0", marginTop: 0, fontStyle: "italic" }}
-              >
-                Debe tener más de 8 caracteres
-              </Text>
-            ) : null}
-            <View style={{ position: "relative" }}>
-              <TextInput
-                style={{
-                  height: 50,
-                  backgroundColor: "#05222F",
-                  borderRadius: 5,
-                  color: "white",
-                  paddingHorizontal: 10,
-                  fontSize: 17,
-                  marginTop: 20,
-                }}
-                placeholder="Repite tu contraseña"
-                placeholderTextColor="grey"
-                autoCapitalize="none"
-                secureTextEntry={secureText}
-                value={claveAgain}
-                onChangeText={setClaveAgain}
-              />
-              <TouchableOpacity
-                onPress={() => setSecureText(!secureText)}
-                style={[styles.eyeIcon, { marginTop: 20 }]}
-              >
-                <Ionicons
-                  name={secureText ? "eye-off" : "eye"}
-                  size={24}
-                  color="white"
-                />
-              </TouchableOpacity>
-            </View>
-            {/* Validar si las contraseñas no coinciden */}
-            {claveAgain !== "" && clave !== claveAgain ? (
-              <Text style={{ color: "#ff7979", marginTop: 0 }}>
-                Las contraseñas no coinciden
-              </Text>
-            ) : null}
           </View>
+          {errorBoolean && clave === "" ? (
+            <Text style={{ color: "#ff7979", marginTop: 0 }}>
+              Ingresa tu contraseña
+            </Text>
+          ) : null}
+          {clave.length < 8 ? (
+            <Text
+              style={{ color: "#79ffd0", marginTop: 0, fontStyle: "italic" }}
+            >
+              Debe tener más de 8 caracteres
+            </Text>
+          ) : null}
+          <View style={{ position: "relative" }}>
+            <TextInput
+              style={{
+                height: 50,
+                backgroundColor: "#05222F",
+                borderRadius: 5,
+                color: "white",
+                paddingHorizontal: 10,
+                fontSize: 17,
+                marginTop: 20,
+              }}
+              placeholder="Repite tu contraseña"
+              placeholderTextColor="grey"
+              autoCapitalize="none"
+              secureTextEntry={secureText}
+              value={claveAgain}
+              onChangeText={setClaveAgain}
+            />
+            <TouchableOpacity
+              onPress={() => setSecureText(!secureText)}
+              style={[styles.eyeIcon, { marginTop: 20 }]}
+            >
+              <Ionicons
+                name={secureText ? "eye-off" : "eye"}
+                size={24}
+                color="white"
+              />
+            </TouchableOpacity>
+          </View>
+          {/* Validar si las contraseñas no coinciden */}
+          {claveAgain !== "" && clave !== claveAgain ? (
+            <Text style={{ color: "#ff7979", marginTop: 0 }}>
+              Las contraseñas no coinciden
+            </Text>
+          ) : null}
         </View>
         <View style={{ width: "90%", maxWidth: 300, marginTop: 30 }}>
           <TouchableOpacity style={{ marginTop: 20 }}>
@@ -498,7 +499,7 @@ function CreacionCuenta(): JSX.Element {
             </Text>
           </TouchableOpacity>
         </View>
-      </SafeAreaView>
+      </ScrollView>
 
       <ConfirmModal
         visible={showModal}
@@ -506,24 +507,26 @@ function CreacionCuenta(): JSX.Element {
         onClose={() => setShowModal(false)}
       />
       <LoadingModal visible={showModalLoading} />
-    </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: "center",
-    justifyContent: "space-between",
+    backgroundColor: "#0A3649",
   },
   header: {
     alignItems: "center",
     width: "100%",
+    backgroundColor: "#0A3649",
+    paddingTop: 40,
+    paddingBottom: 20,
   },
   title: {
     color: "white",
     fontSize: 20,
-    marginTop: 80,
+    marginTop: 20,
     marginBottom: 30,
     textAlign: "center",
   },
