@@ -26,8 +26,8 @@ function Login(): JSX.Element {
   const [errorBoolean, setErrorBoolean] = useState(false);
 
   const handleLogin = () => {
-    setShowModalLoading(true);
     if (correo !== '') {
+      setShowModalLoading(true);
       const fetchData = async () => {
       const JsonLogin = {
         email: correo,

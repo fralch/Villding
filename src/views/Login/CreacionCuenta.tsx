@@ -14,6 +14,7 @@ import {
   ActivityIndicator,
 } from "react-native";
 import axios from "axios";
+import RNPickerSelect from 'react-native-picker-select';
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons"; // Importa el ícono
 import { DateTimePickerAndroid } from "@react-native-community/datetimepicker";
 import ConfirmModal from "../../components/Alerta/ConfirmationModal";
@@ -306,21 +307,23 @@ function CreacionCuenta(): JSX.Element {
           >
             Genero
           </Text>
-          <TextInput
+          <RNPickerSelect
+            onValueChange={(value) => setGenero(value)}
+            items={[
+              { label: 'Masculino', value: 'masculino' },
+              { label: 'Femenino', value: 'femenino' },
+              { label: 'Otro', value: 'otro' },
+            ]}
             style={{
-              height: 50,
-              backgroundColor: "#05222F",
-              borderRadius: 5,
-              color: "white",
-              paddingHorizontal: 10,
-              fontSize: 17,
-              marginBottom: 10,
+              inputIOS: styles.inputSelect,
+              inputAndroid: styles.inputSelect,
             }}
-            placeholder="Escribe tu genero "
-            placeholderTextColor="grey"
-            autoCapitalize="none"
+            placeholder={{
+              label: 'Selecciona tu género...',
+              value: null,
+              color: 'grey',
+            }}
             value={genero}
-            onChangeText={setGenero}
           />
           <Text
             style={{
@@ -574,6 +577,15 @@ const styles = StyleSheet.create({
     position: "absolute",
     right: 10,
     top: 12,
+  },
+  //
+  inputSelect: {
+    height: 50,
+    backgroundColor: "#05222F",
+    borderRadius: 5,
+    color: "white",
+    paddingHorizontal: 10,
+    fontSize: 17,
   },
 });
 

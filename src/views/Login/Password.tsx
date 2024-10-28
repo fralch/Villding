@@ -33,8 +33,8 @@ function Password(): JSX.Element {
   const [msjeModal, setMsjeModal] = useState("Login correcto.");
 
   const handleLogin = () => {
-    setShowModalLoading(true);
     if (clave !== "") {
+      setShowModalLoading(true);
       const fetchData = async () => {
         const JsonLogin = {
           email: email,
