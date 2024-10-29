@@ -98,10 +98,12 @@ function CreacionCuenta(): JSX.Element {
         formData.append("email", email);
         formData.append("telefono", celular);
         formData.append("genero", genero);
-        formData.append("edad", nacimiento);
+        formData.append("edad", edad.toString());
         formData.append("password", clave);
         formData.append("is_paid_user", "0");
         formData.append("role", "user");
+
+        console.log(formData);
 
         // Si hay una imagen seleccionada, la agregamos al FormData
         if (profileImage) {
@@ -138,6 +140,7 @@ function CreacionCuenta(): JSX.Element {
             email: email,
             clave: clave,
             rol: "user",
+            telefono: celular ? celular : "",
             uri: profileImage,
           });
         } catch (error: any) {

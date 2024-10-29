@@ -8,6 +8,7 @@ interface User {
   password: string;
   rol: string;
   telefono?: string;
+  edad? : number;
   uri?: string;
 }
 
