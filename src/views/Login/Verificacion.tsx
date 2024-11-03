@@ -14,6 +14,7 @@ import {
 } from "react-native";
 import { storeSesion } from "../../hooks/localStorageUser";
 import * as FileSystem from "expo-file-system";
+import axios from "axios";
 
 const { width, height } = Dimensions.get("window");
 
@@ -39,9 +40,43 @@ function Verificacion(props: any): JSX.Element {
     console.log(propsUser);
   }, []);
 
-  const handleLogin = async () => {
+  const handleVerificacion = async () => {
+   
+
     try {
       if (codigo !== "") {
+         // Send Code to whatsapp
+          const fetchCodeVerificacion = async () => {
+            const JsonCodeWhatsapp = {
+              user_id:   propsUser.id,
+              code:  codigo
+            };
+
+            console.log(propsUser.id);
+            console.log(codigo);
+
+            let reqOptions = {
+              url: "https://www.centroesteticoedith.com/endpoint/user/verify-code",
+              method: "POST",
+              data: JsonCodeWhatsapp,
+            };
+
+            try {
+              const response = await axios(reqOptions);
+              console.log(response.data);
+            } catch (error) {
+              console.error(error);
+              console.error("Error al descargar la imagen:", error);
+              setErrorBoolean(true); // Indicar error si ocurre un problema
+               
+            }finally{
+              setLoading(false); // Finalizar el estado de carga
+            }
+          };
+
+          fetchCodeVerificacion();
+
+          
         const imageUri = propsUser.uri == undefined ? "" : propsUser.uri;
         let localUri = "";
         setLoading(true); // Iniciar el estado de carga
@@ -141,7 +176,7 @@ function Verificacion(props: any): JSX.Element {
             }}
             placeholder="Ingresa código"
             placeholderTextColor="grey"
-            keyboardType="number-pad"
+      
             autoCapitalize="none"
             value={codigo}
             onChangeText={setCodigo}
@@ -171,7 +206,7 @@ function Verificacion(props: any): JSX.Element {
                   borderRadius: 5,
                   width: "100%",
                 }}
-                onPress={() => handleLogin()}
+                onPress={() => handleVerificacion()}
               >
                 Verificar
               </Text>

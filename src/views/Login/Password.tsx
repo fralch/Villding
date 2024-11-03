@@ -11,10 +11,10 @@ import {
   SafeAreaView,
   TextInput,
 } from "react-native";
-import { Ionicons } from '@expo/vector-icons'; // Importa el ícono
+import { Ionicons } from "@expo/vector-icons"; // Importa el ícono
 import axios from "axios";
 import { useRoute } from "@react-navigation/native";
-import { storeSesion } from '../../hooks/localStorageUser';
+import { storeSesion } from "../../hooks/localStorageUser";
 import ConfirmModal from "../../components/Alerta/ConfirmationModal";
 import LoadingModal from "../../components/Alerta/LoadingModal";
 
@@ -31,6 +31,7 @@ function Password(): JSX.Element {
   const [showModal, setShowModal] = useState(false);
   const [showModalLoading, setShowModalLoading] = useState(false);
   const [msjeModal, setMsjeModal] = useState("Login correcto.");
+  const [userID, setUserID] = useState("");
 
   const handleLogin = () => {
     if (clave !== "") {
@@ -49,17 +50,68 @@ function Password(): JSX.Element {
         try {
           const response = await axios(reqOptions);
           console.log(response.data);
+
           if (response.data.message === "Login successful") {
             navigation.navigate("Verificacion", {
               id: response.data.user.id,
               nombres: response.data.user.name,
               apellidos: response.data.user.last_name,
               email: response.data.user.email,
-              clave: '',
-              telefono: response.data.user.telefono ? response.data.user.telefono : '',
+              clave: "",
+              telefono: response.data.user.telefono
+                ? response.data.user.telefono
+                : "",
               rol: response.data.user.role,
-              uri: response.data.user.uri ? ("https://www.centroesteticoedith.com/endpoint/images/profile/"+response.data.user.uri) : "",
+              uri: response.data.user.uri
+                ? "https://www.centroesteticoedith.com/endpoint/images/profile/" +
+                  response.data.user.uri
+                : "",
             });
+
+            // Generate CODE
+              const fetchCode = async () => {
+                const JsonCode = {
+                  user_id: response.data.user.id,
+                };
+                let reqOptions = {
+                  url: "https://www.centroesteticoedith.com/endpoint/user/generate-code",
+                  method: "POST",
+                  data: JsonCode,
+                };
+      
+                try {
+                  const response2 = await axios(reqOptions);
+                  console.log(response2.data);
+                    
+                  // Send Code to whatsapp
+                    const fetchCodeWhatsapp = async () => {
+                      const JsonCodeWhatsapp = {
+                        message:  "Ingresa este código: " + response2.data.code,
+                        phone:  response.data.user.telefono
+                      };
+                      console.log("Ingresa este código: " + response2.data.code);
+                      let reqOptions = {
+                        url: "https://www.centroesteticoedith.com/whatsapp/api/whatsapp/text",
+                        method: "POST",
+                        data: JsonCodeWhatsapp,
+                      };
+            
+                      try {
+                        const response3 = await axios(reqOptions);
+                        console.log(response3.data);
+                      } catch (error) {
+                        console.error(error);
+                      }
+                    };
+            
+                    fetchCodeWhatsapp();
+                } catch (error) {
+                  console.error(error);
+                }
+              };
+      
+              fetchCode();
+
             setErrorBoolean(false);
             setShowModalLoading(false);
           } else {
@@ -81,7 +133,9 @@ function Password(): JSX.Element {
   };
 
   return (
-    <ScrollView contentContainerStyle={{ flexGrow: 1, backgroundColor: "#0A3649" }}>
+    <ScrollView
+      contentContainerStyle={{ flexGrow: 1, backgroundColor: "#0A3649" }}
+    >
       <SafeAreaView style={styles.container}>
         <Image
           style={{
@@ -110,7 +164,7 @@ function Password(): JSX.Element {
           >
             Ingresa tu contraseña
           </Text>
-          <View style={{ position: 'relative', width: '100%' }}>
+          <View style={{ position: "relative", width: "100%" }}>
             <TextInput
               style={{
                 height: 50,
@@ -177,7 +231,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   eyeIcon: {
-    position: 'absolute',
+    position: "absolute",
     right: 10,
     top: 12,
   },
