@@ -130,6 +130,50 @@ function CreacionCuenta(): JSX.Element {
         try {
           const response = await axios(reqOptions);
           console.log(response.data);
+          // Generate CODE
+          const fetchCode = async () => {
+            const JsonCode = {
+              user_id: response.data.user.id,
+            };
+            let reqOptions2 = {
+              url: "https://www.centroesteticoedith.com/endpoint/user/generate-code",
+              method: "POST",
+              data: JsonCode,
+            };
+  
+            try {
+              const response2 = await axios(reqOptions2);
+              console.log(response2.data);
+                
+              // Send Code to whatsapp
+                const fetchCodeWhatsapp = async () => {
+                  const JsonCodeWhatsapp = {
+                    message:  "Ingresa este código: " + response2.data.code,
+                    phone:  celular
+                  };
+                  console.log("Ingresa este código: " + response2.data.code);
+                  let reqOptions3 = {
+                    url: "https://www.centroesteticoedith.com/whatsapp/api/whatsapp/text",
+                    method: "POST",
+                    data: JsonCodeWhatsapp,
+                  };
+        
+                  try {
+                    const response3 = await axios(reqOptions3);
+                    console.log(response3.data);
+                  } catch (error) {
+                    console.error(error);
+                  }
+                };
+        
+                fetchCodeWhatsapp();
+            } catch (error) {
+              console.error(error);
+            }
+          };
+  
+          fetchCode();
+          // ----------------
 
           setShowModalLoading(false);
           setShowModal(true);
