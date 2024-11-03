@@ -10,7 +10,7 @@ import {
   TouchableOpacity,
   SafeAreaView,
   TextInput,
-  ActivityIndicator,  // Indicador de carga
+  ActivityIndicator, // Indicador de carga
 } from "react-native";
 import { storeSesion } from "../../hooks/localStorageUser";
 import * as FileSystem from "expo-file-system";
@@ -34,56 +34,40 @@ function Verificacion(props: any): JSX.Element {
   const [propsUser, setPropsUser] = useState(props.route.params as User);
   const [codigo, setCodigo] = useState("");
   const [errorBoolean, setErrorBoolean] = useState(false);
-  const [loading, setLoading] = useState(false);  // Estado de carga
+  const [loading, setLoading] = useState(false); // Estado de carga
 
   useEffect(() => {
     console.log(propsUser);
   }, []);
 
   const handleVerificacion = async () => {
-   
-
+    if (codigo === "") {
+      setErrorBoolean(true); // Mostrar error si el código está vacío
+      return;
+    }
+  
+    setLoading(true); // Iniciar el estado de carga
+  
     try {
-      if (codigo !== "") {
-         // Send Code to whatsapp
-          const fetchCodeVerificacion = async () => {
-            const JsonCodeWhatsapp = {
-              user_id:   propsUser.id,
-              code:  codigo
-            };
-
-            console.log(propsUser.id);
-            console.log(codigo);
-
-            let reqOptions = {
-              url: "https://www.centroesteticoedith.com/endpoint/user/verify-code",
-              method: "POST",
-              data: JsonCodeWhatsapp,
-            };
-
-            try {
-              const response = await axios(reqOptions);
-              console.log(response.data);
-            } catch (error) {
-              console.error(error);
-              console.error("Error al descargar la imagen:", error);
-              setErrorBoolean(true); // Indicar error si ocurre un problema
-               
-            }finally{
-              setLoading(false); // Finalizar el estado de carga
-            }
-          };
-
-          fetchCodeVerificacion();
-
-          
-        const imageUri = propsUser.uri == undefined ? "" : propsUser.uri;
+      const JsonCodeWhatsapp = {
+        user_id: propsUser.id,
+        code: codigo,
+      };
+  
+      let reqOptions = {
+        url: "https://www.centroesteticoedith.com/endpoint/user/verify-code",
+        method: "POST",
+        data: JsonCodeWhatsapp,
+      };
+  
+      const response = await axios(reqOptions);
+  
+      if (response.status === 200) { // Suponiendo que 200 es éxito
+        const imageUri = propsUser.uri ?? "";
         let localUri = "";
-        setLoading(true); // Iniciar el estado de carga
   
         if (imageUri && (imageUri.startsWith("http://") || imageUri.startsWith("https://"))) {
-          // Descargar la imagen y guardarla localmente solo si es remota
-          const fileName = imageUri.split("/").pop(); // Obtener nombre de archivo
+          const fileName = imageUri.split("/").pop();
           const fileUri = `${FileSystem.documentDirectory}${fileName}`;
           const downloadResumable = FileSystem.createDownloadResumable(
             imageUri,
@@ -91,23 +75,20 @@ function Verificacion(props: any): JSX.Element {
             {},
             (downloadProgress) => {
               const progress =
-                downloadProgress.totalBytesWritten /
-                downloadProgress.totalBytesExpectedToWrite;
+                downloadProgress.totalBytesWritten / downloadProgress.totalBytesExpectedToWrite;
               console.log(`Download progress: ${progress * 100}%`);
             }
           );
   
           const downloadResult = await downloadResumable.downloadAsync();
-  
           if (downloadResult && downloadResult.uri) {
-            localUri = downloadResult.uri; // Guardar la URI local
+            localUri = downloadResult.uri;
           }
-        } else if (imageUri && imageUri.startsWith("file://")) {
-          // Si la imagen ya está almacenada localmente
+        } else if (imageUri.startsWith("file://")) {
           localUri = imageUri;
         }
   
-        // Guardar la sesión con la URI correcta
+        // Guardar sesión y navegar
         storeSesion({
           id: propsUser.id,
           nombres: propsUser.nombres,
@@ -115,18 +96,18 @@ function Verificacion(props: any): JSX.Element {
           email: propsUser.email,
           password: propsUser.password,
           rol: "user",
-          telefono:  propsUser.telefono ? propsUser.telefono : '',
+          telefono: propsUser.telefono ?? "",
           uri: localUri,
         });
   
-        navigation.navigate("HomeProject");
         setErrorBoolean(false);
+        navigation.navigate("HomeProject");
       } else {
-        setErrorBoolean(true);
+        setErrorBoolean(true); // Mostrar error si la verificación falla
       }
     } catch (error) {
-      console.error("Error al descargar la imagen:", error);
-      setErrorBoolean(true); // Indicar error si ocurre
+      console.log("Error en la verificación:", error);
+      setErrorBoolean(true); // Mostrar error en caso de excepción
     } finally {
       setLoading(false); // Finalizar el estado de carga
     }
@@ -176,24 +157,21 @@ function Verificacion(props: any): JSX.Element {
             }}
             placeholder="Ingresa código"
             placeholderTextColor="grey"
-      
             autoCapitalize="none"
             value={codigo}
             onChangeText={setCodigo}
           />
           {errorBoolean ? (
             <Text style={{ color: "#ff7979", marginTop: 10 }}>
-              Ingresa un código para continuar
+              Ingresa el código para continuar
             </Text>
           ) : null}
           <Text style={{ color: "grey", marginTop: 10 }}>
-            Ingresa el código que enviamos a tu correo.
+            Te enviamos el codigo a tu whatsapp.
           </Text>
-          <Text style={{ color: "grey", marginTop: 5 }}>
-            Recuerda revisar Spam o Notificaciones.
-          </Text>
+          
           <TouchableOpacity style={{ marginTop: 20 }}>
-            {loading ? (  // Mostrar indicador de carga
+            {loading ? ( // Mostrar indicador de carga
               <ActivityIndicator size="large" color="#fff" />
             ) : (
               <Text
