@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigation, NavigationProp } from "@react-navigation/native";
 import {
   View,
@@ -10,6 +10,8 @@ import {
   TouchableOpacity,
   SafeAreaView,
   TextInput,
+  AppState,
+  AppStateStatus,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons"; // Importa el ícono
 import axios from "axios";
@@ -32,6 +34,20 @@ function Password(): JSX.Element {
   const [showModalLoading, setShowModalLoading] = useState(false);
   const [msjeModal, setMsjeModal] = useState("Login correcto.");
   const [userID, setUserID] = useState("");
+
+  useEffect(() => {
+    const handleAppStateChange = (nextAppState: AppStateStatus) => {
+      if (nextAppState === 'active') {
+        setShowModalLoading(false);
+      }
+    };
+
+    const subscription = AppState.addEventListener('change', handleAppStateChange);
+
+    return () => {
+      subscription.remove();
+    };
+  }, []);
 
   const handleLogin = () => {
     if (clave !== "") {
@@ -78,11 +94,11 @@ function Password(): JSX.Element {
                   method: "POST",
                   data: JsonCode,
                 };
-      
+
                 try {
                   const response2 = await axios(reqOptions);
                   console.log(response2.data);
-                    
+
                   // Send Code to whatsapp
                     const fetchCodeWhatsapp = async () => {
                       const JsonCodeWhatsapp = {
@@ -95,7 +111,7 @@ function Password(): JSX.Element {
                         method: "POST",
                         data: JsonCodeWhatsapp,
                       };
-            
+
                       try {
                         const response3 = await axios(reqOptions);
                         console.log(response3.data);
@@ -103,13 +119,13 @@ function Password(): JSX.Element {
                         console.error(error);
                       }
                     };
-            
+
                     fetchCodeWhatsapp();
                 } catch (error) {
                   console.error(error);
                 }
               };
-      
+
               fetchCode();
 
             setErrorBoolean(false);

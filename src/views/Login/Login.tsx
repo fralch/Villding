@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 import {
   View,
@@ -10,10 +10,13 @@ import {
   TouchableOpacity,
   SafeAreaView,
   TextInput,
+  AppState,
+  AppStateStatus,
 } from 'react-native';
 import axios from "axios";
 import ConfirmModal from "../../components/Alerta/ConfirmationModal";
 import LoadingModal from "../../components/Alerta/LoadingModal";
+
 const { width, height } = Dimensions.get('window');
 
 function Login(): JSX.Element {
@@ -25,43 +28,54 @@ function Login(): JSX.Element {
   const [correo, setCorreo] = useState('');
   const [errorBoolean, setErrorBoolean] = useState(false);
 
+  useEffect(() => {
+    const handleAppStateChange = (nextAppState: AppStateStatus) => {
+      if (nextAppState === 'active') {
+        setShowModalLoading(false);
+      }
+    };
+
+    const subscription = AppState.addEventListener('change', handleAppStateChange);
+
+    return () => {
+      subscription.remove();
+    };
+  }, []);
+
   const handleLogin = () => {
     if (correo !== '') {
       setShowModalLoading(true);
       const fetchData = async () => {
-      const JsonLogin = {
-        email: correo,
-      };
+        const JsonLogin = {
+          email: correo,
+        };
 
-      let reqOptions = {
-        url: "https://www.centroesteticoedith.com/endpoint/user/email_exists",
-        method: "POST",
-        data: JsonLogin, // No necesitas usar JSON.stringify aquí
-      };
-      try {
-        const response = await axios(reqOptions);
-        console.log(response.data.message);
+        let reqOptions = {
+          url: "https://www.centroesteticoedith.com/endpoint/user/email_exists",
+          method: "POST",
+          data: JsonLogin, // No necesitas usar JSON.stringify aquí
+        };
+        try {
+          const response = await axios(reqOptions);
+          console.log(response.data.message);
 
-        if (response.data.message === "User already exists") {
-          navigate('Password',
-            { email: correo }
-          );
-          setErrorBoolean(false);
-        }else{
-          setMsjeModal("Email incorrecto.");
-          setErrorBoolean(true);
+          if (response.data.message === "User already exists") {
+            navigate('Password', { email: correo });
+            setErrorBoolean(false);
+            setShowModalLoading(false);
+          } else {
+            setMsjeModal("Email incorrecto.");
+            setErrorBoolean(true);
+            setShowModalLoading(false);
+            setShowModal(true);
+          }
+        } catch (error) {
+          console.error(error);
           setShowModalLoading(false);
-          setShowModal(true);
         }
-      } catch (error) {
-        console.error(error);
-       
-      }
-      
-    }
+      };
 
-    fetchData();
-      
+      fetchData();
     } else {
       setErrorBoolean(true);
     }
