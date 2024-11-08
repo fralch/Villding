@@ -40,6 +40,7 @@ const EditUser = () => {
     nombres: "Piero",
     apellidos: "Rodriguez",
     email: "icemail@gmail.com",
+    email_contact: "emailcontact@gmail.com",
     telefono: "123456789",
     uri: ''
   });
@@ -82,6 +83,8 @@ const EditUser = () => {
       setData({ ...Data, email: modalData.texto });
     }else if (modalData.titulo === "Teléfono") {
       setData({ ...Data, telefono: modalData.texto });
+    }else if (modalData.titulo === "Correo de contacto") {
+      setData({ ...Data, email_contact: modalData.texto });      
     }
     setModalEdit(false); // Cierra el modal después de guardar
   };
@@ -242,13 +245,18 @@ const EditUser = () => {
               <Text style={[styles.sectionTitle, { marginVertical: 10 }]}>
                 Correo de contacto
               </Text>
-              <TouchableOpacity style={[styles.item, { marginVertical: 10 }]}  onPress={() => { OpenEdit("Correo de registro", Data.email)}}>
+              <TouchableOpacity style={[styles.item, { marginVertical: 10 }]}>
                 <Text style={styles.itemLabel}>Correo de registro</Text>
                 <Text style={styles.itemValue}>{Data.email}</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={[styles.item, { marginVertical: 10}]}  onPress={() => { OpenEdit("Teléfono", Data.telefono)}}>
-                <Text style={[styles.itemLabel, {color: "#34c6eb"}]}>Celular</Text>
-                <Text style={[styles.itemValue, {color: "#34c6eb"}]}>{Data.telefono}</Text>
+              <TouchableOpacity style={[styles.item, { marginVertical: 10}]} >
+                <Text style={[styles.itemLabel]}>Celular</Text>
+                <Text style={[styles.itemValue]}>{Data.telefono}</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity style={[styles.item, { marginVertical: 10 }]} onPress={() => { OpenEdit("Correo de contacto", Data.email_contact)}}>
+                <Text style={[styles.itemLabel, {color: "#34c6eb"}]}>Correo de contacto</Text>
+                <Text style={[styles.itemValue, {color: "#34c6eb"}]}>{Data.email_contact ? Data.email_contact : "No registrado"}</Text>
               </TouchableOpacity>
               
             </View>

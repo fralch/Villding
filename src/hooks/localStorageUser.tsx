@@ -5,6 +5,7 @@ interface User {
   nombres: string;
   apellidos: string;
   email: string;
+  email_contact?: string;
   password: string;
   rol: string;
   telefono?: string;
@@ -34,6 +35,8 @@ const updateSesion = async (updatedUser: any): Promise<void> => {
       parsedUser.nombres = updatedUser.nombres;
       parsedUser.apellidos = updatedUser.apellidos;
       parsedUser.email = updatedUser.email;
+
+      if(updatedUser.email_contact) parsedUser.email_contact = updatedUser.email_contact
 
       // Mantenemos los valores actuales si no se están actualizando
       parsedUser.password = parsedUser.password;
