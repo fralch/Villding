@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -8,13 +8,13 @@ import {
   Image,
   StyleSheet,
   ScrollView,
-} from 'react-native';
-import { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
-import { useNavigation, NavigationProp } from '@react-navigation/native';
-import { Picker } from '@react-native-picker/picker';
-import * as ImagePicker from 'expo-image-picker';
-import { saveProject, deleteProject } from '../../hooks/localStorageProject';
-import { useRoute, RouteProp } from '@react-navigation/native';
+} from "react-native";
+import { DateTimePickerAndroid } from "@react-native-community/datetimepicker";
+import { useNavigation, NavigationProp } from "@react-navigation/native";
+import { Picker } from "@react-native-picker/picker";
+import * as ImagePicker from "expo-image-picker";
+import { saveProject, deleteProject } from "../../hooks/localStorageProject";
+import { useRoute, RouteProp } from "@react-navigation/native";
 
 interface Project {
   company: string;
@@ -32,20 +32,31 @@ type RouteParams = {
 
 const NewProject: React.FC = () => {
   const { navigate } = useNavigation<NavigationProp<any>>();
-  const route = useRoute<RouteProp<RouteParams, 'params'>>();
+  const route = useRoute<RouteProp<RouteParams, "params">>();
   console.log(route.params.project);
 
-  const [projectName, setProjectName] = useState('');
-  const [location, setLocation] = useState('');
-  const [company, setCompany] = useState('');
+  const [projectName, setProjectName] = useState("");
+  const [location, setLocation] = useState("");
+  const [company, setCompany] = useState("");
   const [startDate, setStartDate] = useState(
-    new Date().toLocaleDateString('es-ES')
+    new Date().toLocaleDateString("es-ES")
   );
-  const [duration, setDuration] = useState('6');
-  const [durationUnit, setDurationUnit] = useState('Meses');
+  const [duration, setDuration] = useState("6");
+  const [durationUnit, setDurationUnit] = useState("Meses");
   const [durationOnWeeks, setDurationOnWeeks] = useState(0);
   const [projectImage, setProjectImage] = useState<string | null>(null);
   const [errorBoolean, setErrorBoolean] = useState(false);
+  const [tipoProyecto, setTipoProyecto] = useState("");
+  const [tiposProyectos, setTiposProyectos] = useState<{ name: string }[]>([]);
+  const [subtipoProyecto, setSubtipoProyecto] = useState("");
+
+  useEffect(() => {
+    fetch("https://www.centroesteticoedith.com/endpoint/project/types")
+      .then((response) => response.json())
+      .then((data) => {
+        setTiposProyectos(data);
+      });
+  }, []);
 
   useEffect(() => {
     calculateEndDate();
@@ -53,25 +64,25 @@ const NewProject: React.FC = () => {
   }, [startDate, duration, durationUnit]);
 
   const handleCalculationOnWeeks = () => {
-    const [day, month, year] = startDate.split('/').map(Number);
+    const [day, month, year] = startDate.split("/").map(Number);
     const start = new Date(year, month - 1, day); // Meses en JavaScript son 0-indexados
     let durationInWeeks = 0;
 
     switch (durationUnit) {
-      case 'Dias':
+      case "Dias":
         durationInWeeks = parseInt(duration, 10) / 7; // Convertir días a semanas
         break;
-      case 'Semanas':
+      case "Semanas":
         durationInWeeks = parseInt(duration, 10);
         break;
-      case 'Meses':
+      case "Meses":
         durationInWeeks = parseInt(duration, 10) * 4.34524; // 1 mes ≈ 4.345 semanas
         break;
-      case 'Años':
+      case "Años":
         durationInWeeks = parseInt(duration, 10) * 52.1429; // 1 año ≈ 52.14 semanas
         break;
       default:
-        console.error('Unidad de duración no reconocida');
+        console.error("Unidad de duración no reconocida");
         return;
     }
 
@@ -98,39 +109,39 @@ const NewProject: React.FC = () => {
     DateTimePickerAndroid.open({
       value: new Date(),
       onChange: (event, date) => {
-        if (event.type === 'set' && date) {
-          const formattedDate = new Date(date).toLocaleDateString('es-ES');
+        if (event.type === "set" && date) {
+          const formattedDate = new Date(date).toLocaleDateString("es-ES");
           setStartDate(formattedDate);
         }
       },
-      mode: 'date',
+      mode: "date",
       is24Hour: true,
     });
   };
 
   const calculateEndDate = () => {
-    const [day, month, year] = startDate.split('/').map(Number);
+    const [day, month, year] = startDate.split("/").map(Number);
     const start = new Date(year, month - 1, day); // Meses en JavaScript son 0-indexados
 
     const durationInUnits = parseInt(duration, 10);
-    if (durationUnit === 'Meses') {
+    if (durationUnit === "Meses") {
       start.setMonth(start.getMonth() + durationInUnits);
-    } else if (durationUnit === 'Años') {
+    } else if (durationUnit === "Años") {
       start.setFullYear(start.getFullYear() + durationInUnits);
-    } else if (durationUnit === 'Semanas') {
+    } else if (durationUnit === "Semanas") {
       start.setDate(start.getDate() + durationInUnits * 7);
-    } else if (durationUnit === 'Dias') {
+    } else if (durationUnit === "Dias") {
       start.setDate(start.getDate() + durationInUnits);
     }
-    return start.toLocaleDateString('es-ES');
+    return start.toLocaleDateString("es-ES");
   };
 
   const handleCreateProject = async () => {
-    console.log('Creando nuevo proyecto...');
+    console.log("Creando nuevo proyecto...");
     if (
-      projectName === '' ||
-      location === '' ||
-      company === '' ||
+      projectName === "" ||
+      location === "" ||
+      company === "" ||
       ImagePicker === null
     ) {
       setErrorBoolean(true);
@@ -138,7 +149,7 @@ const NewProject: React.FC = () => {
     }
     const newProject = {
       id: Date.now().toString(), // Genera un ID único
-      image: projectImage || '',
+      image: projectImage || "",
       title: projectName,
       subtitle: location,
       company,
@@ -146,36 +157,37 @@ const NewProject: React.FC = () => {
     };
 
     // Guarda el proyecto y espera a que se complete antes de navegar
+
     try {
-      await saveProject(newProject); // Asegúrate de que saveProject devuelva una promesa
-      navigate('HomeProject'); // Navega a HomeProject después de que se guarde
+      // await saveProject(newProject); // Asegúrate de que saveProject devuelva una promesa
+      // navigate('HomeProject'); // Navega a HomeProject después de que se guarde
     } catch (error) {
-      console.error('Error al guardar el proyecto:', error);
+      console.error("Error al guardar el proyecto:", error);
     }
   };
 
   const handleCancel = () => {
-    navigate('HomeProject');
+    navigate("HomeProject");
   };
   return (
     <ScrollView style={styles.container}>
       <View style={[styles.header]}>
         <View
           style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            width: '100%',
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-between",
+            width: "100%",
           }}
         >
           <TouchableOpacity onPress={handleCancel}>
-            <Text style={{ color: 'white', fontSize: 18 }}>Cancelar</Text>
+            <Text style={{ color: "white", fontSize: 18 }}>Cancelar</Text>
           </TouchableOpacity>
-          <Text style={{ color: 'white', fontSize: 18, fontWeight: 'bold' }}>
+          <Text style={{ color: "white", fontSize: 18, fontWeight: "bold" }}>
             Nuevo proyecto
           </Text>
           <TouchableOpacity onPress={handleCreateProject}>
-            <Text style={{ color: 'white', fontSize: 18 }}>Crear</Text>
+            <Text style={{ color: "white", fontSize: 18 }}>Crear</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -185,11 +197,11 @@ const NewProject: React.FC = () => {
           style={styles.input}
           value={projectName}
           onChangeText={setProjectName}
-          placeholder='Nombre del proyecto'
-          placeholderTextColor='#888'
+          placeholder="Nombre del proyecto"
+          placeholderTextColor="#888"
         />
-        {errorBoolean && projectName === '' ? (
-          <Text style={{ color: '#ff7979', marginTop: -20, marginBottom: 10 }}>
+        {errorBoolean && projectName === "" ? (
+          <Text style={{ color: "#ff7979", marginTop: -20, marginBottom: 10 }}>
             Ingresa un correo
           </Text>
         ) : null}
@@ -198,11 +210,11 @@ const NewProject: React.FC = () => {
           style={styles.input}
           value={location}
           onChangeText={setLocation}
-          placeholder='Ubicación'
-          placeholderTextColor='#888'
+          placeholder="Ubicación"
+          placeholderTextColor="#888"
         />
-        {errorBoolean && location === '' ? (
-          <Text style={{ color: '#ff7979', marginTop: -20, marginBottom: 10 }}>
+        {errorBoolean && location === "" ? (
+          <Text style={{ color: "#ff7979", marginTop: -20, marginBottom: 10 }}>
             Ingresa una ubicación
           </Text>
         ) : null}
@@ -212,21 +224,33 @@ const NewProject: React.FC = () => {
           style={styles.input}
           value={company}
           onChangeText={setCompany}
-          placeholder='Empresa ejecutora'
-          placeholderTextColor='#888'
+          placeholder="Empresa ejecutora"
+          placeholderTextColor="#888"
         />
-        {errorBoolean && company === '' ? (
-          <Text style={{ color: '#ff7979', marginTop: -20, marginBottom: 10 }}>
+        {errorBoolean && company === "" ? (
+          <Text style={{ color: "#ff7979", marginTop: -20, marginBottom: 10 }}>
             Ingresa una empresa
           </Text>
         ) : null}
-
-        <Text style={styles.label}>Fecha de inicio</Text>
-        <TouchableOpacity
-          style={styles.input}
-          onPress={showDataTimePicker}
+        <Text style={styles.label}>Tipo de proyecto</Text>
+        <Picker
+          selectedValue={tipoProyecto}
+          style={{
+            height: 50,
+            width: "100%",
+            backgroundColor: "#05222F",
+            color: "white",
+            borderRadius: 5,
+          }}
+          onValueChange={(itemValue) => setTipoProyecto(itemValue)}
         >
-          <Text style={{ color: '#888' }}>{startDate}</Text>
+          {tiposProyectos.map((item, index) => (
+            <Picker.Item key={index} label={item.name} value={item.name} />
+          ))}
+        </Picker>
+        <Text style={styles.label}>Fecha de inicio</Text>
+        <TouchableOpacity style={styles.input} onPress={showDataTimePicker}>
+          <Text style={{ color: "#888" }}>{startDate}</Text>
         </TouchableOpacity>
 
         <Text style={styles.label}>Tiempo de ejecución</Text>
@@ -235,19 +259,19 @@ const NewProject: React.FC = () => {
             style={[
               styles.input,
               {
-                width: '40%',
-                textAlign: 'left',
+                width: "40%",
+                textAlign: "left",
               },
             ]}
             value={duration}
             onChangeText={setDuration}
-            keyboardType='numeric'
-            placeholderTextColor='#888'
+            keyboardType="numeric"
+            placeholderTextColor="#888"
           />
           <View
             style={{
-              width: '50%',
-              alignItems: 'center',
+              width: "50%",
+              alignItems: "center",
               marginTop: -15,
               marginLeft: 10,
               borderRadius: 5,
@@ -257,29 +281,17 @@ const NewProject: React.FC = () => {
               selectedValue={durationUnit}
               style={{
                 height: 50,
-                width: '100%',
-                backgroundColor: '#05222F',
-                color: 'white',
+                width: "100%",
+                backgroundColor: "#05222F",
+                color: "white",
                 borderRadius: 5,
               }}
               onValueChange={(itemValue) => setDurationUnit(itemValue)}
             >
-              <Picker.Item
-                label='Semanas'
-                value='Semanas'
-              />
-              <Picker.Item
-                label='Dias'
-                value='Dias'
-              />
-              <Picker.Item
-                label='Meses'
-                value='Meses'
-              />
-              <Picker.Item
-                label='Años'
-                value='Años'
-              />
+              <Picker.Item label="Semanas" value="Semanas" />
+              <Picker.Item label="Dias" value="Dias" />
+              <Picker.Item label="Meses" value="Meses" />
+              <Picker.Item label="Años" value="Años" />
             </Picker>
           </View>
         </View>
@@ -288,40 +300,34 @@ const NewProject: React.FC = () => {
         <Text style={styles.endDate}>{calculateEndDate()}</Text>
         <Text style={styles.label}>Foto de proyecto</Text>
 
-        <TouchableOpacity
-          style={styles.imagePicker}
-          onPress={handlePickImage}
-        >
+        <TouchableOpacity style={styles.imagePicker} onPress={handlePickImage}>
           {projectImage ? (
-            <Image
-              source={{ uri: projectImage }}
-              style={styles.image}
-            />
+            <Image source={{ uri: projectImage }} style={styles.image} />
           ) : (
             <Text style={styles.imageText}>Subir foto del proyecto</Text>
           )}
         </TouchableOpacity>
         {errorBoolean && !projectImage ? (
-          <Text style={{ color: '#ff7979', marginTop: -20, marginBottom: 10 }}>
+          <Text style={{ color: "#ff7979", marginTop: -20, marginBottom: 10 }}>
             Ingresa una imagen
           </Text>
         ) : null}
         {route.params.project ? (
           <TouchableOpacity
             style={{
-              backgroundColor: '#0A3649', // Color de fondo
-              borderColor: '#ff0033', // Color del borde
+              backgroundColor: "#0A3649", // Color de fondo
+              borderColor: "#ff0033", // Color del borde
               borderWidth: 1, // Grosor del borde
               paddingVertical: 10, // Espaciado vertical
               paddingHorizontal: 20, // Espaciado horizontal
               borderRadius: 8, // Esquinas redondeadas
-              alignItems: 'center', // Centrar el texto
+              alignItems: "center", // Centrar el texto
               marginHorizontal: 20, // Margen horizontal
             }}
           >
             <Text
               style={{
-                color: '#ff0033', // Color del texto
+                color: "#ff0033", // Color del texto
                 fontSize: 16, // Tamaño de la fuente
               }}
             >
@@ -337,24 +343,24 @@ const NewProject: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#05222F', // Background color of the app
+    backgroundColor: "#05222F", // Background color of the app
   },
   header: {
-    backgroundColor: '#05222F',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    backgroundColor: "#05222F",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     paddingHorizontal: 16,
     height: 80,
     marginTop: 30,
   },
   label: {
-    color: '#aaa',
+    color: "#aaa",
     marginBottom: 4,
   },
   input: {
-    backgroundColor: '#05222F',
-    color: '#fff',
+    backgroundColor: "#05222F",
+    color: "#fff",
     fontSize: 16,
     borderRadius: 8,
     paddingHorizontal: 8,
@@ -362,43 +368,43 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   durationContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
   },
 
   endDate: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 21,
     marginBottom: 16,
   },
   imagePicker: {
     height: 150,
-    backgroundColor: '#0A3649',
+    backgroundColor: "#0A3649",
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#777',
-    borderStyle: 'dashed',
-    justifyContent: 'center',
-    alignItems: 'center',
+    borderColor: "#777",
+    borderStyle: "dashed",
+    justifyContent: "center",
+    alignItems: "center",
     marginBottom: 16,
   },
   imageText: {
-    color: '#fff',
+    color: "#fff",
   },
   image: {
-    width: '100%',
-    height: '100%',
+    width: "100%",
+    height: "100%",
     borderRadius: 8,
   },
   buttonsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
   },
   formContainer: {
     flex: 1,
-    justifyContent: 'flex-start',
-    backgroundColor: '#0A3649',
+    justifyContent: "flex-start",
+    backgroundColor: "#0A3649",
     padding: 16,
     margin: 0,
   },
