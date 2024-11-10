@@ -13,8 +13,13 @@ import { DateTimePickerAndroid } from "@react-native-community/datetimepicker";
 import { useNavigation, NavigationProp } from "@react-navigation/native";
 import { Picker } from "@react-native-picker/picker";
 import * as ImagePicker from "expo-image-picker";
+import axios from 'axios';
 import { saveProject, deleteProject } from "../../hooks/localStorageProject";
 import { useRoute, RouteProp } from "@react-navigation/native";
+
+import ConfirmModal from '../../components/Alerta/ConfirmationModal';
+import LoadingModal from '../../components/Alerta/LoadingModal';
+
 
 interface Project {
   company: string;
@@ -33,14 +38,14 @@ type RouteParams = {
 const NewProject: React.FC = () => {
   const { navigate } = useNavigation<NavigationProp<any>>();
   const route = useRoute<RouteProp<RouteParams, "params">>();
-  console.log(route.params.project);
+  const [showModalConfirm, setShowModalConfirm] = useState(false);
+  const [showModalLoading, setShowModalLoading] = useState(false);
+  const [msjeModal, setMsjeModal] = useState('');
 
   const [projectName, setProjectName] = useState("");
   const [location, setLocation] = useState("");
   const [company, setCompany] = useState("");
-  const [startDate, setStartDate] = useState(
-    new Date().toLocaleDateString("es-ES")
-  );
+  const [startDate, setStartDate] = useState(new Date().toLocaleDateString("es-ES"));
   const [duration, setDuration] = useState("6");
   const [durationUnit, setDurationUnit] = useState("Meses");
   const [durationOnWeeks, setDurationOnWeeks] = useState(0);
@@ -116,15 +121,15 @@ const NewProject: React.FC = () => {
     setDurationOnWeeks(Math.ceil(durationInWeeks));
   };
   const handlePickImage = async () => {
-    let result = await ImagePicker.launchImageLibraryAsync({
+    let pickerResult = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [4, 3],
       quality: 1,
     });
 
-    if (!result.canceled) {
-      setProjectImage(result.assets[0].uri);
+    if (!pickerResult.canceled && pickerResult.assets && pickerResult.assets.length > 0) {
+      setProjectImage(pickerResult.assets[0].uri); // Actualizar imagen seleccionada
     }
   };
 
@@ -156,10 +161,18 @@ const NewProject: React.FC = () => {
     } else if (durationUnit === "Dias") {
       start.setDate(start.getDate() + durationInUnits);
     }
+    
     return start.toLocaleDateString("es-ES");
   };
 
+  const formatDate = (dateString: string) => {
+    // (dd/mm/yyyy) -> (yyyy-mm-dd)
+    const [day, month, year] = dateString.split("/");
+    return `${year}-${month}-${day}`;
+  };
+
   const handleCreateProject = async () => {
+    setShowModalLoading(true);
     console.log("Creando nuevo proyecto...");
     if (
       projectName === "" ||
@@ -170,20 +183,66 @@ const NewProject: React.FC = () => {
       setErrorBoolean(true);
       return;
     }
-    const newProject = {
-      id: Date.now().toString(), // Genera un ID único
-      image: projectImage || "",
-      title: projectName,
-      subtitle: location,
-      company,
-      week: durationOnWeeks,
-    };
+    // const newProject = {
+    //   id: Date.now().toString(), // Genera un ID único
+    //   image: projectImage || "",
+    //   title: projectName,
+    //   subtitle: location,
+    //   company,
+    //   week: durationOnWeeks,
+    // };
 
     // Guarda el proyecto y espera a que se complete antes de navegar
+    const formdata = new FormData();
+    formdata.append("name", projectName);
+    formdata.append("location", location);
+    formdata.append("company", company);
+    formdata.append("start_date", formatDate(startDate));
+    formdata.append("end_date", formatDate(calculateEndDate()));
+    formdata.append("project_type_id", tipoProyecto);
+    formdata.append("project_subtype_id", subtipoProyecto);
+
+    
+
+    // Si hay una imagen seleccionada, la agregamos al FormData
+    if (projectImage) {
+      const uriParts = projectImage.split('.');
+      const fileType = uriParts[uriParts.length - 1];
+
+      formdata.append('uri', {
+        uri: projectImage,
+        name: `profile_image.${fileType}`,
+        type: `image/${fileType}`, // Tipo de imagen
+      } as any); // Especificar el tipo como 'any' para evitar errores de tipado en TypeScript
+    }
+
+    let reqOptions = {
+      url: "https://www.centroesteticoedith.com/endpoint/project/store",
+      method: "POST",
+      data: formdata, // Enviar el FormData
+      headers: {
+        'Content-Type': 'multipart/form-data', // Asegurarse de usar el tipo correcto de contenido
+      },
+    };
 
     try {
-      // await saveProject(newProject); // Asegúrate de que saveProject devuelva una promesa
-      // navigate('HomeProject'); // Navega a HomeProject después de que se guarde
+      let response = await axios(reqOptions);
+
+      const newProject = {
+        id: response.data.id, 
+        image: projectImage || "",
+        title: projectName,
+        subtitle: location,
+        company,
+        week: durationOnWeeks,
+      };
+
+      setShowModalLoading(false);
+      setMsjeModal("Se ha actualizado el perfil con exito") ;
+      setShowModalConfirm (true);
+      
+      await saveProject(newProject); // Asegúrate de que saveProject devuelva una promesa
+      navigate('HomeProject'); // Navega a HomeProject después de que se guarde
     } catch (error) {
       console.error("Error al guardar el proyecto:", error);
     }
@@ -192,6 +251,10 @@ const NewProject: React.FC = () => {
   const handleCancel = () => {
     navigate("HomeProject");
   };
+
+  const capitalizarPrimeraLetra = (cadena: string) => {
+    return cadena.charAt(0).toUpperCase() + cadena.slice(1);
+  }
   return (
     <ScrollView style={styles.container}>
       <View style={[styles.header]}>
@@ -267,8 +330,9 @@ const NewProject: React.FC = () => {
           }}
           onValueChange={(itemValue) => setTipoProyecto(itemValue)}
         >
+           <Picker.Item label="Seleccionar" value="0" />
           {tiposProyectos.map((item, index) => (
-            <Picker.Item key={index} label={item.name} value={item.id} />
+            <Picker.Item key={index} label={capitalizarPrimeraLetra(item.name)} value={item.id} />
           ))}
         </Picker>
         {subtipoProyectoFilter.length > 0 ? (
@@ -285,8 +349,9 @@ const NewProject: React.FC = () => {
               }}
               onValueChange={(itemValue) => setSubtipoProyecto(itemValue)}
             >
+              <Picker.Item label="Seleccionar" value="0" />
               {subtipoProyectoFilter.map((item, index) => (
-                <Picker.Item key={index} label={item.name} value={item.id} />
+                <Picker.Item key={index} label={capitalizarPrimeraLetra(item.name)} value={item.id} />
               ))}
             </Picker>
           </View>
@@ -379,6 +444,8 @@ const NewProject: React.FC = () => {
           </TouchableOpacity>
         ) : null}
       </View>
+      <ConfirmModal visible={showModalConfirm} message={msjeModal} onClose={() => setShowModalConfirm(false)} />
+      <LoadingModal visible={showModalLoading} />
     </ScrollView>
   );
 };
