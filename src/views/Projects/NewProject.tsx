@@ -47,8 +47,16 @@ const NewProject: React.FC = () => {
   const [projectImage, setProjectImage] = useState<string | null>(null);
   const [errorBoolean, setErrorBoolean] = useState(false);
   const [tipoProyecto, setTipoProyecto] = useState("");
-  const [tiposProyectos, setTiposProyectos] = useState<{ name: string }[]>([]);
-  const [subtipoProyecto, setSubtipoProyecto] = useState("");
+  const [tiposProyectos, setTiposProyectos] = useState<
+    { name: string; id: string }[]
+  >([]);
+  const [subtiposProyecto, setSubtiposProyecto] = useState<
+    { name: string; id: string; project_type_id: string }[]
+  >([]);
+  const [subtipoProyectoFilter, setSubtipoProyectoFilter] = useState<
+    { name: string; id: string }[]
+  >([]);
+  const [subtipoProyecto, setSubtipoProyecto] = useState<string>("");
 
   useEffect(() => {
     fetch("https://www.centroesteticoedith.com/endpoint/project/types")
@@ -59,9 +67,24 @@ const NewProject: React.FC = () => {
   }, []);
 
   useEffect(() => {
+    fetch("https://www.centroesteticoedith.com/endpoint/project/subtypes")
+      .then((response2) => response2.json())
+      .then((data2) => {
+        setSubtiposProyecto(data2);
+      });
+  }, []);
+
+  useEffect(() => {
     calculateEndDate();
     handleCalculationOnWeeks();
   }, [startDate, duration, durationUnit]);
+
+  useEffect(() => {
+    const filteredSubtipos = subtiposProyecto.filter(
+      (subtipo) => subtipo.project_type_id == tipoProyecto
+    );
+    setSubtipoProyectoFilter(filteredSubtipos);
+  }, [tipoProyecto]);
 
   const handleCalculationOnWeeks = () => {
     const [day, month, year] = startDate.split("/").map(Number);
@@ -245,9 +268,29 @@ const NewProject: React.FC = () => {
           onValueChange={(itemValue) => setTipoProyecto(itemValue)}
         >
           {tiposProyectos.map((item, index) => (
-            <Picker.Item key={index} label={item.name} value={item.name} />
+            <Picker.Item key={index} label={item.name} value={item.id} />
           ))}
         </Picker>
+        {subtipoProyectoFilter.length > 0 ? (
+          <View>
+            <Text style={styles.label}>Subtipo de proyecto</Text>
+            <Picker
+              selectedValue={subtipoProyecto}
+              style={{
+                height: 50,
+                width: "100%",
+                backgroundColor: "#05222F",
+                color: "white",
+                borderRadius: 5,
+              }}
+              onValueChange={(itemValue) => setSubtipoProyecto(itemValue)}
+            >
+              {subtipoProyectoFilter.map((item, index) => (
+                <Picker.Item key={index} label={item.name} value={item.id} />
+              ))}
+            </Picker>
+          </View>
+        ) : null}
         <Text style={styles.label}>Fecha de inicio</Text>
         <TouchableOpacity style={styles.input} onPress={showDataTimePicker}>
           <Text style={{ color: "#888" }}>{startDate}</Text>
