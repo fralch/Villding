@@ -15,6 +15,7 @@ import { Picker } from "@react-native-picker/picker";
 import * as ImagePicker from "expo-image-picker";
 import axios from 'axios';
 import { saveProject, deleteProject } from "../../hooks/localStorageProject";
+import { getSesion, removeSesion , updateSesion } from '../../hooks/localStorageUser';
 import { useRoute, RouteProp } from "@react-navigation/native";
 
 import ConfirmModal from '../../components/Alerta/ConfirmationModal';
@@ -62,6 +63,15 @@ const NewProject: React.FC = () => {
     { name: string; id: string }[]
   >([]);
   const [subtipoProyecto, setSubtipoProyecto] = useState<string>("");
+  const [userData, setUserData] = useState<any>(null);
+
+
+  React.useEffect(() => {
+    getSesion().then((StoredSesion : any) => {
+      let sesion = JSON.parse(StoredSesion);
+      setUserData(sesion);  
+    });
+  }, [ ]);
 
   useEffect(() => {
     fetch("https://www.centroesteticoedith.com/endpoint/project/types")
@@ -227,6 +237,23 @@ const NewProject: React.FC = () => {
 
     try {
       let response = await axios(reqOptions);
+
+      const AttachUserProjectJson = {
+        user_id:  userData.id,
+        project_id: response.data.id,
+      };
+
+      let reqOptions2 = {
+        url: "https://www.centroesteticoedith.com/endpoint/project/attach",
+        method: "POST",
+        data: AttachUserProjectJson,
+      };
+
+      response = await axios(reqOptions2);
+
+      console.log(response.data);
+
+      console.log("Se ha creado el proyecto con exito");
 
       const newProject = {
         id: response.data.id, 
