@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useState} from "react";
 import {
   View,
   Text,
@@ -6,8 +6,11 @@ import {
   Image,
   StyleSheet,
   TouchableOpacity,
+  Button,
 } from "react-native";
 import { Ionicons, MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons"; // Importa el ícono
+import MemberModal from './MemberModal';
+
 
 type User = {
   id: string;
@@ -56,8 +59,11 @@ const users: User[] = [
 ];
 
 const VistaMiembros: React.FC = () => {
+  const [isModalVisible, setModalVisible] = useState(false);
+
+
   const renderItem = ({ item }: { item: User }) => (
-    <TouchableOpacity style={styles.itemContainer}>
+    <TouchableOpacity style={styles.itemContainer} onPress={() => setModalVisible(true)}> 
       <Image
         source={{ uri: item.avatar || "https://via.placeholder.com/40" }}
         style={styles.avatar}
@@ -105,6 +111,10 @@ const VistaMiembros: React.FC = () => {
         </Text>
       </TouchableOpacity>
       </View>
+
+        
+        <MemberModal visible={isModalVisible} onClose={() => setModalVisible(false)} />
+   
     </View>
   );
 };
