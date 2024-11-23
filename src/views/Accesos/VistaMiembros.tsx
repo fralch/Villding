@@ -7,7 +7,7 @@ import {
   StyleSheet,
   TouchableOpacity,
 } from "react-native";
-import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons"; // Importa el ícono
+import { Ionicons, MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons"; // Importa el ícono
 
 type User = {
   id: string;
@@ -23,41 +23,41 @@ const users: User[] = [
     name: "Alfredo Salazar",
     email: "alo.alfredo@gmail.com",
     role: "Admin",
-    avatar: "https://via.placeholder.com/40",
+    avatar: "https://wac-cdn.atlassian.com/dam/jcr:ba03a215-2f45-40f5-8540-b2015223c918/Max-R_Headshot%20(1).jpg?cdnVersion=2444",
   },
   {
     id: "A4678H4",
     name: "Ana Luisa Veltrac",
     email: "analui.sa@gmail.com",
     role: "Admin",
-    avatar: "https://via.placeholder.com/40",
+    avatar: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ6BAHlIuDPK6lkExHi1DWN6cdzB2OJkmSSMNxEhQXpLnHQ3fslHw7AqUJsZEDvu85xhWw&usqp=CAU",
   },
   {
     id: "K8567L2",
     name: "Jaime Contreras",
     email: "jaimeec@gmail.com",
     role: "User",
-    avatar: "https://via.placeholder.com/40",
+    avatar: "https://images.squarespace-cdn.com/content/v1/58f2f33603596e9d44cde2c7/1719583455788-G5VBFIW35ALMXY0JP0K7/1671741176329.jpeg?format=1000w",
   },
   {
     id: "P1267X5",
     name: "Noten Gofofo y texto largo",
     email: "usuariosinfotextolargo@gmail.com",
     role: "User",
-    avatar: "https://via.placeholder.com/40",
+    avatar: "https://www.startplatz.de/wp-content/uploads/2014/02/sebastian-b%C3%BCttner1-e1415696229562-300x300.jpg",
   },
   {
     id: "P6357B2",
     name: "Monopoly guy",
     email: "correo@gmail.com",
     role: "User",
-    avatar: "https://via.placeholder.com/40",
+    avatar: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRNlwuBstycsyHcMyatzBQeFRphcEpFhLuRkkB87S_DXjuRjhXmoefv-MNuH4BsBY6_9TM&usqp=CAU",
   },
 ];
 
 const VistaMiembros: React.FC = () => {
   const renderItem = ({ item }: { item: User }) => (
-    <View style={styles.itemContainer}>
+    <TouchableOpacity style={styles.itemContainer}>
       <Image
         source={{ uri: item.avatar || "https://via.placeholder.com/40" }}
         style={styles.avatar}
@@ -69,7 +69,7 @@ const VistaMiembros: React.FC = () => {
         </Text>
       </View>
       {item.role === "Admin" && <Text style={styles.adminBadge}>Admin</Text>}
-    </View>
+    </TouchableOpacity>
   );
 
   return (
@@ -85,15 +85,26 @@ const VistaMiembros: React.FC = () => {
           </TouchableOpacity>
         </View>
       </View>
+      <View  style={styles.list}>
       <FlatList
         data={users}
         keyExtractor={(item) => item.id}
         renderItem={renderItem}
-        style={styles.list}
+       
       />
       <TouchableOpacity style={styles.inviteButton}>
-        <Text style={styles.inviteText}>Invitar por link</Text>
+          <MaterialCommunityIcons name="content-copy" size={24} color="gray" />
+        <Text style={[styles.inviteText, { marginLeft: 10 }]}>
+          Codigo de proyecto 
+        </Text>
       </TouchableOpacity>
+      <TouchableOpacity style={[styles.inviteButton, { marginTop: -20 , backgroundColor: "#05222f"}]}>
+        <MaterialIcons name="save-alt" size={24} color="gray" />
+        <Text style={[styles.inviteText, { marginLeft: 10 }]}>
+           Ingresar codigo 
+        </Text>
+      </TouchableOpacity>
+      </View>
     </View>
   );
 };
@@ -161,16 +172,20 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   inviteButton: {
-    backgroundColor: "#008CFF",
+    backgroundColor: "#eee",
     padding: 12,
     alignItems: "center",
     borderRadius: 8,
-    
+    marginBottom: 30,
+    marginHorizontal: 20,
+    justifyContent: "center",
+    flexDirection: "row",
   },
   inviteText: {
-    color: "white",
+    color: "gray",
     fontSize: 16,
     fontWeight: "bold",
+    alignItems: "center",
   },
 });
 
