@@ -156,12 +156,9 @@ function Login(): JSX.Element {
                 borderRadius: 5,
                 width: '100%',
               }}
-              onPress={() => navigate('CreacionCuenta')}
+              onPress={() => navigate('VistaMiembros')}
             >
-              {/* <Image
-                source={require('../../assets/images/google-logo.png')}
-                style={{ width: 20, height: 20, marginRight: 10 }}
-              /> */}
+             
               Crear cuenta
             </Text>
           </TouchableOpacity>
