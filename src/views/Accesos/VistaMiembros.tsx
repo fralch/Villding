@@ -60,10 +60,16 @@ const users: User[] = [
 
 const VistaMiembros: React.FC = () => {
   const [isModalVisible, setModalVisible] = useState(false);
+  const [admin, setAdmin] =   useState(false);
 
 
   const renderItem = ({ item }: { item: User }) => (
-    <TouchableOpacity style={styles.itemContainer} onPress={() => setModalVisible(true)}> 
+    <TouchableOpacity style={styles.itemContainer} onPress={() => {
+      if (item.role === "Admin") {
+        setAdmin(true);
+      } 
+      setModalVisible(true);
+    }}> 
       <Image
         source={{ uri: item.avatar || "https://via.placeholder.com/40" }}
         style={styles.avatar}
@@ -113,7 +119,7 @@ const VistaMiembros: React.FC = () => {
       </View>
 
         
-        <MemberModal visible={isModalVisible} onClose={() => setModalVisible(false)} />
+        <MemberModal visible={isModalVisible} admin={admin} onClose={() => setModalVisible(false)} />
    
     </View>
   );

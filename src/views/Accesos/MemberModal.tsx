@@ -4,9 +4,10 @@ import { View, Text, Image, StyleSheet, TouchableOpacity, Modal } from 'react-na
 type MemberModalProps = {
   visible: boolean;
   onClose: () => void;
+  admin: boolean;
 };
 
-const MemberModal: React.FC<MemberModalProps> = ({ visible, onClose }) => {
+const MemberModal: React.FC<MemberModalProps> = ({ visible, onClose, admin}) => {
   const member = {
     name: 'Jaime Contreras',
     email: 'jaimeec@gmail.com',
@@ -41,7 +42,17 @@ const MemberModal: React.FC<MemberModalProps> = ({ visible, onClose }) => {
 
           {/* Access Section */}
           <View style={styles.accessSection}>
-            <Text style={styles.sectionTitle}>Acceso a seguimientos:</Text>
+          {
+            !admin ? (<TouchableOpacity style={styles.adminButton}>
+              <Text style={styles.adminText}>Volver administrador</Text>
+            </TouchableOpacity>) :   <TouchableOpacity style={styles.removeButton}>
+            <Text style={styles.removeText}>Quitar permiso de administrador</Text>
+          </TouchableOpacity>
+          }
+        
+          <TouchableOpacity style={styles.removeButton}>
+            <Text style={styles.removeText}>Retirar del proyecto</Text>
+          </TouchableOpacity>
           </View>
         </View>
       </View>
@@ -112,6 +123,32 @@ const styles = StyleSheet.create({
   sectionTitle: {
     color: 'white',
     fontSize: 14,
+  },
+  adminButton: {
+    borderWidth: 1,
+    borderColor: "#00FFFF", // Color de borde cian
+    borderRadius: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    marginBottom: 15,
+  },
+  adminText: {
+    color: "#00FFFF",
+    fontSize: 16,
+    textAlign: "center",
+  },
+  removeButton: {
+    borderWidth: 1,
+    borderColor: "#FF0000", // Color de borde rojo
+    borderRadius: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    marginBottom: 15,
+  },
+  removeText: {
+    color: "#FF0000",
+    fontSize: 16,
+    textAlign: "center",
   },
 });
 
