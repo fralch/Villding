@@ -119,7 +119,7 @@ function CreacionCuenta(): JSX.Element {
         }
 
         let reqOptions = {
-          url: "https://www.centroesteticoedith.com/endpoint/user/create",
+          url: "http://45.236.131.189/endpoint/user/create",
           method: "POST",
           data: formData, // Enviar el FormData
           headers: {
@@ -136,7 +136,7 @@ function CreacionCuenta(): JSX.Element {
               user_id: response.data.user.id,
             };
             let reqOptions2 = {
-              url: "https://www.centroesteticoedith.com/endpoint/user/generate-code",
+              url: "http://45.236.131.189/endpoint/user/generate-code",
               method: "POST",
               data: JsonCode,
             };

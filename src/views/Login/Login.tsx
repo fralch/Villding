@@ -51,7 +51,7 @@ function Login(): JSX.Element {
         };
 
         let reqOptions = {
-          url: "https://www.centroesteticoedith.com/endpoint/user/email_exists",
+          url: "http://45.236.131.189/endpoint/user/email_exists",
           method: "POST",
           data: JsonLogin, // No necesitas usar JSON.stringify aquí
         };
@@ -156,7 +156,7 @@ function Login(): JSX.Element {
                 borderRadius: 5,
                 width: '100%',
               }}
-              onPress={() => navigate('VistaMiembros')}
+              onPress={() => navigate('CreacionCuenta')}
             >
              
               Crear cuenta

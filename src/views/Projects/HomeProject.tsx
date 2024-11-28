@@ -115,7 +115,7 @@ export default function HomeProject() {
   async function fetchProjectsFromServer(userId: string): Promise<Project[]> {
     try {
       const response = await axios.post(
-        "https://www.centroesteticoedith.com/endpoint/user/check-attachment",
+        "http://45.236.131.189/endpoint/user/check-attachment",
         { user_id: userId }, // Envía el ID del usuario en el cuerpo de la solicitud
         {
           headers: {
@@ -134,7 +134,7 @@ export default function HomeProject() {
         image:
           project.uri === null
             ? "https://serviciosenlinea.mined.gob.ni/nic10cweb/assets/img/user.jpg"
-            : "https://www.centroesteticoedith.com/endpoint/images/projects/" +
+            : "http://45.236.131.189/endpoint/images/projects/" +
               project.uri, // Asumiendo que la imagen es la propiedad `uri`
         week: calculateWeekDifference(project.start_date, project.end_date),
       }));
