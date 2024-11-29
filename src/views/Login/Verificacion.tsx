@@ -54,15 +54,16 @@ function Verificacion(props: any): JSX.Element {
         code: codigo,
       };
   
-      let reqOptions = {
-        url: "http://45.236.131.189/endpoint/user/verify-code",
-        method: "POST",
-        data: JsonCodeWhatsapp,
-      };
+      // let reqOptions = {
+      //   url: "http://45.236.131.189/endpoint/user/verify-code",
+      //   method: "POST",
+      //   data: JsonCodeWhatsapp,
+      // };
   
-      const response = await axios(reqOptions);
+      // const response = await axios(reqOptions);
   
-      if (response.status === 200) { // Suponiendo que 200 es éxito
+      // if (response.status === 200) { // Suponiendo que 200 es éxito
+       if (true) { // Suponiendo que 200 es éxito
         const imageUri = propsUser.uri ?? "";
         let localUri = "";
   
