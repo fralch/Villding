@@ -228,15 +228,9 @@ export default function HomeProject() {
       ) : null}
 
       {!viewSearch ? (
-        filteredProjects?.length > 0 ? (
-          <ProjectList projects={filteredProjects} />
-        ) : (
-          <Text>No hay proyectos disponibles</Text>
-        )
-      ) : filteredProjects?.length > 0 ? (
-        <ProjectListSearch projects={filteredProjects} />
+        <ProjectList projects={filteredProjects} />
       ) : (
-        <Text>No hay proyectos encontrados</Text>
+        <ProjectListSearch projects={filteredProjects} />
       )}
     </View>
   );

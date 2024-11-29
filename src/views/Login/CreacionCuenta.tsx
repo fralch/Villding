@@ -153,7 +153,7 @@ function CreacionCuenta(): JSX.Element {
                   };
                   console.log("Ingresa este código: " + response2.data.code);
                   let reqOptions3 = {
-                    url: "https://www.centroesteticoedith.com/whatsapp/api/whatsapp/text",
+                    url: "http://45.236.131.189:3000/api/whatsapp/text",
                     method: "POST",
                     data: JsonCodeWhatsapp,
                   };
