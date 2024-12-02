@@ -12,10 +12,11 @@ import {
   TextInput,
   AppState,
   AppStateStatus,
+  Modal,
+  TouchableWithoutFeedback,
+  Keyboard,
 } from 'react-native';
 import axios from "axios";
-import ConfirmModal from "../../components/Alerta/ConfirmationModal";
-import LoadingModal from "../../components/Alerta/LoadingModal";
 
 const { width, height } = Dimensions.get('window');
 
@@ -24,9 +25,9 @@ function Login(): JSX.Element {
   const [showModal, setShowModal] = useState(false);
   const [showModalLoading, setShowModalLoading] = useState(false);
   const [msjeModal, setMsjeModal] = useState("Email correcto.");
-
   const [correo, setCorreo] = useState('');
   const [errorBoolean, setErrorBoolean] = useState(false);
+  const [errorMessage, setErrorMessage] = useState(''); // Estado para el mensaje de error
 
   useEffect(() => {
     const handleAppStateChange = (nextAppState: AppStateStatus) => {
@@ -74,9 +75,21 @@ function Login(): JSX.Element {
           setShowModalLoading(false);
           setShowModal(true);
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error(error);
         setShowModalLoading(false);
+
+        // Manejo del error y actualización del estado con el mensaje de error
+        if (error.response) {
+          setErrorMessage(error.response.data?.message || "Hubo un error en la conexión.");
+        } else if (error.request) {
+          setErrorMessage("No se pudo conectar al servidor.");
+        } else {
+          setErrorMessage("Error desconocido: " + error.message);
+        }
+
+        // Mostrar el modal de error
+        setShowModal(true);
       }
     };
 
@@ -84,9 +97,7 @@ function Login(): JSX.Element {
   };
 
   return (
-    <ScrollView
-      contentContainerStyle={{ flexGrow: 1, backgroundColor: '#0A3649' }}
-    >
+    <ScrollView contentContainerStyle={{ flexGrow: 1, backgroundColor: '#0A3649' }}>
       <SafeAreaView style={styles.container}>
         <Image
           style={{
@@ -166,12 +177,35 @@ function Login(): JSX.Element {
           </TouchableOpacity>
         </View>
       </SafeAreaView>
-      <ConfirmModal
+
+      {/* Modal de error que muestra los errores de la consulta de axios */}
+      <Modal
+        transparent={true}
         visible={showModal}
-        message={msjeModal}
-        onClose={() => setShowModal(false)}
-      />
-      <LoadingModal visible={showModalLoading} />
+        animationType="fade"
+        onRequestClose={() => setShowModal(false)} // Asegura que se pueda cerrar el modal
+      >
+        <TouchableWithoutFeedback onPress={() => setShowModal(false)}>
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <Text style={styles.message}>{errorMessage}</Text>
+              <TouchableOpacity
+                onPress={() => setShowModal(false)}
+                style={styles.closeButton}
+              >
+                <Text style={styles.closeText}>Cerrar</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
+
+      {/* Modal de carga */}
+      <Modal transparent={true} visible={showModalLoading} animationType="fade">
+        <View style={styles.loadingOverlay}>
+          <Text style={styles.loadingText}>Cargando...</Text>
+        </View>
+      </Modal>
     </ScrollView>
   );
 }
@@ -180,6 +214,45 @@ const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalContent: {
+    width: 300,
+    backgroundColor: 'white',
+    padding: 20,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  message: {
+    fontSize: 18,
+    color: 'black',
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  closeButton: {
+    backgroundColor: '#05222F',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+  },
+  closeText: {
+    color: 'white',
+    fontSize: 16,
+  },
+  loadingOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  loadingText: {
+    color: 'white',
+    fontSize: 20,
   },
 });
 
