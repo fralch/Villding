@@ -9,7 +9,7 @@ const LoadingModal: React.FC<LoadingModalProps> = ({ visible }) => {
   return (
     <Modal transparent={true} animationType="fade" visible={visible}>
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#33baba" />
+        {/* <ActivityIndicator size="large" color="#33baba" /> */}
         <Text style={styles.loadingText}>Cargando...</Text>
       </View>
     </Modal>

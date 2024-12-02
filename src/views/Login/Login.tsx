@@ -43,42 +43,44 @@ function Login(): JSX.Element {
   }, []);
 
   const handleLogin = () => {
-    if (correo !== '') {
-      setShowModalLoading(true);
-      const fetchData = async () => {
-        const JsonLogin = {
-          email: correo,
-        };
+    if (correo === '') {
+      setErrorBoolean(true); // Muestra el error si el correo está vacío
+      return;
+    }
 
-        let reqOptions = {
-          url: "http://45.236.131.189/endpoint/user/email_exists",
-          method: "POST",
-          data: JsonLogin, // No necesitas usar JSON.stringify aquí
-        };
-        try {
-          const response = await axios(reqOptions);
-          console.log(response.data.message);
-
-          if (response.data.message === "User already exists") {
-            navigate('Password', { email: correo });
-            setErrorBoolean(false);
-            setShowModalLoading(false);
-          } else {
-            setMsjeModal("Email incorrecto.");
-            setErrorBoolean(true);
-            setShowModalLoading(false);
-            setShowModal(true);
-          }
-        } catch (error) {
-          console.error(error);
-          setShowModalLoading(false);
-        }
+    setShowModalLoading(true);
+    const fetchData = async () => {
+      const JsonLogin = {
+        email: correo,
       };
 
-      fetchData();
-    } else {
-      setErrorBoolean(true);
-    }
+      let reqOptions = {
+        url: "http://45.236.131.189/endpoint/user/email_exists",
+        method: "POST",
+        data: JsonLogin,
+      };
+
+      try {
+        const response = await axios(reqOptions);
+        console.log(response.data.message);
+
+        if (response.data.message === "User already exists") {
+          navigate('Password', { email: correo });
+          setErrorBoolean(false);
+          setShowModalLoading(false);
+        } else {
+          setMsjeModal("Email incorrecto.");
+          setErrorBoolean(true);
+          setShowModalLoading(false);
+          setShowModal(true);
+        }
+      } catch (error) {
+        console.error(error);
+        setShowModalLoading(false);
+      }
+    };
+
+    fetchData();
   };
 
   return (
@@ -124,18 +126,19 @@ function Login(): JSX.Element {
               Ingresa un correo
             </Text>
           ) : null}
+
           <TouchableOpacity style={{ marginTop: 20 }}>
             <Text
               style={{
-                color: '#05222F',
+                color: correo === '' || errorBoolean ? '#B0B0B0' : '#05222F',
                 fontSize: 17,
                 textAlign: 'center',
-                backgroundColor: '#DEDEDE',
+                backgroundColor: correo === '' || errorBoolean ? '#DEDEDE' : '#DEDEDE',
                 padding: 10,
                 borderRadius: 5,
                 width: '100%',
               }}
-              onPress={() => handleLogin()}
+              onPress={() => correo !== '' && handleLogin()} // Solo llama handleLogin si el correo no está vacío
             >
               Continuar
             </Text>
@@ -158,7 +161,6 @@ function Login(): JSX.Element {
               }}
               onPress={() => navigate('CreacionCuenta')}
             >
-             
               Crear cuenta
             </Text>
           </TouchableOpacity>
