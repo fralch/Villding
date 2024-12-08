@@ -139,7 +139,7 @@ const EditUser = () => {
       }
 
       let reqOptions = {
-        url: "http://45.236.131.189/endpoint/user/update",
+        url: "https://centroesteticoedith.com/endpoint/user/update",
         method: "POST",
         data: formData, // Enviar el FormData
         headers: {

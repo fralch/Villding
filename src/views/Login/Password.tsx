@@ -59,7 +59,7 @@ function Password(): JSX.Element {
         };
 
         let reqOptions = {
-          url: "http://45.236.131.189/endpoint/user/login",
+          url: "https://centroesteticoedith.com/endpoint/user/login",
           method: "POST",
           data: JsonLogin,
         };
@@ -79,7 +79,7 @@ function Password(): JSX.Element {
                 : "",
               rol: response.data.user.role,
               uri: response.data.user.uri
-                ? "http://45.236.131.189/endpoint/images/profile/" +
+                ? "https://centroesteticoedith.com/endpoint/images/profile/" +
                   response.data.user.uri
                 : "",
             });
@@ -90,7 +90,7 @@ function Password(): JSX.Element {
                   user_id: response.data.user.id,
                 };
                 let reqOptions = {
-                  url: "http://45.236.131.189/endpoint/user/generate-code",
+                  url: "https://centroesteticoedith.com/endpoint/user/generate-code",
                   method: "POST",
                   data: JsonCode,
                 };

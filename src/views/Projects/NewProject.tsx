@@ -74,7 +74,7 @@ const NewProject: React.FC = () => {
   }, [ ]);
 
   useEffect(() => {
-    fetch("http://45.236.131.189/endpoint/project/types")
+    fetch("https://centroesteticoedith.com/endpoint/project/types")
       .then((response) => response.json())
       .then((data) => {
         setTiposProyectos(data);
@@ -82,7 +82,7 @@ const NewProject: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    fetch("http://45.236.131.189/endpoint/project/subtypes")
+    fetch("https://centroesteticoedith.com/endpoint/project/subtypes")
       .then((response2) => response2.json())
       .then((data2) => {
         setSubtiposProyecto(data2);
@@ -227,7 +227,7 @@ const NewProject: React.FC = () => {
     }
 
     let reqOptions = {
-      url: "http://45.236.131.189/endpoint/project/store",
+      url: "https://centroesteticoedith.com/endpoint/project/store",
       method: "POST",
       data: formdata, // Enviar el FormData
       headers: {
@@ -244,7 +244,7 @@ const NewProject: React.FC = () => {
       };
 
       let reqOptions2 = {
-        url: "http://45.236.131.189/endpoint/project/attach",
+        url: "https://centroesteticoedith.com/endpoint/project/attach",
         method: "POST",
         data: AttachUserProjectJson,
       };

@@ -56,7 +56,7 @@ function Login(): JSX.Element {
       };
 
       let reqOptions = {
-        url: "http://45.236.131.189/endpoint/user/email_exists",
+        url: "https://centroesteticoedith.com/endpoint/user/email_exists",
         method: "POST",
         data: JsonLogin,
       };
