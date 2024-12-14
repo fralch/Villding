@@ -13,6 +13,8 @@ import { DateTimePickerAndroid } from "@react-native-community/datetimepicker";
 import { useNavigation, NavigationProp } from "@react-navigation/native";
 import { Picker } from "@react-native-picker/picker";
 import * as ImagePicker from "expo-image-picker";
+import * as ImageManipulator from 'expo-image-manipulator';
+import * as FileSystem from 'expo-file-system';
 import axios from 'axios';
 import { saveProject, deleteProject } from "../../hooks/localStorageProject";
 import { getSesion, removeSesion , updateSesion } from '../../hooks/localStorageUser';
@@ -20,7 +22,7 @@ import { useRoute, RouteProp } from "@react-navigation/native";
 
 import ConfirmModal from '../../components/Alerta/ConfirmationModal';
 import LoadingModal from '../../components/Alerta/LoadingModal';
-
+const MAX_FILE_SIZE = 500 * 1024; // 500 KB en bytes
 
 interface Project {
   company: string;
@@ -135,11 +137,41 @@ const NewProject: React.FC = () => {
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [4, 3],
-      quality: 1,
+      quality: 1, // Calidad original
     });
-
+  
     if (!pickerResult.canceled && pickerResult.assets && pickerResult.assets.length > 0) {
-      setProjectImage(pickerResult.assets[0].uri); // Actualizar imagen seleccionada
+      let selectedImage = pickerResult.assets[0].uri;
+      let compressLevel = 0.8; // Comenzamos con 80% de compresión
+      let resizedWidth = 800; // Ancho inicial para redimensionar
+  
+      let manipulatedImage = await ImageManipulator.manipulateAsync(
+        selectedImage,
+        [{ resize: { width: resizedWidth } }], // Redimensionar
+        { compress: compressLevel, format: ImageManipulator.SaveFormat.JPEG } // Comprimir
+      );
+  
+      let fileInfo = await FileSystem.getInfoAsync(manipulatedImage.uri) as any;
+  
+      // Reducir el tamaño iterativamente si supera 500 KB
+      while (fileInfo.size> MAX_FILE_SIZE && compressLevel > 0.1) {
+        compressLevel -= 0.1; // Reducir nivel de compresión
+        resizedWidth -= 100; // Reducir ancho de la imagen
+        manipulatedImage = await ImageManipulator.manipulateAsync(
+          selectedImage,
+          [{ resize: { width: resizedWidth } }], // Redimensionar
+          { compress: compressLevel, format: ImageManipulator.SaveFormat.JPEG } // Comprimir
+        );
+        fileInfo = await FileSystem.getInfoAsync(manipulatedImage.uri);
+      }
+  
+      if (fileInfo.size <= MAX_FILE_SIZE) {
+        console.log(`Imagen lista: ${(fileInfo.size / 1024).toFixed(2)} KB`);
+        setProjectImage(manipulatedImage.uri); // Actualizar imagen reducida
+      } else {
+        console.log("No se pudo reducir la imagen a menos de 500 KB.");
+        alert("La imagen seleccionada es demasiado grande incluso después de ser comprimida.");
+      }
     }
   };
 

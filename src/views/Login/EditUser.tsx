@@ -18,6 +18,7 @@ import {
 } from "@expo/vector-icons"; // Para íconos
 import { StatusBar as ExpoStatusBar } from "expo-status-bar";
 import * as ImagePicker from 'expo-image-picker';
+import * as ImageManipulator from 'expo-image-manipulator';
 import axios from 'axios';
 import { getSesion, removeSesion , updateSesion } from '../../hooks/localStorageUser';
 import { useNavigation, NavigationProp } from "@react-navigation/native";
@@ -91,25 +92,37 @@ const EditUser = () => {
 
   const pickImage = async () => {
     setEditBool(true);
+    
     // Solicitar permisos para acceder a la galería
     let result = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (result.granted === false) {
+    if (!result.granted) {
       alert("Permiso para acceder a las fotos es necesario.");
       return;
     }
-
+  
     // Abrir selector de imágenes
     let pickerResult = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [1, 1],
-      quality: 1,
+      quality: 1, // Calidad original
     });
-
-    // Verificar si el usuario seleccionó una imagen o canceló la acción
+  
+    // Verificar si el usuario seleccionó una imagen
     if (!pickerResult.canceled && pickerResult.assets && pickerResult.assets.length > 0) {
-      setProfileImage(pickerResult.assets[0].uri); // Actualizar imagen seleccionada
-      setData({ ...Data, uri: pickerResult.assets[0].uri });
+      const selectedImage = pickerResult.assets[0].uri;
+  
+      // Reducir la calidad y/o tamaño de la imagen
+      const manipulatedImage = await ImageManipulator.manipulateAsync(
+        selectedImage,
+        [{ resize: { width: 500 } }], // Opcional: redimensionar (ancho máximo de 500px)
+        { compress: 0.3, format: ImageManipulator.SaveFormat.JPEG } // Comprimir al 50% y convertir a JPEG
+      );
+      
+  
+      // Actualizar la imagen reducida
+      setProfileImage(manipulatedImage.uri);
+      setData({ ...Data, uri: manipulatedImage.uri });
     }
   };
 
