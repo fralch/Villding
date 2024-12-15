@@ -19,11 +19,14 @@ import {
 import { StatusBar as ExpoStatusBar } from "expo-status-bar";
 import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
+import * as FileSystem from 'expo-file-system';
 import axios from 'axios';
 import { getSesion, removeSesion , updateSesion } from '../../hooks/localStorageUser';
 import { useNavigation, NavigationProp } from "@react-navigation/native";
 import ConfirmModal from '../../components/Alerta/ConfirmationModal';
 import LoadingModal from '../../components/Alerta/LoadingModal';
+
+const MAX_FILE_SIZE = 100 * 1024; // 100 KB en bytes
 
 const EditUser = () => {
   const navigation = useNavigation<NavigationProp<any>>();
@@ -104,7 +107,7 @@ const EditUser = () => {
     let pickerResult = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
-      aspect: [1, 1],
+      aspect: [1, 1], // Aspecto de la imagen
       quality: 1, // Calidad original
     });
   
@@ -112,17 +115,48 @@ const EditUser = () => {
     if (!pickerResult.canceled && pickerResult.assets && pickerResult.assets.length > 0) {
       const selectedImage = pickerResult.assets[0].uri;
   
-      // Reducir la calidad y/o tamaño de la imagen
-      const manipulatedImage = await ImageManipulator.manipulateAsync(
-        selectedImage,
-        [{ resize: { width: 500 } }], // Opcional: redimensionar (ancho máximo de 500px)
-        { compress: 0.3, format: ImageManipulator.SaveFormat.JPEG } // Comprimir al 50% y convertir a JPEG
-      );
-      
+      let compressLevel = 0.8; // Comenzamos con 80% de compresión
+      let resizedWidth = 800; // Ancho inicial para redimensionar
   
-      // Actualizar la imagen reducida
-      setProfileImage(manipulatedImage.uri);
-      setData({ ...Data, uri: manipulatedImage.uri });
+      // Manipulamos la imagen inicialmente
+      let manipulatedImage = await ImageManipulator.manipulateAsync(
+        selectedImage,
+        [{ resize: { width: resizedWidth } }], // Redimensionamos
+        { compress: compressLevel, format: ImageManipulator.SaveFormat.JPEG } // Comprimimos
+      );
+  
+      // Obtener información del archivo manipulado
+      let fileInfo = await FileSystem.getInfoAsync(manipulatedImage.uri) as any;
+  
+      // Verificar si el archivo existe y tiene tamaño válido
+      if (fileInfo.exists) {
+        console.log(`Tamaño inicial: ${(fileInfo.size / 1024).toFixed(2)} KB`);
+  
+        // Reducir el tamaño iterativamente si supera los 500 KB
+        while (fileInfo.size > MAX_FILE_SIZE && compressLevel > 0.1) {
+          compressLevel -= 0.1; // Reducir el nivel de compresión
+          resizedWidth -= 100; // Reducir el ancho de la imagen
+          manipulatedImage = await ImageManipulator.manipulateAsync(
+            selectedImage,
+            [{ resize: { width: resizedWidth } }], // Redimensionar
+            { compress: compressLevel, format: ImageManipulator.SaveFormat.JPEG } // Comprimir
+          );
+          fileInfo = await FileSystem.getInfoAsync(manipulatedImage.uri);
+        }
+  
+        if (fileInfo.size <= MAX_FILE_SIZE) {
+          console.log(`Imagen lista: ${(fileInfo.size / 1024).toFixed(2)} KB`);
+          // Actualizar la imagen reducida
+          setProfileImage(manipulatedImage.uri);
+          setData({ ...Data, uri: manipulatedImage.uri });
+        } else {
+          console.log("No se pudo reducir la imagen a menos de 500 KB.");
+          alert("La imagen seleccionada es demasiado grande incluso después de ser comprimida.");
+        }
+      } else {
+        console.error("No se pudo obtener el tamaño de la imagen o el archivo no existe.");
+        alert("Hubo un error al procesar la imagen.");
+      }
     }
   };
 
