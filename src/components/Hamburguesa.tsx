@@ -138,7 +138,9 @@ export default function Hamburguesa(props: any) {
             color='#FFF'
           />
         )}
-        onPress={() => {}}
+        onPress={() => {
+          navigate('VistaMiembros');
+        }}
       />
       <List.Item
         title='Configurar proyecto'
