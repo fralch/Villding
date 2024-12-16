@@ -15,11 +15,8 @@ import Feather from "@expo/vector-icons/Feather";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import ProjectList from "../../components/Project/ProjectList";
 import ProjectListSearch from "../../components/Project/ProjectListSearch";
-import { getProjects } from "../../hooks/localStorageProject";
-import {
-  removeProject,
-  storeProject,
-} from "../../hooks/localStorageCurrentProject";
+import { getProjects, saveProject } from "../../hooks/localStorageProject";
+import { removeProject } from "../../hooks/localStorageCurrentProject";
 import { getSesion } from "../../hooks/localStorageUser";
 import { useNavigation, NavigationProp } from "@react-navigation/native";
 import axios from "axios";
@@ -150,7 +147,10 @@ export default function HomeProject() {
     projects: Project[]
   ): Promise<void> {
     try {
-      await storeProject(JSON.stringify(projects));
+      // Guarda los proyectos en AsyncStorage
+      for (const project of projects) {
+        await saveProject(project);  // Usamos la función saveProject de tu hook
+      }
     } catch (error) {
       console.error("Error al guardar proyectos en localStorage:", error);
     }
@@ -163,6 +163,8 @@ export default function HomeProject() {
     const msPerWeek = 1000 * 60 * 60 * 24 * 7;
     return Math.round((end.getTime() - start.getTime()) / msPerWeek);
   }
+
+
   return (
     <View style={[styles.container]}>
       <ExpoStatusBar style="dark" />
