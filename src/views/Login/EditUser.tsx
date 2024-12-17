@@ -26,6 +26,9 @@ import { useNavigation, NavigationProp } from "@react-navigation/native";
 import ConfirmModal from '../../components/Alerta/ConfirmationModal';
 import LoadingModal from '../../components/Alerta/LoadingModal';
 
+import * as Clipboard from "expo-clipboard";
+
+
 const MAX_FILE_SIZE = 100 * 1024; // 100 KB en bytes
 
 const EditUser = () => {
@@ -51,6 +54,13 @@ const EditUser = () => {
   });
 
   const [profileImage, setProfileImage] = useState<string | null>(null);
+
+  const copyToClipboard = async (code: string) => {
+    await Clipboard.setStringAsync(code);
+    setMsjeModal(`El codigo ${code} copiado al portapapeles`);
+    setShowModalConfirm(true);
+    console.log("Código copiado al portapapeles:", code);
+  };
   
 
   React.useEffect(() => {
@@ -309,15 +319,17 @@ const EditUser = () => {
               
             </View>
           </View>
-          <View style={styles.section}>
+
+          {/* User Code */}
+          <TouchableOpacity style={styles.section} onPress={() => {copyToClipboard(Data.user_code);}}>
             <View style={{ marginHorizontal: 20, marginVertical: 10 }}>
-              <TouchableOpacity style={[styles.item, { marginVertical: 10 }]} onPress={() => { OpenEdit("Codigo de usuario", Data.email_contact)}}>
-                <Text style={[styles.sectionTitle, {color: "#fff"}]}>Correo de contacto</Text>
+              <View style={[styles.item, { marginVertical: 10 }]} >
+                <Text style={[styles.sectionTitle, {color: "#fff"}]}>Codigo de usuario</Text>
                 <Text style={[styles.itemValue, {color: "#fff", marginLeft: -100}]}>{Data.user_code}</Text>
-              </TouchableOpacity>
+              </View>
               
             </View>
-          </View>
+          </TouchableOpacity>
         </View>
         {/* Footer */}
         <View style={styles.footer}>
