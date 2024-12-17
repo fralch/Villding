@@ -9,6 +9,7 @@ export type UserData = {
   uri?: string;
   isPaidUser: boolean;
   role: UserRole;
+  user_code: string;
 };
 
 export type Project = {

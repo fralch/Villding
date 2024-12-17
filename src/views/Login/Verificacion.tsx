@@ -25,6 +25,7 @@ interface User {
   email: string;
   password: string;
   rol: string;
+  user_code: string;
   telefono?: string;
   uri?: string;
 }
@@ -96,7 +97,8 @@ function Verificacion(props: any): JSX.Element {
           apellidos: propsUser.apellidos,
           email: propsUser.email,
           password: propsUser.password,
-          rol: "user",
+          rol:    propsUser.rol,
+          user_code: propsUser.user_code,
           telefono: propsUser.telefono ?? "",
           uri: localUri,
         });

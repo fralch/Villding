@@ -78,6 +78,7 @@ function Password(): JSX.Element {
                 ? response.data.user.telefono
                 : "",
               rol: response.data.user.role,
+              user_code : response.data.user_code,
               uri: response.data.user.uri
                 ? "https://centroesteticoedith.com/endpoint/images/profile/" +
                   response.data.user.uri
@@ -126,7 +127,7 @@ function Password(): JSX.Element {
                 }
               };
 
-              fetchCode();
+              // fetchCode();
 
             setErrorBoolean(false);
             setShowModalLoading(false);

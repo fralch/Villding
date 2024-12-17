@@ -8,6 +8,7 @@ interface User {
   email_contact?: string;
   password: string;
   rol: string;
+  user_code: string;
   telefono?: string;
   edad? : number;
   uri?: string;
