@@ -65,6 +65,7 @@ function Password(): JSX.Element {
         };
         try {
           const response = await axios(reqOptions);
+          console.log("Datos de Usuario");
           console.log(response.data);
 
           if (response.data.message === "Login successful") {
@@ -78,7 +79,7 @@ function Password(): JSX.Element {
                 ? response.data.user.telefono
                 : "",
               rol: response.data.user.role,
-              user_code : response.data.user_code,
+              user_code : response.data.user.user_code,
               uri: response.data.user.uri
                 ? "https://centroesteticoedith.com/endpoint/images/profile/" +
                   response.data.user.uri
