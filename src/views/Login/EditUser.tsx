@@ -46,7 +46,8 @@ const EditUser = () => {
     email: "icemail@gmail.com",
     email_contact: "emailcontact@gmail.com",
     telefono: "123456789",
-    uri: ''
+    uri: '',
+    user_code: "12345",
   });
 
   const [profileImage, setProfileImage] = useState<string | null>(null);
@@ -304,6 +305,15 @@ const EditUser = () => {
               <TouchableOpacity style={[styles.item, { marginVertical: 10 }]} onPress={() => { OpenEdit("Correo de contacto", Data.email_contact)}}>
                 <Text style={[styles.itemLabel, {color: "#34c6eb"}]}>Correo de contacto</Text>
                 <Text style={[styles.itemValue, {color: "#34c6eb"}]}>{Data.email_contact ? Data.email_contact : "No registrado"}</Text>
+              </TouchableOpacity>
+              
+            </View>
+          </View>
+          <View style={styles.section}>
+            <View style={{ marginHorizontal: 20, marginVertical: 10 }}>
+              <TouchableOpacity style={[styles.item, { marginVertical: 10 }]} onPress={() => { OpenEdit("Codigo de usuario", Data.email_contact)}}>
+                <Text style={[styles.sectionTitle, {color: "#fff"}]}>Correo de contacto</Text>
+                <Text style={[styles.itemValue, {color: "#fff", marginLeft: -100}]}>{Data.user_code}</Text>
               </TouchableOpacity>
               
             </View>
