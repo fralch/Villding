@@ -141,7 +141,7 @@ function Login(): JSX.Element {
           <TouchableOpacity style={{ marginTop: 20 }}>
             <Text
               style={{
-                color: correo === '' || errorBoolean ? '#B0B0B0' : '#05222F',
+                color:  '#05222F',
                 fontSize: 17,
                 textAlign: 'center',
                 backgroundColor: correo === '' || errorBoolean ? '#DEDEDE' : '#DEDEDE',
@@ -188,7 +188,7 @@ function Login(): JSX.Element {
         <TouchableWithoutFeedback onPress={() => setShowModal(false)}>
           <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
-              <Text style={styles.message}>{errorMessage}</Text>
+              <Text style={styles.message}>El correo ingresado es incorrecto.</Text>
               <TouchableOpacity
                 onPress={() => setShowModal(false)}
                 style={styles.closeButton}
