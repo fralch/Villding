@@ -28,7 +28,7 @@ interface User {
   user_code: string;
   telefono?: string;
   uri?: string;
-  tamano_img : number; 
+  tamano_img : number;
 }
 
 function Verificacion(props: any): JSX.Element {
@@ -37,6 +37,7 @@ function Verificacion(props: any): JSX.Element {
   const [codigo, setCodigo] = useState("");
   const [errorBoolean, setErrorBoolean] = useState(false);
   const [loading, setLoading] = useState(false); // Estado de carga
+  const [porcentajeDescarga, setPorcentajeDescarga] = useState(0);
 
   useEffect(() => {
     console.log(propsUser);
@@ -47,28 +48,28 @@ function Verificacion(props: any): JSX.Element {
       setErrorBoolean(true); // Mostrar error si el código está vacío
       return;
     }
-  
+
     setLoading(true); // Iniciar el estado de carga
-  
+
     try {
       const JsonCodeWhatsapp = {
         user_id: propsUser.id,
         code: codigo,
       };
-  
+
       // let reqOptions = {
       //   url: "https://centroesteticoedith.com/endpoint/user/verify-code",
       //   method: "POST",
       //   data: JsonCodeWhatsapp,
       // };
-  
+
       // const response = await axios(reqOptions);
-  
+
       // if (response.status === 200) { // Suponiendo que 200 es éxito
-       if (true) { // Suponiendo que 200 es éxito
+      if (true) { // Suponiendo que 200 es éxito
         const imageUri = propsUser.uri ?? "";
         let localUri = "";
-  
+
         if (imageUri && (imageUri.startsWith("http://") || imageUri.startsWith("https://"))) {
           const fileName = imageUri.split("/").pop();
           const fileUri = `${FileSystem.documentDirectory}${fileName}`;
@@ -79,10 +80,11 @@ function Verificacion(props: any): JSX.Element {
             (downloadProgress) => {
               const progress =
                 downloadProgress.totalBytesWritten / propsUser.tamano_img;
+              setPorcentajeDescarga(progress);
               console.log(`Download progress: ${progress * 100}%`);
             }
           );
-  
+
           const downloadResult = await downloadResumable.downloadAsync();
           if (downloadResult && downloadResult.uri) {
             localUri = downloadResult.uri;
@@ -90,7 +92,7 @@ function Verificacion(props: any): JSX.Element {
         } else if (imageUri.startsWith("file://")) {
           localUri = imageUri;
         }
-  
+
         // Guardar sesión y navegar
         storeSesion({
           id: propsUser.id,
@@ -103,7 +105,7 @@ function Verificacion(props: any): JSX.Element {
           telefono: propsUser.telefono ?? "",
           uri: localUri,
         });
-  
+
         setErrorBoolean(false);
         navigation.navigate("HomeProject");
       } else {
@@ -116,7 +118,6 @@ function Verificacion(props: any): JSX.Element {
       setLoading(false); // Finalizar el estado de carga
     }
   };
-  
 
   return (
     <ScrollView
@@ -173,10 +174,18 @@ function Verificacion(props: any): JSX.Element {
           <Text style={{ color: "grey", marginTop: 10 }}>
             Te enviamos el codigo a tu whatsapp.
           </Text>
-          
+
           <TouchableOpacity style={{ marginTop: 20 }}>
             {loading ? ( // Mostrar indicador de carga
-              <ActivityIndicator size="large" color="#fff" />
+              <View style={styles.loadingContainer}>
+                <ActivityIndicator size="large" color="#fff" />
+                <Text style={styles.loadingText}>
+                  Descargando datos: {(porcentajeDescarga * 100).toFixed(2)}%
+                </Text>
+                <View style={styles.progressBarContainer}>
+                  <View style={[styles.progressBar, { width: `${porcentajeDescarga * 100}%` }]} />
+                </View>
+              </View>
             ) : (
               <Text
                 style={{
@@ -221,6 +230,27 @@ const styles = StyleSheet.create({
   container: {
     alignItems: "center",
     justifyContent: "center",
+  },
+  loadingContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  loadingText: {
+    color: "white",
+    marginTop: 10,
+    textAlign: "center",
+  },
+  progressBarContainer: {
+    width: "70%",
+    height: 5,
+    backgroundColor: "#ddd",
+    borderRadius: 5,
+    marginTop: 10,
+    overflow: "hidden",
+  },
+  progressBar: {
+    height: "100%",
+    backgroundColor: "#05222F",
   },
 });
 
