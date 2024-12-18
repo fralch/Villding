@@ -28,6 +28,7 @@ interface User {
   user_code: string;
   telefono?: string;
   uri?: string;
+  tamano_img : number; 
 }
 
 function Verificacion(props: any): JSX.Element {
@@ -77,7 +78,7 @@ function Verificacion(props: any): JSX.Element {
             {},
             (downloadProgress) => {
               const progress =
-                downloadProgress.totalBytesWritten / downloadProgress.totalBytesExpectedToWrite;
+                downloadProgress.totalBytesWritten / propsUser.tamano_img;
               console.log(`Download progress: ${progress * 100}%`);
             }
           );

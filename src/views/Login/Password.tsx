@@ -84,6 +84,7 @@ function Password(): JSX.Element {
                 ? "https://centroesteticoedith.com/endpoint/images/profile/" +
                   response.data.user.uri
                 : "",
+              tamano_img: response.data.profile_image_size
             });
 
             // Generate CODE
