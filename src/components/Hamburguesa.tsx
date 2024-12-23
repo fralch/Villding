@@ -139,7 +139,9 @@ export default function Hamburguesa(props: any) {
           />
         )}
         onPress={() => {
-          navigate('VistaMiembros');
+          navigate('VistaMiembros', {
+            id_project: recibiendoProyecto.id,
+          });
         }}
       />
       <List.Item

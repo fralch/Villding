@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -10,77 +10,66 @@ import {
 } from "react-native";
 import { Ionicons, MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons"; // Importa el ícono
 import MemberModal from './MemberModal';
-
+import axios from "axios";
 
 type User = {
   id: string;
   name: string;
+  last_name: string;
+  user_code: string;
+  telefono: string;
   email: string;
-  role: "Admin" | "User";
-  avatar: string | null;
+  role:  string;
+  uri: string | null;
 };
 
-const users: User[] = [
-  {
-    id: "B6784K6",
-    name: "Alfredo Salazar",
-    email: "alo.alfredo@gmail.com",
-    role: "Admin",
-    avatar: "https://wac-cdn.atlassian.com/dam/jcr:ba03a215-2f45-40f5-8540-b2015223c918/Max-R_Headshot%20(1).jpg?cdnVersion=2444",
-  },
-  {
-    id: "A4678H4",
-    name: "Ana Luisa Veltrac",
-    email: "analui.sa@gmail.com",
-    role: "Admin",
-    avatar: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ6BAHlIuDPK6lkExHi1DWN6cdzB2OJkmSSMNxEhQXpLnHQ3fslHw7AqUJsZEDvu85xhWw&usqp=CAU",
-  },
-  {
-    id: "K8567L2",
-    name: "Jaime Contreras",
-    email: "jaimeec@gmail.com",
-    role: "User",
-    avatar: "https://images.squarespace-cdn.com/content/v1/58f2f33603596e9d44cde2c7/1719583455788-G5VBFIW35ALMXY0JP0K7/1671741176329.jpeg?format=1000w",
-  },
-  {
-    id: "P1267X5",
-    name: "Noten Gofofo y texto largo",
-    email: "usuariosinfotextolargo@gmail.com",
-    role: "User",
-    avatar: "https://www.startplatz.de/wp-content/uploads/2014/02/sebastian-b%C3%BCttner1-e1415696229562-300x300.jpg",
-  },
-  {
-    id: "P6357B2",
-    name: "Monopoly guy",
-    email: "correo@gmail.com",
-    role: "User",
-    avatar: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRNlwuBstycsyHcMyatzBQeFRphcEpFhLuRkkB87S_DXjuRjhXmoefv-MNuH4BsBY6_9TM&usqp=CAU",
-  },
-];
 
-const VistaMiembros: React.FC = () => {
+
+const VistaMiembros: React.FC<any> = (project) => {
   const [isModalVisible, setModalVisible] = useState(false);
-  const [admin, setAdmin] =   useState(false);
+  const [admin, setAdmin] = useState(false);
+  const [idProject, setIdProject] = useState<any>(project?.route?.params?.id_project);
+  const [users, setUsers] = useState<User[]>([]);
 
+  useEffect(() => {
+    const myHeaders = {
+      'Content-Type': 'application/json',
+    };
 
-  const renderItem = ({ item }: { item: User }) => (
+    const data = {
+      project_id: idProject
+    };
+
+    axios.post('https://centroesteticoedith.com/endpoint/project/check-attachment', data, {
+      headers: myHeaders
+    })
+      .then(response => {
+        setUsers(response.data);
+        console.log(response.data);
+      })
+      .catch(error => {
+        console.error(error);
+      });
+  }, []);
+
+  const renderItem = ({ item, index }: { item: User, index: number }) => (
     <TouchableOpacity style={styles.itemContainer} onPress={() => {
-      if (item.role === "Admin") {
+      if (item.role !== "user") {
         setAdmin(true);
-      } 
+      }
       setModalVisible(true);
-    }}> 
+    }}>
       <Image
-        source={{ uri: item.avatar || "https://via.placeholder.com/40" }}
+        source={{ uri: "https://centroesteticoedith.com/endpoint/images/profile/"+item.uri || "https://via.placeholder.com/40" }}
         style={styles.avatar}
       />
       <View style={styles.infoContainer}>
         <Text style={styles.name}>{item.name}</Text>
         <Text style={styles.email}>
-          {item.email} | {item.id}
+          {item.email} | {item.role}
         </Text>
       </View>
-      {item.role === "Admin" && <Text style={styles.adminBadge}>Admin</Text>}
+      {item.role !== "user" && <Text style={styles.adminBadge}>Admin</Text>}
     </TouchableOpacity>
   );
 
@@ -97,34 +86,29 @@ const VistaMiembros: React.FC = () => {
           </TouchableOpacity>
         </View>
       </View>
-      <View  style={styles.list}>
-      <FlatList
-        data={users}
-        keyExtractor={(item) => item.id}
-        renderItem={renderItem}
-       
-      />
-      <TouchableOpacity style={styles.inviteButton}>
+      <View style={styles.list}>
+        <FlatList
+          data={users}
+          keyExtractor={(item, index) => `${item.id}-${item.email}-${index}`}
+          renderItem={renderItem}
+        />
+        <TouchableOpacity style={styles.inviteButton}>
           <MaterialCommunityIcons name="content-copy" size={24} color="gray" />
-        <Text style={[styles.inviteText, { marginLeft: 10 }]}>
-          Codigo de proyecto 
-        </Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={[styles.inviteButton, { marginTop: -20 , backgroundColor: "#05222f"}]}>
-        <MaterialIcons name="save-alt" size={24} color="gray" />
-        <Text style={[styles.inviteText, { marginLeft: 10 }]}>
-           Ingresar codigo 
-        </Text>
-      </TouchableOpacity>
+          <Text style={[styles.inviteText, { marginLeft: 10 }]}>
+            Codigo de proyecto
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={[styles.inviteButton, { marginTop: -20, backgroundColor: "#05222f" }]}>
+          <MaterialIcons name="save-alt" size={24} color="gray" />
+          <Text style={[styles.inviteText, { marginLeft: 10 }]}>
+            Ingresar codigo
+          </Text>
+        </TouchableOpacity>
       </View>
-
-        
-        <MemberModal visible={isModalVisible} admin={admin} onClose={() => setModalVisible(false)} />
-   
+      <MemberModal visible={isModalVisible} admin={admin} onClose={() => setModalVisible(false)} />
     </View>
   );
 };
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
