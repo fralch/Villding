@@ -2,11 +2,13 @@ import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
+  TextInput,
   FlatList,
   Image,
   StyleSheet,
   TouchableOpacity,
   Button,
+  Modal
 } from "react-native";
 import { Ionicons, MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons"; // Importa el ícono
 import MemberModal from './MemberModal';
@@ -23,13 +25,13 @@ type User = {
   uri: string | null;
 };
 
-
-
 const VistaMiembros: React.FC<any> = (project) => {
   const [isModalVisible, setModalVisible] = useState(false);
+  const [isModalVisibleInsertUser, setModalVisibleInsertUser] = useState(false);
   const [admin, setAdmin] = useState(false);
   const [idProject, setIdProject] = useState<any>(project?.route?.params?.id_project);
   const [users, setUsers] = useState<User[]>([]);
+  const [codeUser, setCodeUser] = useState("");
 
   useEffect(() => {
     const myHeaders = {
@@ -45,7 +47,7 @@ const VistaMiembros: React.FC<any> = (project) => {
     })
       .then(response => {
         setUsers(response.data);
-        console.log(response.data);
+        // console.log(response.data);
       })
       .catch(error => {
         console.error(error);
@@ -73,6 +75,10 @@ const VistaMiembros: React.FC<any> = (project) => {
     </TouchableOpacity>
   );
 
+  const handleAddUser = ( ) => {
+      console.log(codeUser);
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -92,29 +98,45 @@ const VistaMiembros: React.FC<any> = (project) => {
           keyExtractor={(item, index) => `${item.id}-${item.email}-${index}`}
           renderItem={renderItem}
         />
-        <TouchableOpacity style={styles.inviteButton}>
-          <MaterialCommunityIcons name="content-copy" size={24} color="gray" />
-          <Text style={[styles.inviteText, { marginLeft: 10 }]}>
-            Codigo de proyecto
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={[styles.inviteButton, { marginTop: -20, backgroundColor: "#05222f" }]}>
+
+        <TouchableOpacity style={[styles.inviteButton, { marginTop: -20, backgroundColor: "#05222f" }]} onPress={() => setModalVisibleInsertUser(true)}>
           <MaterialIcons name="save-alt" size={24} color="gray" />
           <Text style={[styles.inviteText, { marginLeft: 10 }]}>
-            Ingresar codigo
+            Ingresar usuario
           </Text>
         </TouchableOpacity>
       </View>
       <MemberModal visible={isModalVisible} admin={admin} onClose={() => setModalVisible(false)} />
+      <Modal visible={isModalVisibleInsertUser} animationType="slide" transparent>
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Insertar usuario</Text>
+            <TextInput placeholder="Codigo" style={styles.modalInput} placeholderTextColor="gray"   
+             value={codeUser}
+             onChangeText={setCodeUser}
+             />
+            <View style={styles.modalButtonsContainer}>
+              <TouchableOpacity style={[styles.button, { backgroundColor: "#0a3649" }]}
+               onPress={() => handleAddUser()}
+               >
+                        <Text style={styles.buttonText}>OK</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={[styles.button, { backgroundColor: "#05222f", borderColor: "#0a3649", borderWidth: 1}]} onPress={() => setModalVisibleInsertUser(false)}>
+                        <Text style={styles.buttonText}>Cancelar</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#05222F", // Background color of the app
   },
-
   header: {
     backgroundColor: "#05222F",
     flexDirection: "row",
@@ -186,6 +208,52 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "bold",
     alignItems: "center",
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+  },
+  modalContent: {
+    backgroundColor: "#05222F",
+    padding: 20,
+    borderRadius: 8,
+    width: "80%",
+    alignItems: "center",
+  },
+  modalTitle: {
+    fontSize: 18,
+    marginBottom: 20,
+    color: "white", // Color del texto del título
+  },
+  modalInput: {
+    borderWidth: 1,
+    borderColor: "gray",
+    marginBottom: 20,
+    padding: 10,
+    width: "100%",
+    borderRadius: 4,
+    color: "#05222F", // Color del texto dentro del TextInput
+    backgroundColor: "white", // Color de fondo del TextInput
+    fontSize: 16, // Tamaño del texto dentro del TextInput
+  },
+
+  modalButtonsContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "100%",
+    marginTop: 20,
+  },
+  button: {
+    backgroundColor: '#33baba',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+  },
+  buttonText: {
+    color: 'white',
+    fontSize: 16,
   },
 });
 
