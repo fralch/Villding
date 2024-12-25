@@ -77,23 +77,25 @@ const VistaMiembros: React.FC<any> = (project) => {
     </TouchableOpacity>
   );
 
-  const handleAddUser =  async ( ) => {
+  const handleAddUser = async () => {
     try {
+      const userCodeRpt = await axios.post('https://centroesteticoedith.com/endpoint/user/user_code', { user_code: codeUser });
+      const userId = userCodeRpt.data.id;
+
       const myHeaders = {
-          'Content-Type': 'application/json',
+        'Content-Type': 'application/json',
       };
 
       const data = {
-          user_id: 1,
-          project_id: 1,
+        user_id: userId,
+        project_id: idProject,
       };
 
       const response = await axios.post('https://centroesteticoedith.com/endpoint/project/attach', data, { headers: myHeaders });
-      console.log(response.data);
       setIngresado(response.data);
-  } catch (error) {
+    } catch (error) {
       console.error('Error inserting data:', error);
-  }
+    }
   };
 
   return (
