@@ -31,6 +31,7 @@ const VistaMiembros: React.FC<any> = (project) => {
   const [admin, setAdmin] = useState(false);
   const [idProject, setIdProject] = useState<any>(project?.route?.params?.id_project);
   const [users, setUsers] = useState<User[]>([]);
+  const [userSelected, setUserSelected] = useState<User | null>(null);
   const [codeUser, setCodeUser] = useState("");
   const [ingresado, setIngresado] = useState()
 
@@ -61,10 +62,11 @@ const VistaMiembros: React.FC<any> = (project) => {
       if (item.role !== "user") {
         setAdmin(true);
       }
+      setUserSelected(item);
       setModalVisible(true);
-    }}>
+        }}>
       <Image
-        source={{ uri: "https://centroesteticoedith.com/endpoint/images/profile/"+item.uri || "https://via.placeholder.com/40" }}
+        source={{ uri: item.uri ? "https://centroesteticoedith.com/endpoint/images/profile/" + item.uri : "https://cdn-icons-png.flaticon.com/512/9385/9385289.png" }}
         style={styles.avatar}
       />
       <View style={styles.infoContainer}>
@@ -125,7 +127,8 @@ const VistaMiembros: React.FC<any> = (project) => {
           </Text>
         </TouchableOpacity>
       </View>
-      <MemberModal visible={isModalVisible} admin={admin} onClose={() => setModalVisible(false)} />
+      <MemberModal visible={isModalVisible} admin={admin}  user={userSelected} onClose={() => setModalVisible(false)} />
+
       <Modal visible={isModalVisibleInsertUser} animationType="slide" transparent>
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>

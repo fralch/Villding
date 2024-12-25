@@ -5,15 +5,42 @@ type MemberModalProps = {
   visible: boolean;
   onClose: () => void;
   admin: boolean;
+  user: any;
 };
 
-const MemberModal: React.FC<MemberModalProps> = ({ visible, onClose, admin}) => {
-  const member = {
-    name: 'Jaime Contreras',
-    email: 'jaimeec@gmail.com',
-    id: 'K8567L2',
-    avatar: 'https://www.startplatz.de/wp-content/uploads/2014/02/sebastian-b%C3%BCttner1-e1415696229562-300x300.jpg', // Reemplaza con la URL real o un avatar predeterminado.
-  };
+const MemberModal: React.FC<MemberModalProps> = ({ visible, onClose, admin, user}) => {
+
+  const [member, setMember] = React.useState<any>(null);
+  React.useEffect(() => {
+    /*
+    {
+      "created_at": "2024-12-17T20:53:56.000000Z",
+      "edad": 24,
+      "email": "ingfralch@gmail.com",
+      "email_verified_at": null,
+      "genero": "masculino",
+      "id": 1,
+      "is_paid_user": 0,
+      "last_name": "Cairampoma",
+      "name": "Frank",
+      "pivot": {
+        "project_id": 1,
+        "user_id": 1
+      },
+      "role": "user",
+      "telefono": "961610362",
+      "updated_at": "2024-12-17T20:53:56.000000Z",
+      "uri": "1734468836.jpg",
+      "user_code": "4FCvyzAOTS"
+    }
+     */
+    console.log(user);
+    setMember(user);
+  }, [user]);
+
+  if (!member) {
+    return null;
+  }
 
   return (
     <Modal visible={visible} animationType="slide" transparent>
@@ -31,14 +58,18 @@ const MemberModal: React.FC<MemberModalProps> = ({ visible, onClose, admin}) => 
           </View>
 
           {/* Member Info */}
-          <View style={styles.memberInfo}>
-            <Image source={{ uri: member.avatar }} style={styles.avatar} />
+            <View style={styles.memberInfo}>
+            {member.uri ? (
+              <Image source={{ uri: "https://centroesteticoedith.com/endpoint/images/profile/" + member.uri }} style={styles.avatar} />
+            ) : (
+              <Image source={{ uri: "https://cdn-icons-png.flaticon.com/512/9385/9385289.png" }} style={styles.avatar} />
+            )}
             <View style={styles.info}>
               <Text style={styles.name}>{member.name}</Text>
               <Text style={styles.email}>{member.email}</Text>
               <Text style={styles.id}>{member.id}</Text>
             </View>
-          </View>
+            </View>
 
           {/* Access Section */}
           <View style={styles.accessSection}>

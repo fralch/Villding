@@ -1,10 +1,13 @@
-import React, { useMemo, useEffect } from 'react';
+import React, { useMemo, useEffect, useCallback } from 'react';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import { useRoute, RouteProp } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
+import { TouchableOpacity, Image, StyleSheet } from 'react-native';
 import Hamburguesa from '../../components/Hamburguesa';
 import TaskList from '../../components/Task/TaskList';
 import { storeProject } from '../../hooks/localStorageCurrentProject';
+import { useNavigation, NavigationProp, useFocusEffect } from "@react-navigation/native";
+import { getSesion } from "../../hooks/localStorageUser";
 
 interface Project {
   company: string;
@@ -24,7 +27,35 @@ type RouteParams = {
 const Drawer = createDrawerNavigator();
 
 export default function Project(props: any) {
+  const { navigate } = useNavigation<NavigationProp<any>>();
   const route = useRoute<RouteProp<RouteParams, 'params'>>();
+  const [imageUserSesion, setImageUserSesion] = React.useState<string>();
+  const [user, setUser] = React.useState<any>();
+
+  React.useEffect(() => {
+    getSesion().then((StoredSesion: any) => {
+      let sesion = JSON.parse(StoredSesion);
+      console.log(sesion.id);
+      setImageUserSesion(sesion.uri);
+      setUser(sesion);
+    });
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      // Esto se ejecuta cada vez que vuelves a la pantalla
+      getSesion().then((StoredSesion: any) => {
+        let sesion = JSON.parse(StoredSesion);
+        console.log(sesion.uri);
+        setImageUserSesion(sesion.uri);
+        setUser(sesion);
+      });
+
+      return () => {
+        // Limpieza si es necesario
+      };
+    }, [])
+  );
 
   const hasExactProjectStructure = (obj: any): obj is Project => {
     if (!obj) {
@@ -48,21 +79,21 @@ export default function Project(props: any) {
       hasExactProjectStructure(route.params?.project) &&
       Object.entries(route.params?.project).length > 0
     ) {
-      storeProject(route.params?.project);
+      storeProject(JSON.stringify(route.params?.project));
       return route.params?.project;
     }
     if (
       hasExactProjectStructure(route?.params) &&
       Object.entries(route?.params).length > 0
     ) {
-      storeProject(route?.params);
+      storeProject(JSON.stringify(route?.params));
       return route.params;
     }
     if (
       hasExactProjectStructure(props.route?.params) &&
       Object.entries(props.route?.params).length > 0
     ) {
-      storeProject(props.route.params);
+      storeProject(JSON.stringify(props.route.params));
       return props.route.params;
     }
 
@@ -89,15 +120,16 @@ export default function Project(props: any) {
         },
         headerTintColor: '#fff',
         headerRight: () => (
-          <Ionicons
-            name='person-circle-outline'
-            size={35}
-            color='white'
-            style={{ marginRight: 10 }}
-            onPress={() => {
-              alert('Perfil de usuario');
-            }}
-          />
+          <TouchableOpacity onPress={() => navigate("EditUser")}>
+            <Image
+              source={
+                imageUserSesion
+                  ? { uri: imageUserSesion }
+                  : require("../../assets/images/user.png")
+              }
+              style={styles.avatar}
+            />
+          </TouchableOpacity>
         ),
       }}
     >
@@ -108,3 +140,12 @@ export default function Project(props: any) {
     </Drawer.Navigator>
   );
 }
+
+const styles = StyleSheet.create({
+  avatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    marginRight: 10,
+  },
+});
