@@ -32,6 +32,7 @@ const VistaMiembros: React.FC<any> = (project) => {
   const [idProject, setIdProject] = useState<any>(project?.route?.params?.id_project);
   const [users, setUsers] = useState<User[]>([]);
   const [codeUser, setCodeUser] = useState("");
+  const [ingresado, setIngresado] = useState()
 
   useEffect(() => {
     const myHeaders = {
@@ -52,7 +53,8 @@ const VistaMiembros: React.FC<any> = (project) => {
       .catch(error => {
         console.error(error);
       });
-  }, []);
+  }, [ingresado]);
+
 
   const renderItem = ({ item, index }: { item: User, index: number }) => (
     <TouchableOpacity style={styles.itemContainer} onPress={() => {
@@ -75,8 +77,23 @@ const VistaMiembros: React.FC<any> = (project) => {
     </TouchableOpacity>
   );
 
-  const handleAddUser = ( ) => {
-      console.log(codeUser);
+  const handleAddUser =  async ( ) => {
+    try {
+      const myHeaders = {
+          'Content-Type': 'application/json',
+      };
+
+      const data = {
+          user_id: 1,
+          project_id: 1,
+      };
+
+      const response = await axios.post('https://centroesteticoedith.com/endpoint/project/attach', data, { headers: myHeaders });
+      console.log(response.data);
+      setIngresado(response.data);
+  } catch (error) {
+      console.error('Error inserting data:', error);
+  }
   };
 
   return (
@@ -116,13 +133,13 @@ const VistaMiembros: React.FC<any> = (project) => {
              onChangeText={setCodeUser}
              />
             <View style={styles.modalButtonsContainer}>
+              <TouchableOpacity style={[styles.button, { backgroundColor: "#05222f", borderColor: "#0a3649", borderWidth: 1}]} onPress={() => setModalVisibleInsertUser(false)}>
+                        <Text style={styles.buttonText}>Cancelar</Text>
+              </TouchableOpacity>
               <TouchableOpacity style={[styles.button, { backgroundColor: "#0a3649" }]}
                onPress={() => handleAddUser()}
                >
-                        <Text style={styles.buttonText}>OK</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={[styles.button, { backgroundColor: "#05222f", borderColor: "#0a3649", borderWidth: 1}]} onPress={() => setModalVisibleInsertUser(false)}>
-                        <Text style={styles.buttonText}>Cancelar</Text>
+                        <Text style={styles.buttonText}>Insertar</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -235,7 +252,7 @@ const styles = StyleSheet.create({
     width: "100%",
     borderRadius: 4,
     color: "#05222F", // Color del texto dentro del TextInput
-    backgroundColor: "white", // Color de fondo del TextInput
+    backgroundColor: "#eee", // Color de fondo del TextInput
     fontSize: 16, // Tamaño del texto dentro del TextInput
   },
 
