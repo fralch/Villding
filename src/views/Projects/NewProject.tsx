@@ -290,8 +290,9 @@ const NewProject: React.FC = () => {
       };
 
       setShowModalLoading(false);
-      setMsjeModal("Se ha actualizado el perfil con exito") ;
-      setShowModalConfirm (true);
+      //  setMsjeModal("Se ha actualizado el perfil con exito") ;
+      // setShowModalConfirm (true);
+      
       
       await saveProject(newProject)
         .then(() => {
