@@ -15,7 +15,7 @@ import Feather from "@expo/vector-icons/Feather";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import ProjectList from "../../components/Project/ProjectList";
 import ProjectListSearch from "../../components/Project/ProjectListSearch";
-import { getProjects, saveProject } from "../../hooks/localStorageProject";
+import { getProjects, saveProject, deleteAllProjects } from "../../hooks/localStorageProject";
 import { removeProject } from "../../hooks/localStorageCurrentProject";
 import { getSesion } from "../../hooks/localStorageUser";
 import { useNavigation, NavigationProp } from "@react-navigation/native";
@@ -82,29 +82,25 @@ export default function HomeProject() {
     setFilteredProjects(filtered);
   }, [search, projects]);
 
+  // useFocusEffect es un gancho de React Navigation que se ejecuta cada vez que la pantalla obtiene el foco.
   useFocusEffect(
     useCallback(() => {
-      getProjects().then((StoredProjects) => {
-        if (StoredProjects && StoredProjects.length > 0) {
-          setProjects(StoredProjects);
-          setFilteredProjects(StoredProjects);
-        } else {
-          // Si no hay proyectos almacenados, consulta al servidor
-          getSesion().then((StoredSesion: any) => {
-            const sesion = JSON.parse(StoredSesion);
-            if (sesion && sesion.id) {
-              setUser(sesion); // Establece el usuario
-              fetchProjectsFromServer(sesion.id).then((fetchedProjects) => {
-                setProjects(fetchedProjects);
-                setFilteredProjects(fetchedProjects);
-                // Opcional: Guarda los proyectos en localStorage
-                saveProjectsToLocalStorage(fetchedProjects);
-              });
-            } else {
-              console.error("No se encontró el ID del usuario en la sesión.");
-            }
-          });
-        }
+      // Eliminar todos los proyectos almacenados localmente
+      deleteAllProjects().then(() => {
+        // Consultar los proyectos al servidor
+        getSesion().then((StoredSesion: any) => {
+          const sesion = JSON.parse(StoredSesion);
+          if (sesion && sesion.id) {
+            setUser(sesion);
+            fetchProjectsFromServer(sesion.id).then((fetchedProjects) => {
+              setProjects(fetchedProjects);
+              setFilteredProjects(fetchedProjects);
+              saveProjectsToLocalStorage(fetchedProjects);
+            });
+          } else {
+            console.error("No se encontró el ID del usuario en la sesión.");
+          }
+        });
       });
     }, [])
   );
@@ -163,7 +159,6 @@ export default function HomeProject() {
     const msPerWeek = 1000 * 60 * 60 * 24 * 7;
     return Math.round((end.getTime() - start.getTime()) / msPerWeek);
   }
-
 
   return (
     <View style={[styles.container]}>

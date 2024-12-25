@@ -33,6 +33,15 @@ const deleteProject = async (projectId: string) => {
   }
 };
 
+// borrar todos  los proyectos
+const deleteAllProjects = async () => {
+  try {
+    await AsyncStorage.removeItem(PROJECTS_KEY);
+  } catch (error) {
+    console.log('Error al eliminar todos los proyectos de AsyncStorage:', error);
+  }
+};
+
 const getProjects = async (): Promise<Project[]> => {
   try {
     const projectsJSON = await AsyncStorage.getItem(PROJECTS_KEY);
@@ -73,4 +82,5 @@ export {
   getProjects,
   updateProject,
   getProjectCurrent,
+  deleteAllProjects,
 };
