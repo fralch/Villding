@@ -121,8 +121,21 @@ export default function HomeProject() {
         // Accede a la propiedad 'projects' del objeto de respuesta
         const projectsData = response.data.projects;
 
+        // Utiliza un Set para almacenar los IDs de los proyectos procesados
+        const seenProjectIds = new Set();
+
+        // Filtra los proyectos duplicados
+        const uniqueProjects = projectsData.filter((project: any) => {
+            if (seenProjectIds.has(project.id)) {
+                return false; // El proyecto ya ha sido procesado
+            } else {
+                seenProjectIds.add(project.id);
+                return true; // El proyecto no ha sido procesado
+            }
+        });
+
         // Mapea los datos de la API al formato de la interfaz
-        const mappedProjects: Project[] = projectsData.map((project: any) => ({
+        const mappedProjects: Project[] = uniqueProjects.map((project: any) => ({
             id: String(project.id),
             title: project.name,
             subtitle: project.location, // Asumiendo que `location` es un subtítulo adecuado
@@ -138,7 +151,8 @@ export default function HomeProject() {
         console.error("Error al obtener proyectos del servidor:", error);
         return [];
     }
-  }
+}
+
 
 
 

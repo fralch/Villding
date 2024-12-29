@@ -235,7 +235,9 @@ const NewProject: React.FC = () => {
     formdata.append("start_date", formatDate(startDate));
     formdata.append("end_date", formatDate(calculateEndDate()));
     formdata.append("project_type_id", tipoProyecto);
-    formdata.append("project_subtype_id", subtipoProyecto);
+    if (subtipoProyecto !== "0") {
+      formdata.append("project_subtype_id", subtipoProyecto);
+    }
 
     
 
@@ -266,6 +268,7 @@ const NewProject: React.FC = () => {
       const AttachUserProjectJson = {
         user_id:  userData.id,
         project_id: response.data.id,
+        is_admin: true,
       };
 
       let reqOptions2 = {
