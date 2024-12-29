@@ -7,7 +7,6 @@ import {
   Image,
   StyleSheet,
   TouchableOpacity,
-  Button,
   Modal,
 } from "react-native";
 import {
@@ -21,12 +20,26 @@ import axios from "axios";
 type User = {
   id: string;
   name: string;
-  last_name: string;
-  user_code: string;
-  telefono: string;
   email: string;
-  role: string;
   uri: string | null;
+  user_code: string | null;
+  is_admin: number;
+};
+
+type Project = {
+  id: number;
+  name: string;
+  location: string;
+  company: string;
+  code: string;
+  start_date: string;
+  end_date: string;
+  uri: string;
+};
+
+type ApiResponse = {
+  project: Project;
+  users: User[];
 };
 
 const VistaMiembros: React.FC<any> = (project) => {
@@ -59,8 +72,8 @@ const VistaMiembros: React.FC<any> = (project) => {
         }
       )
       .then((response) => {
-        setUsers(response.data);
-        // console.log(response.data);
+        const apiResponse: ApiResponse = response.data;
+        setUsers(apiResponse.users);
       })
       .catch((error) => {
         console.error(error);
@@ -71,7 +84,7 @@ const VistaMiembros: React.FC<any> = (project) => {
     <TouchableOpacity
       style={styles.itemContainer}
       onPress={() => {
-        if (item.role !== "user") {
+        if (item.is_admin) {
           setAdmin(true);
         }
         setUserSelected(item);
@@ -90,10 +103,10 @@ const VistaMiembros: React.FC<any> = (project) => {
       <View style={styles.infoContainer}>
         <Text style={styles.name}>{item.name}</Text>
         <Text style={styles.email}>
-          {item.email} | {item.role}
+          {item.email} | {item.is_admin ? "Admin" : "User"}
         </Text>
       </View>
-      {item.role !== "user" && <Text style={styles.adminBadge}>Admin</Text>}
+      {item.is_admin && <Text style={styles.adminBadge}>Admin</Text>}
     </TouchableOpacity>
   );
 
