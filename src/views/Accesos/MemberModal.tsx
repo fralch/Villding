@@ -1,39 +1,30 @@
-import React from 'react';
-import { View, Text, Image, StyleSheet, TouchableOpacity, Modal } from 'react-native';
-
+import React from "react";
+import {
+  View,
+  Text,
+  Image,
+  StyleSheet,
+  TouchableOpacity,
+  Modal,
+} from "react-native";
+import axios from "axios";
 type MemberModalProps = {
   visible: boolean;
   onClose: () => void;
   admin: boolean;
   user: any;
+  project: any;
 };
 
-const MemberModal: React.FC<MemberModalProps> = ({ visible, onClose, admin, user}) => {
-
+const MemberModal: React.FC<MemberModalProps> = ({
+  visible,
+  onClose,
+  admin,
+  user,
+  project,
+}) => {
   const [member, setMember] = React.useState<any>(null);
   React.useEffect(() => {
-    /*
-    {
-      "created_at": "2024-12-17T20:53:56.000000Z",
-      "edad": 24,
-      "email": "ingfralch@gmail.com",
-      "email_verified_at": null,
-      "genero": "masculino",
-      "id": 1,
-      "is_paid_user": 0,
-      "last_name": "Cairampoma",
-      "name": "Frank",
-      "pivot": {
-        "project_id": 1,
-        "user_id": 1
-      },
-      "role": "user",
-      "telefono": "961610362",
-      "updated_at": "2024-12-17T20:53:56.000000Z",
-      "uri": "1734468836.jpg",
-      "user_code": "4FCvyzAOTS"
-    }
-     */
     console.log(user);
     setMember(user);
   }, [user]);
@@ -41,6 +32,25 @@ const MemberModal: React.FC<MemberModalProps> = ({ visible, onClose, admin, user
   if (!member) {
     return null;
   }
+
+  const handleMakeAdmin = async () => {
+    const response = await axios.post(
+      "https://centroesteticoedith.com/endpoint/project/attach",
+      {
+        user_id: member.id,
+        project_id: project,
+        is_admin: 1,
+      }, // Envía el ID del usuario en el cuerpo de la solicitud
+      {
+        headers: {
+          Authorization: `Bearer YOUR_TOKEN`, // Incluye el token si es necesario
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    const rpt = response.data;
+    console.log(rpt);
+  };
 
   return (
     <Modal visible={visible} animationType="slide" transparent>
@@ -58,32 +68,62 @@ const MemberModal: React.FC<MemberModalProps> = ({ visible, onClose, admin, user
           </View>
 
           {/* Member Info */}
-            <View style={styles.memberInfo}>
+          <View style={styles.memberInfo}>
             {member.uri ? (
-              <Image source={{ uri: "https://centroesteticoedith.com/endpoint/images/profile/" + member.uri }} style={styles.avatar} />
+              <Image
+                source={{
+                  uri:
+                    "https://centroesteticoedith.com/endpoint/images/profile/" +
+                    member.uri,
+                }}
+                style={styles.avatar}
+              />
             ) : (
-              <Image source={{ uri: "https://cdn-icons-png.flaticon.com/512/9385/9385289.png" }} style={styles.avatar} />
+              <Image
+                source={{
+                  uri: "https://cdn-icons-png.flaticon.com/512/9385/9385289.png",
+                }}
+                style={styles.avatar}
+              />
             )}
             <View style={styles.info}>
               <Text style={styles.name}>{member.name}</Text>
               <Text style={styles.email}>{member.email}</Text>
-              <Text style={styles.id}>{member.id}</Text>
+              <Text style={styles.id}>{member.user_code}</Text>
+              <Text
+                style={[
+                  styles.name,
+                  {
+                    color: member.is_admin == 1 ? "#e74c3c" : "#2ecc71",
+                    fontSize: 14,
+                    fontWeight: "normal",
+                  },
+                ]}
+              >
+                {member.is_admin == 1 ? "Admin" : "User"}
+              </Text>
             </View>
-            </View>
+          </View>
 
           {/* Access Section */}
           <View style={styles.accessSection}>
-          {
-            !admin ? (<TouchableOpacity style={styles.adminButton}>
-              <Text style={styles.adminText}>Volver administrador</Text>
-            </TouchableOpacity>) :   <TouchableOpacity style={styles.removeButton}>
-            <Text style={styles.removeText}>Quitar permiso de administrador</Text>
-          </TouchableOpacity>
-          }
-        
-          <TouchableOpacity style={styles.removeButton}>
-            <Text style={styles.removeText}>Retirar del proyecto</Text>
-          </TouchableOpacity>
+            {!admin ? (
+              <TouchableOpacity style={styles.adminButton} 
+                onPress={handleMakeAdmin}
+              >
+                <Text style={styles.adminText}>Volver administrador</Text>
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity style={styles.removeButton}>
+                <Text style={styles.removeText}>
+                  Quitar permiso de administrador
+                </Text>
+              </TouchableOpacity>
+            )}
+
+            <TouchableOpacity style={styles.removeButton}>
+              <Text style={styles.removeText}>Retirar del proyecto</Text>
+            </TouchableOpacity>
           </View>
         </View>
       </View>
@@ -94,34 +134,34 @@ const MemberModal: React.FC<MemberModalProps> = ({ visible, onClose, admin, user
 const styles = StyleSheet.create({
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "center",
+    alignItems: "center",
   },
   modalContent: {
-    backgroundColor: '#05222F',
-    width: '90%',
+    backgroundColor: "#05222F",
+    width: "90%",
     borderRadius: 12,
     padding: 16,
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: 16,
   },
   headerButton: {
-    color: '#33baba',
+    color: "#33baba",
     fontSize: 16,
   },
   headerTitle: {
-    color: 'white',
+    color: "white",
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   memberInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 16,
   },
   avatar: {
@@ -134,25 +174,25 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   name: {
-    color: 'white',
+    color: "white",
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   email: {
-    color: '#B0C4DE',
+    color: "#B0C4DE",
     fontSize: 14,
   },
   id: {
-    color: '#B0C4DE',
+    color: "#B0C4DE",
     fontSize: 12,
   },
   accessSection: {
     borderTopWidth: 1,
-    borderTopColor: '#004466',
+    borderTopColor: "#004466",
     paddingTop: 12,
   },
   sectionTitle: {
-    color: 'white',
+    color: "white",
     fontSize: 14,
   },
   adminButton: {

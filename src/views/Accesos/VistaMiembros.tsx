@@ -182,6 +182,7 @@ const VistaMiembros: React.FC<any> = (project) => {
         visible={isModalVisible}
         admin={admin}
         user={userSelected}
+        project= {idProject}
         onClose={() => setModalVisible(false)}
       />
 
