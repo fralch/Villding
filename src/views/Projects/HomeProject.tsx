@@ -107,37 +107,40 @@ export default function HomeProject() {
 
   async function fetchProjectsFromServer(userId: string): Promise<Project[]> {
     try {
-      const response = await axios.post(
-        "https://centroesteticoedith.com/endpoint/user/check-attachment",
-        { user_id: userId }, // Envía el ID del usuario en el cuerpo de la solicitud
-        {
-          headers: {
-            Authorization: `Bearer YOUR_TOKEN`, // Incluye el token si es necesario
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      // Mapea los datos de la API al formato de la interfaz
-      // console.log(response.data);
-      const mappedProjects: Project[] = response.data.map((project: any) => ({
-        id: String(project.id),
-        title: project.name,
-        subtitle: project.location, // Asumiendo que `location` es un subtítulo adecuado
-        company: project.company,
-        image:
-          project.uri === null
-            ? "https://serviciosenlinea.mined.gob.ni/nic10cweb/assets/img/user.jpg"
-            : "https://centroesteticoedith.com/endpoint/images/projects/" +
-              project.uri, // Asumiendo que la imagen es la propiedad `uri`
-        week: calculateWeekDifference(project.start_date, project.end_date),
-      }));
+        const response = await axios.post(
+            "https://centroesteticoedith.com/endpoint/user/check-attachment",
+            { user_id: userId }, // Envía el ID del usuario en el cuerpo de la solicitud
+            {
+                headers: {
+                    Authorization: `Bearer YOUR_TOKEN`, // Incluye el token si es necesario
+                    "Content-Type": "application/json",
+                },
+            }
+        );
 
-      return mappedProjects;
+        // Accede a la propiedad 'projects' del objeto de respuesta
+        const projectsData = response.data.projects;
+
+        // Mapea los datos de la API al formato de la interfaz
+        const mappedProjects: Project[] = projectsData.map((project: any) => ({
+            id: String(project.id),
+            title: project.name,
+            subtitle: project.location, // Asumiendo que `location` es un subtítulo adecuado
+            company: project.company,
+            image: project.uri.startsWith('http')
+                ? project.uri
+                : `https://centroesteticoedith.com/endpoint/images/projects/${project.uri}`,
+            week: calculateWeekDifference(project.start_date, project.end_date),
+        }));
+
+        return mappedProjects;
     } catch (error) {
-      console.error("Error al obtener proyectos del servidor:", error);
-      return [];
+        console.error("Error al obtener proyectos del servidor:", error);
+        return [];
     }
   }
+
+
 
   async function saveProjectsToLocalStorage(
     projects: Project[]
