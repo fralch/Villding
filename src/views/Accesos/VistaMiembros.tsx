@@ -8,10 +8,14 @@ import {
   StyleSheet,
   TouchableOpacity,
   Button,
-  Modal
+  Modal,
 } from "react-native";
-import { Ionicons, MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons"; // Importa el ícono
-import MemberModal from './MemberModal';
+import {
+  Ionicons,
+  MaterialCommunityIcons,
+  MaterialIcons,
+} from "@expo/vector-icons"; // Importa el ícono
+import MemberModal from "./MemberModal";
 import axios from "axios";
 
 type User = {
@@ -21,7 +25,7 @@ type User = {
   user_code: string;
   telefono: string;
   email: string;
-  role:  string;
+  role: string;
   uri: string | null;
 };
 
@@ -29,44 +33,58 @@ const VistaMiembros: React.FC<any> = (project) => {
   const [isModalVisible, setModalVisible] = useState(false);
   const [isModalVisibleInsertUser, setModalVisibleInsertUser] = useState(false);
   const [admin, setAdmin] = useState(false);
-  const [idProject, setIdProject] = useState<any>(project?.route?.params?.id_project);
+  const [idProject, setIdProject] = useState<any>(
+    project?.route?.params?.id_project
+  );
   const [users, setUsers] = useState<User[]>([]);
   const [userSelected, setUserSelected] = useState<User | null>(null);
   const [codeUser, setCodeUser] = useState("");
-  const [ingresado, setIngresado] = useState()
+  const [ingresado, setIngresado] = useState();
 
   useEffect(() => {
     const myHeaders = {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     };
 
     const data = {
-      project_id: idProject
+      project_id: idProject,
     };
 
-    axios.post('https://centroesteticoedith.com/endpoint/project/check-attachment', data, {
-      headers: myHeaders
-    })
-      .then(response => {
+    axios
+      .post(
+        "https://centroesteticoedith.com/endpoint/project/check-attachment",
+        data,
+        {
+          headers: myHeaders,
+        }
+      )
+      .then((response) => {
         setUsers(response.data);
         // console.log(response.data);
       })
-      .catch(error => {
+      .catch((error) => {
         console.error(error);
       });
   }, [ingresado]);
 
-
-  const renderItem = ({ item, index }: { item: User, index: number }) => (
-    <TouchableOpacity style={styles.itemContainer} onPress={() => {
-      if (item.role !== "user") {
-        setAdmin(true);
-      }
-      setUserSelected(item);
-      setModalVisible(true);
-        }}>
+  const renderItem = ({ item, index }: { item: User; index: number }) => (
+    <TouchableOpacity
+      style={styles.itemContainer}
+      onPress={() => {
+        if (item.role !== "user") {
+          setAdmin(true);
+        }
+        setUserSelected(item);
+        setModalVisible(true);
+      }}
+    >
       <Image
-        source={{ uri: item.uri ? "https://centroesteticoedith.com/endpoint/images/profile/" + item.uri : "https://cdn-icons-png.flaticon.com/512/9385/9385289.png" }}
+        source={{
+          uri: item.uri
+            ? "https://centroesteticoedith.com/endpoint/images/profile/" +
+              item.uri
+            : "https://cdn-icons-png.flaticon.com/512/9385/9385289.png",
+        }}
         style={styles.avatar}
       />
       <View style={styles.infoContainer}>
@@ -81,11 +99,14 @@ const VistaMiembros: React.FC<any> = (project) => {
 
   const handleAddUser = async () => {
     try {
-      const userCodeRpt = await axios.post('https://centroesteticoedith.com/endpoint/user/user_code', { user_code: codeUser });
+      const userCodeRpt = await axios.post(
+        "https://centroesteticoedith.com/endpoint/user/user_code",
+        { user_code: codeUser }
+      );
       const userId = userCodeRpt.data.id;
 
       const myHeaders = {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       };
 
       const data = {
@@ -93,10 +114,15 @@ const VistaMiembros: React.FC<any> = (project) => {
         project_id: idProject,
       };
 
-      const response = await axios.post('https://centroesteticoedith.com/endpoint/project/attach', data, { headers: myHeaders });
+      const response = await axios.post(
+        "https://centroesteticoedith.com/endpoint/project/attach",
+        data,
+        { headers: myHeaders }
+      );
       setIngresado(response.data);
+      setModalVisibleInsertUser(false); // Close the modal after inserting the user
     } catch (error) {
-      console.error('Error inserting data:', error);
+      console.error("Error inserting data:", error);
     }
   };
 
@@ -106,10 +132,16 @@ const VistaMiembros: React.FC<any> = (project) => {
         <TouchableOpacity>
           <Ionicons name="chevron-back-outline" size={24} color="white" />
         </TouchableOpacity>
-        <Text style={{ color: 'white', fontSize: 18 }}>Administrar accesos</Text>
+        <Text style={{ color: "white", fontSize: 18 }}>
+          Administrar accesos
+        </Text>
         <View style={{ flexDirection: "row", alignItems: "center" }}>
           <TouchableOpacity>
-            <MaterialCommunityIcons name="dots-vertical" size={24} color="white" />
+            <MaterialCommunityIcons
+              name="dots-vertical"
+              size={24}
+              color="white"
+            />
           </TouchableOpacity>
         </View>
       </View>
@@ -120,31 +152,60 @@ const VistaMiembros: React.FC<any> = (project) => {
           renderItem={renderItem}
         />
 
-        <TouchableOpacity style={[styles.inviteButton, { marginTop: -20, backgroundColor: "#05222f" }]} onPress={() => setModalVisibleInsertUser(true)}>
+        <TouchableOpacity
+          style={[
+            styles.inviteButton,
+            { marginTop: -20, backgroundColor: "#05222f" },
+          ]}
+          onPress={() => setModalVisibleInsertUser(true)}
+        >
           <MaterialIcons name="save-alt" size={24} color="gray" />
           <Text style={[styles.inviteText, { marginLeft: 10 }]}>
             Ingresar usuario
           </Text>
         </TouchableOpacity>
       </View>
-      <MemberModal visible={isModalVisible} admin={admin}  user={userSelected} onClose={() => setModalVisible(false)} />
+      <MemberModal
+        visible={isModalVisible}
+        admin={admin}
+        user={userSelected}
+        onClose={() => setModalVisible(false)}
+      />
 
-      <Modal visible={isModalVisibleInsertUser} animationType="slide" transparent>
+      <Modal
+        visible={isModalVisibleInsertUser}
+        animationType="slide"
+        transparent
+      >
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Insertar usuario</Text>
-            <TextInput placeholder="Codigo" style={styles.modalInput} placeholderTextColor="gray"   
-             value={codeUser}
-             onChangeText={setCodeUser}
-             />
+            <TextInput
+              placeholder="Codigo"
+              style={styles.modalInput}
+              placeholderTextColor="gray"
+              value={codeUser}
+              onChangeText={setCodeUser}
+            />
             <View style={styles.modalButtonsContainer}>
-              <TouchableOpacity style={[styles.button, { backgroundColor: "#05222f", borderColor: "#0a3649", borderWidth: 1}]} onPress={() => setModalVisibleInsertUser(false)}>
-                        <Text style={styles.buttonText}>Cancelar</Text>
+              <TouchableOpacity
+                style={[
+                  styles.button,
+                  {
+                    backgroundColor: "#05222f",
+                    borderColor: "#0a3649",
+                    borderWidth: 1,
+                  },
+                ]}
+                onPress={() => setModalVisibleInsertUser(false)}
+              >
+                <Text style={styles.buttonText}>Cancelar</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={[styles.button, { backgroundColor: "#0a3649" }]}
-               onPress={() => handleAddUser()}
-               >
-                        <Text style={styles.buttonText}>Insertar</Text>
+              <TouchableOpacity
+                style={[styles.button, { backgroundColor: "#0a3649" }]}
+                onPress={() => handleAddUser()}
+              >
+                <Text style={styles.buttonText}>Insertar</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -268,13 +329,13 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   button: {
-    backgroundColor: '#33baba',
+    backgroundColor: "#33baba",
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 5,
   },
   buttonText: {
-    color: 'white',
+    color: "white",
     fontSize: 16,
   },
 });
