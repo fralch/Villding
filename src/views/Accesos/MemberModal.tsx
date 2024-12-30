@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Modal,
 } from "react-native";
+
 import axios from "axios";
 type MemberModalProps = {
   visible: boolean;
@@ -23,7 +24,10 @@ const MemberModal: React.FC<MemberModalProps> = ({
   user,
   project,
 }) => {
+
   const [member, setMember] = React.useState<any>(null);
+  const [userSession , setUserSession] = React.useState<any>(null);
+
   React.useEffect(() => {
     console.log(user);
     setMember(user);
@@ -33,13 +37,17 @@ const MemberModal: React.FC<MemberModalProps> = ({
     return null;
   }
 
+    
+
+
   const handleMakeAdmin = async () => {
+    console.log(member.id);
+    console.log(project);
     const response = await axios.post(
-      "https://centroesteticoedith.com/endpoint/project/attach",
+      "https://centroesteticoedith.com/endpoint/user/makeadmin",
       {
         user_id: member.id,
-        project_id: project,
-        is_admin: 1,
+        project_id: project
       }, // Envía el ID del usuario en el cuerpo de la solicitud
       {
         headers: {
@@ -48,9 +56,34 @@ const MemberModal: React.FC<MemberModalProps> = ({
         },
       }
     );
-    const rpt = response.data;
+    const rpt = response.data.message;
     console.log(rpt);
+    //verifica si el mensaje es correcto y si es Project successfully linked to user cierra el modal 
+    if(rpt === "User is now an admin of the project"){ 
+      onClose(); 
+    }
+    else{
+      console.log("Error al agregar al proyecto");
+    }
   };
+
+  const handleRemoveAdmin = async () =>{
+    const response = await axios.post(
+      "https://centroesteticoedith.com/endpoint/user/removeadmin",
+      {
+        user_id: member.id,
+        project_id: project,
+      }
+    );
+    const rpt = response.data.message;
+    console.log(rpt);
+    if(rpt === "User is no longer an admin of the project"){ 
+      onClose(); 
+    }
+    else{
+      console.log("Error al retirar del proyecto");
+    }
+  }
 
   return (
     <Modal visible={visible} animationType="slide" transparent>
@@ -107,23 +140,31 @@ const MemberModal: React.FC<MemberModalProps> = ({
 
           {/* Access Section */}
           <View style={styles.accessSection}>
-            {!admin ? (
+            {member.is_admin == 1 ? (
+              !admin ? (
               <TouchableOpacity style={styles.adminButton} 
                 onPress={handleMakeAdmin}
               >
                 <Text style={styles.adminText}>Volver administrador</Text>
               </TouchableOpacity>
-            ) : (
-              <TouchableOpacity style={styles.removeButton}>
+              ) : (
+              <TouchableOpacity style={styles.removeButton}
+                onPress={handleRemoveAdmin}
+              >
                 <Text style={styles.removeText}>
-                  Quitar permiso de administrador
+                Quitar permiso de administrador
                 </Text>
               </TouchableOpacity>
-            )}
+              )
+            ) : null}
 
-            <TouchableOpacity style={styles.removeButton}>
-              <Text style={styles.removeText}>Retirar del proyecto</Text>
-            </TouchableOpacity>
+            {
+              member.is_admin == 1 ? (<TouchableOpacity style={styles.removeButton}>
+                <Text style={styles.removeText}>Retirar del proyecto</Text>
+              </TouchableOpacity>):
+              null
+            }
+            
           </View>
         </View>
       </View>
