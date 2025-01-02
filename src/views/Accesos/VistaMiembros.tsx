@@ -15,6 +15,7 @@ import {
   MaterialIcons,
 } from "@expo/vector-icons"; // Importa el ícono
 import MemberModal from "./MemberModal";
+import { getSesion, removeSesion , updateSesion } from '../../hooks/localStorageUser';
 import axios from "axios";
 
 type User = {
@@ -53,6 +54,18 @@ const VistaMiembros: React.FC<any> = (project) => {
   const [userSelected, setUserSelected] = useState<User | null>(null);
   const [codeUser, setCodeUser] = useState("");
   const [ingresado, setIngresado] = useState();
+  const [dataUser, setDataUser] = useState<any>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+
+  useEffect(() => {
+    console.log('Obteniendo sesion en vista miembros');
+    getSesion().then((StoredSesion : any) => {
+      let sesion = JSON.parse(StoredSesion);
+      console.log(sesion);
+      setDataUser(sesion);
+    });
+  }, []);
 
   useEffect(() => {
     const myHeaders = {
@@ -79,6 +92,17 @@ const VistaMiembros: React.FC<any> = (project) => {
         console.error(error);
       });
   }, [ingresado]);
+
+  useEffect(() => {
+    users.filter((user) => {
+      if (user.id === dataUser?.id) {
+        if(user.is_admin === 1){
+          setIsAdmin(true);
+        }
+      }
+    });
+    console.log(`isAdmin: ${isAdmin}`);
+  }, []);
 
   const renderItem = ({ item, index }: { item: User; index: number }) => (
     <TouchableOpacity
@@ -180,7 +204,7 @@ const VistaMiembros: React.FC<any> = (project) => {
       </View>
       <MemberModal
         visible={isModalVisible}
-        admin={admin}
+        admin={isAdmin}
         user={userSelected}
         project= {idProject}
         onClose={() => setModalVisible(false)}

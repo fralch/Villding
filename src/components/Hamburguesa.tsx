@@ -4,6 +4,7 @@ import { List, Divider } from 'react-native-paper';
 import { useRoute, RouteProp } from '@react-navigation/native';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 
+
 interface Project {
   company: string;
   id: string;
@@ -42,6 +43,8 @@ export default function Hamburguesa(props: any) {
 
     return requiredKeys.every((key) => key in obj);
   };
+
+ 
 
   const recibiendoProyecto = useMemo(() => {
     if (

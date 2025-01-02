@@ -30,6 +30,7 @@ const MemberModal: React.FC<MemberModalProps> = ({
 
   React.useEffect(() => {
     console.log(user);
+    console.log(`admin-member-modal: ${admin}`); 
     setMember(user);
   }, [user]);
 
@@ -140,8 +141,8 @@ const MemberModal: React.FC<MemberModalProps> = ({
 
           {/* Access Section */}
           <View style={styles.accessSection}>
-            {member.is_admin == 1 ? (
-              !admin ? (
+            {admin ? (
+              member.is_admin == 0 ? (
               <TouchableOpacity style={styles.adminButton} 
                 onPress={handleMakeAdmin}
               >
@@ -159,10 +160,12 @@ const MemberModal: React.FC<MemberModalProps> = ({
             ) : null}
 
             {
-              member.is_admin == 1 ? (<TouchableOpacity style={styles.removeButton}>
+              admin ? (<TouchableOpacity style={styles.removeButton}>
                 <Text style={styles.removeText}>Retirar del proyecto</Text>
               </TouchableOpacity>):
-              null
+              (<TouchableOpacity style={styles.removeButton}>
+                <Text style={styles.removeText}>Retirarme del proyecto</Text>
+              </TouchableOpacity>)
             }
             
           </View>

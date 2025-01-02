@@ -116,7 +116,7 @@ function CreacionCuenta(): JSX.Element {
   };
 
   const handleCreateAccount = async () => {
-    setShowModalLoading(true);
+    // setShowModalLoading(true);
 
     if (nombres !== "" && apellidos !== "" && email !== "" && clave !== "") {
       if (clave.length < 8) {
@@ -219,7 +219,7 @@ function CreacionCuenta(): JSX.Element {
             }
           };
   
-          fetchCode();
+          //fetchCode();
           // ----------------
 
           setShowModalLoading(false);
@@ -233,6 +233,7 @@ function CreacionCuenta(): JSX.Element {
             rol: "user",
             telefono: celular ? celular : "",
             uri: profileImage,
+            user_code: response.data.user.user_code,
           });
         } catch (error: any) {
           console.log(error);
@@ -600,7 +601,7 @@ function CreacionCuenta(): JSX.Element {
       </ScrollView>
 
       <ConfirmModal
-        visible={showModal}
+        visible={false}
         message={msjeModal}
         onClose={() => setShowModal(false)}
       />
