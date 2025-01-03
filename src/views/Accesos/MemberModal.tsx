@@ -29,21 +29,21 @@ const MemberModal: React.FC<MemberModalProps> = ({
   const [userSession, setUserSession] = useState<any>(null);
 
   useEffect(() => {
-    console.log("useEffect for user:", user);
-    console.log(`admin-member-modal: ${admin}`);
+    // console.log("useEffect for user:", user);
+    // console.log(`admin-member-modal: ${admin}`);
     setMember(user);
   }, [user]);
 
   const getUserSession = useCallback(async () => {
     const userSession = await getSesion();
-    console.log("getUserSession:", userSession);
+    // console.log("getUserSession:", userSession);
     if (userSession) {
       setUserSession(JSON.parse(userSession));
     }
   }, []);
 
   useEffect(() => {
-    console.log("useEffect for getUserSession");
+    // console.log("useEffect for getUserSession");
     getUserSession();
   }, [getUserSession]);
 
@@ -51,11 +51,11 @@ const MemberModal: React.FC<MemberModalProps> = ({
     return null;
   }
 
-  console.log("userSession:", userSession.id);
-  console.log("member:", member.id);
+    // console.log("userSession:", userSession.id);
+    // console.log("member:", member.id);
 
   const handleMakeAdmin = async () => {
-    console.log("handleMakeAdmin:", member.id, project);
+    // console.log("handleMakeAdmin:", member.id, project);
     try {
       const response = await axios.post(
         "https://centroesteticoedith.com/endpoint/user/makeadmin",
@@ -71,11 +71,11 @@ const MemberModal: React.FC<MemberModalProps> = ({
         }
       );
       const rpt = response.data.message;
-      console.log("handleMakeAdmin response:", rpt);
+      // console.log("handleMakeAdmin response:", rpt);
       if (rpt === "User is now an admin of the project") {
         onClose();
       } else {
-        console.log("Error al agregar al proyecto");
+         console.log("Error al agregar al proyecto");
       }
     } catch (error) {
       console.error("Error making admin:", error);

@@ -62,7 +62,7 @@ const VistaMiembros: React.FC<any> = (project) => {
     console.log('Obteniendo sesion en vista miembros');
     getSesion().then((StoredSesion : any) => {
       let sesion = JSON.parse(StoredSesion);
-      console.log(sesion);
+      // console.log(sesion);
       setDataUser(sesion);
     });
   }, []);
@@ -95,14 +95,14 @@ const VistaMiembros: React.FC<any> = (project) => {
 
   useEffect(() => {
     users.filter((user) => {
-      console.log(dataUser?.id);
+      // console.log(dataUser?.id);
       if (user.id == dataUser?.id) {
         if(user.is_admin === 1){
           setIsAdmin(true);
         }
       }
     });
-    console.log(`isAdmin: ${isAdmin}`);
+    // console.log(`isAdmin: ${isAdmin}`);
   }, []);
 
   const renderItem = ({ item, index }: { item: User; index: number }) => (
