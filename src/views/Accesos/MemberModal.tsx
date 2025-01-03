@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
+import { useNavigation, NavigationProp } from '@react-navigation/native';
 import {
   View,
   Text,
@@ -25,6 +26,7 @@ const MemberModal: React.FC<MemberModalProps> = ({
   user,
   project,
 }) => {
+  const { navigate } = useNavigation<NavigationProp<any>>();
   const [member, setMember] = useState<any>(null);
   const [userSession, setUserSession] = useState<any>(null);
 
@@ -104,6 +106,28 @@ const MemberModal: React.FC<MemberModalProps> = ({
     }
   };
 
+  const handleRemoveMember = async () => {
+    console.log("handleRemoveMember:", member.id, project);
+    try {
+      const response = await axios.post(
+        "https://centroesteticoedith.com/endpoint/project/detach",
+        {
+          user_id: member.id,
+          project_id: project,
+        }
+      );
+      const rpt = response.data.message;
+      console.log("handleRemoveMember response:", rpt);
+      if (rpt === "Project successfully unlinked from user") {
+        // quiero que se dirija a la pantalla del proyecto
+        navigate("HomeProject" );
+      } else {
+        console.log("Error al retirar del proyecto");
+      }
+    } catch (error) {
+      console.error("Error removing member:", error);
+    }
+  }
   return (
     <Modal visible={visible} animationType="slide" transparent>
       <View style={styles.modalOverlay}>
@@ -179,11 +203,11 @@ const MemberModal: React.FC<MemberModalProps> = ({
             ) : null}
 
             {admin ? (
-              <TouchableOpacity style={styles.removeButton}>
+              <TouchableOpacity style={styles.removeButton} onPress={handleRemoveMember}>
                 <Text style={styles.removeText}>Retirar del proyecto</Text>
               </TouchableOpacity>
             ) : userSession.id == member.id ? (
-              <TouchableOpacity style={styles.removeButton}>
+              <TouchableOpacity style={styles.removeButton} onPress={handleRemoveMember}>
                 <Text style={styles.removeText}>Salir del proyecto</Text>
               </TouchableOpacity>
             ) : null}
