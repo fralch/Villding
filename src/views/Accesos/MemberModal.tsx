@@ -110,12 +110,19 @@ const MemberModal: React.FC<MemberModalProps> = ({
         <View style={styles.modalContent}>
           {/* Header */}
           <View style={styles.header}>
-            <TouchableOpacity onPress={onClose}>
-              <Text style={styles.headerButton}>Cancelar</Text>
+            <TouchableOpacity >
             </TouchableOpacity>
             <Text style={styles.headerTitle}>Miembro</Text>
-            <TouchableOpacity>
-              <Text style={styles.headerButton}>Guardar</Text>
+            <TouchableOpacity 
+              onPress={onClose} 
+              style={{
+                marginLeft: "auto",
+                padding: 10,
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <Text style={[styles.headerButton]}>X</Text>
             </TouchableOpacity>
           </View>
 
