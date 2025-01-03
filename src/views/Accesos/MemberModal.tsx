@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -7,8 +7,9 @@ import {
   TouchableOpacity,
   Modal,
 } from "react-native";
-
+import { getSesion, removeSesion, updateSesion } from '../../hooks/localStorageUser';
 import axios from "axios";
+
 type MemberModalProps = {
   visible: boolean;
   onClose: () => void;
@@ -24,67 +25,84 @@ const MemberModal: React.FC<MemberModalProps> = ({
   user,
   project,
 }) => {
+  const [member, setMember] = useState<any>(null);
+  const [userSession, setUserSession] = useState<any>(null);
 
-  const [member, setMember] = React.useState<any>(null);
-  const [userSession , setUserSession] = React.useState<any>(null);
-
-  React.useEffect(() => {
-    console.log(user);
-    console.log(`admin-member-modal: ${admin}`); 
+  useEffect(() => {
+    console.log("useEffect for user:", user);
+    console.log(`admin-member-modal: ${admin}`);
     setMember(user);
   }, [user]);
+
+  const getUserSession = useCallback(async () => {
+    const userSession = await getSesion();
+    console.log("getUserSession:", userSession);
+    if (userSession) {
+      setUserSession(JSON.parse(userSession));
+    }
+  }, []);
+
+  useEffect(() => {
+    console.log("useEffect for getUserSession");
+    getUserSession();
+  }, [getUserSession]);
 
   if (!member) {
     return null;
   }
 
-    
-
+  console.log("userSession:", userSession.id);
+  console.log("member:", member.id);
 
   const handleMakeAdmin = async () => {
-    console.log(member.id);
-    console.log(project);
-    const response = await axios.post(
-      "https://centroesteticoedith.com/endpoint/user/makeadmin",
-      {
-        user_id: member.id,
-        project_id: project
-      }, // Envía el ID del usuario en el cuerpo de la solicitud
-      {
-        headers: {
-          Authorization: `Bearer YOUR_TOKEN`, // Incluye el token si es necesario
-          "Content-Type": "application/json",
+    console.log("handleMakeAdmin:", member.id, project);
+    try {
+      const response = await axios.post(
+        "https://centroesteticoedith.com/endpoint/user/makeadmin",
+        {
+          user_id: member.id,
+          project_id: project,
         },
+        {
+          headers: {
+            Authorization: `Bearer YOUR_TOKEN`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      const rpt = response.data.message;
+      console.log("handleMakeAdmin response:", rpt);
+      if (rpt === "User is now an admin of the project") {
+        onClose();
+      } else {
+        console.log("Error al agregar al proyecto");
       }
-    );
-    const rpt = response.data.message;
-    console.log(rpt);
-    //verifica si el mensaje es correcto y si es Project successfully linked to user cierra el modal 
-    if(rpt === "User is now an admin of the project"){ 
-      onClose(); 
-    }
-    else{
-      console.log("Error al agregar al proyecto");
+    } catch (error) {
+      console.error("Error making admin:", error);
     }
   };
 
-  const handleRemoveAdmin = async () =>{
-    const response = await axios.post(
-      "https://centroesteticoedith.com/endpoint/user/removeadmin",
-      {
-        user_id: member.id,
-        project_id: project,
+  const handleRemoveAdmin = async () => {
+    console.log("handleRemoveAdmin:", member.id, project);
+    try {
+      const response = await axios.post(
+        "https://centroesteticoedith.com/endpoint/user/removeadmin",
+        {
+          user_id: member.id,
+          project_id: project,
+        }
+      );
+      const rpt = response.data.message;
+      console.log("handleRemoveAdmin response:", rpt);
+      if (rpt === "User is no longer an admin of the project") {
+        onClose();
+      } else {
+        console.log("Error al retirar del proyecto");
       }
-    );
-    const rpt = response.data.message;
-    console.log(rpt);
-    if(rpt === "User is no longer an admin of the project"){ 
-      onClose(); 
+    } catch (error) {
+      console.error("Error removing admin:", error);
     }
-    else{
-      console.log("Error al retirar del proyecto");
-    }
-  }
+  };
 
   return (
     <Modal visible={visible} animationType="slide" transparent>
@@ -143,38 +161,31 @@ const MemberModal: React.FC<MemberModalProps> = ({
           <View style={styles.accessSection}>
             {admin ? (
               member.is_admin == 0 ? (
-              <TouchableOpacity style={styles.adminButton} 
-                onPress={handleMakeAdmin}
-              >
-                <Text style={styles.adminText}>Volver administrador</Text>
-              </TouchableOpacity>
+                <TouchableOpacity style={styles.adminButton} onPress={handleMakeAdmin}>
+                  <Text style={styles.adminText}>Volver administrador</Text>
+                </TouchableOpacity>
               ) : (
-              <TouchableOpacity style={styles.removeButton}
-                onPress={handleRemoveAdmin}
-              >
-                <Text style={styles.removeText}>
-                Quitar permiso de administrador
-                </Text>
-              </TouchableOpacity>
+                <TouchableOpacity style={styles.removeButton} onPress={handleRemoveAdmin}>
+                  <Text style={styles.removeText}>Quitar permiso de administrador</Text>
+                </TouchableOpacity>
               )
             ) : null}
 
-            {
-              admin ? (<TouchableOpacity style={styles.removeButton}>
+            {admin ? (
+              <TouchableOpacity style={styles.removeButton}>
                 <Text style={styles.removeText}>Retirar del proyecto</Text>
-              </TouchableOpacity>):
-              (<TouchableOpacity style={styles.removeButton}>
-                <Text style={styles.removeText}>Retirarme del proyecto</Text>
-              </TouchableOpacity>)
-            }
-            
+              </TouchableOpacity>
+            ) : userSession.id == member.id ? (
+              <TouchableOpacity style={styles.removeButton}>
+                <Text style={styles.removeText}>Salir del proyecto</Text>
+              </TouchableOpacity>
+            ) : null}
           </View>
         </View>
       </View>
     </Modal>
   );
 };
-
 const styles = StyleSheet.create({
   modalOverlay: {
     flex: 1,
