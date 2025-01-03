@@ -83,7 +83,7 @@ const MemberModal: React.FC<MemberModalProps> = ({
   };
 
   const handleRemoveAdmin = async () => {
-    console.log("handleRemoveAdmin:", member.id, project);
+    // console.log("handleRemoveAdmin:", member.id, project);
     try {
       const response = await axios.post(
         "https://centroesteticoedith.com/endpoint/user/removeadmin",
@@ -93,7 +93,7 @@ const MemberModal: React.FC<MemberModalProps> = ({
         }
       );
       const rpt = response.data.message;
-      console.log("handleRemoveAdmin response:", rpt);
+      // console.log("handleRemoveAdmin response:", rpt);
       if (rpt === "User is no longer an admin of the project") {
         onClose();
       } else {
