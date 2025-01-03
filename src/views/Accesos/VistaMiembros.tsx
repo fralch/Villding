@@ -62,7 +62,7 @@ const VistaMiembros: React.FC<any> = (project) => {
     console.log('Obteniendo sesion en vista miembros');
     getSesion().then((StoredSesion : any) => {
       let sesion = JSON.parse(StoredSesion);
-      // console.log(sesion);
+      console.log(sesion);
       setDataUser(sesion);
     });
   }, []);
@@ -86,6 +86,7 @@ const VistaMiembros: React.FC<any> = (project) => {
       )
       .then((response) => {
         const apiResponse: ApiResponse = response.data;
+        console.log(apiResponse.users);
         setUsers(apiResponse.users);
       })
       .catch((error) => {
@@ -95,17 +96,20 @@ const VistaMiembros: React.FC<any> = (project) => {
 
   useEffect(() => {
     users.filter((user) => {
-      // console.log(dataUser?.id);
+      console.log("comprobando si es admin");
+      console.log(dataUser?.id, user.id);
+   ;
       if (user.id == dataUser?.id) {
-        if(user.is_admin === 1){
+        if(user.is_admin === 1 || dataUser?.is_admin === 1){
           setIsAdmin(true);
         }
       }
     });
-    // console.log(`isAdmin: ${isAdmin}`);
+    console.log(`isAdmin: ${isAdmin}`);
   }, []);
 
   const renderItem = ({ item, index }: { item: User; index: number }) => (
+   <View>
     <TouchableOpacity
       style={styles.itemContainer}
       onPress={() => {
@@ -131,8 +135,9 @@ const VistaMiembros: React.FC<any> = (project) => {
           {item.email} | {item.is_admin ? "Admin" : "User"}
         </Text>
       </View>
-      {item.is_admin && <Text style={styles.adminBadge}>Admin</Text>}
+      {item.is_admin ? <Text style={styles.adminBadge}>Admin</Text> : null}
     </TouchableOpacity>
+   </View>
   );
 
   const handleAddUser = async () => {

@@ -17,10 +17,12 @@ import VistaMiembros from './src/views/Accesos/VistaMiembros';
 
 SplashScreen.preventAutoHideAsync(); // Evita que el splash screen desaparezca automáticamente
 
+
+
 export default function RootNavigator() {
   const [stateLogin, setStateLogin] = useState(true); // Indica si debe ir a la pantalla de Login o HomeProject
   const [isLoading, setIsLoading] = useState(true); // Indica si aún se está verificando la sesión
-  const [projectState, setProject] = useState<any>(null); // Ajusta el tipo de `projectState` a `any` o al tipo adecuado
+  const [projectState, setProject] = useState<any>(null);
   const [initialRoute, setInitialRoute] = useState('Login'); // Maneja la ruta inicial
   const Stack = createNativeStackNavigator();
 
@@ -43,10 +45,14 @@ export default function RootNavigator() {
       console.log('Login exitoso');
       const proyecto = await getProject();
       if (proyecto) {
-        // No necesitamos JSON.parse ya que proyecto ya es un objeto
+        // Asegúrate de que `proyecto` no es null antes de usar `JSON.parse`
+       if( typeof proyecto === 'string'){
+        setProject(JSON.parse(proyecto));
+       } else {
         setProject(proyecto);
+       }
       } else {
-        setProject(null);
+        setProject(null); // Maneja el caso cuando `proyecto` es null
       }
       setStateLogin(false);
     }

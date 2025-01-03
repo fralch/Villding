@@ -107,7 +107,7 @@ const MemberModal: React.FC<MemberModalProps> = ({
   };
 
   const handleRemoveMember = async () => {
-    console.log("handleRemoveMember:", member.id, project);
+    // console.log("handleRemoveMember:", member.id, project);
     try {
       const response = await axios.post(
         "https://centroesteticoedith.com/endpoint/project/detach",
