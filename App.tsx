@@ -43,10 +43,10 @@ export default function RootNavigator() {
       console.log('Login exitoso');
       const proyecto = await getProject();
       if (proyecto) {
-        // Asegúrate de que `proyecto` no es null antes de usar `JSON.parse`
-        setProject(JSON.parse(proyecto));
+        // No necesitamos JSON.parse ya que proyecto ya es un objeto
+        setProject(proyecto);
       } else {
-        setProject(null); // Maneja el caso cuando `proyecto` es null
+        setProject(null);
       }
       setStateLogin(false);
     }
