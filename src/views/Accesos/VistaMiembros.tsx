@@ -95,7 +95,8 @@ const VistaMiembros: React.FC<any> = (project) => {
 
   useEffect(() => {
     users.filter((user) => {
-      if (user.id === dataUser?.id) {
+      console.log(dataUser?.id);
+      if (user.id == dataUser?.id) {
         if(user.is_admin === 1){
           setIsAdmin(true);
         }
