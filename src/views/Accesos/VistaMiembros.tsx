@@ -54,7 +54,6 @@ const VistaMiembros: React.FC<any> = (project) => {
   const [userSelected, setUserSelected] = useState<User | null>(null);
   const [codeUser, setCodeUser] = useState("");
   const [ingresado, setIngresado] = useState();
-  const [dataUser, setDataUser] = useState<any>(null);
   const [isAdmin, setIsAdmin] = useState(false);
 
 
@@ -63,7 +62,6 @@ const VistaMiembros: React.FC<any> = (project) => {
     getSesion().then((StoredSesion : any) => {
       let sesion = JSON.parse(StoredSesion);
       console.log(sesion);
-      setDataUser(sesion);
       const myHeaders = {
         "Content-Type": "application/json",
       };
@@ -104,11 +102,8 @@ const VistaMiembros: React.FC<any> = (project) => {
     .then(() => {
       console.log(`isAdmin: ${isAdmin}`);
     })
-  }, []);
-
-  useEffect(() => {
-    
   }, [ingresado]);
+
 
 
 
