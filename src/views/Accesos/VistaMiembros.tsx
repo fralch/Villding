@@ -64,49 +64,53 @@ const VistaMiembros: React.FC<any> = (project) => {
       let sesion = JSON.parse(StoredSesion);
       console.log(sesion);
       setDataUser(sesion);
-    });
+      const myHeaders = {
+        "Content-Type": "application/json",
+      };
+  
+      const data = {
+        project_id: idProject,
+      };
+  
+      axios
+        .post(
+          "https://centroesteticoedith.com/endpoint/project/check-attachment",
+          data,
+          {
+            headers: myHeaders,
+          }
+        )
+        .then((response) => {
+          const apiResponse: ApiResponse = response.data;
+          console.log(apiResponse.users);
+          apiResponse.users.filter((user) => {
+            console.log(`user.id: ${user.id} - dataUser?.id: ${sesion?.id}`);
+            console.log(sesion);
+            if(user.id == sesion?.id){
+              console.log(user.id == sesion?.id);
+              console.log(`user.is_admin ${user.is_admin} - dataUser?.is_admin ${sesion?.is_admin}`);
+              if(user.is_admin == 1 || sesion?.is_admin == 1){
+  
+                setIsAdmin(true);
+              }
+            }
+          });
+          setUsers(apiResponse.users);
+        })
+        .catch((error) => {
+          console.error(error);
+        });
+    })
+    .then(() => {
+      console.log(`isAdmin: ${isAdmin}`);
+    })
   }, []);
 
   useEffect(() => {
-    const myHeaders = {
-      "Content-Type": "application/json",
-    };
-
-    const data = {
-      project_id: idProject,
-    };
-
-    axios
-      .post(
-        "https://centroesteticoedith.com/endpoint/project/check-attachment",
-        data,
-        {
-          headers: myHeaders,
-        }
-      )
-      .then((response) => {
-        const apiResponse: ApiResponse = response.data;
-        console.log(apiResponse.users);
-        setUsers(apiResponse.users);
-      })
-      .catch((error) => {
-        console.error(error);
-      });
+    
   }, [ingresado]);
 
-  useEffect(() => {
-    users.filter((user) => {
-      console.log("comprobando si es admin");
-      console.log(dataUser?.id, user.id);
-   ;
-      if (user.id == dataUser?.id) {
-        if(user.is_admin === 1 || dataUser?.is_admin === 1){
-          setIsAdmin(true);
-        }
-      }
-    });
-    console.log(`isAdmin: ${isAdmin}`);
-  }, []);
+
 
   const renderItem = ({ item, index }: { item: User; index: number }) => (
    <View>
