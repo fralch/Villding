@@ -58,51 +58,41 @@ const VistaMiembros: React.FC<any> = (project) => {
 
 
   useEffect(() => {
-    console.log('Obteniendo sesion en vista miembros');
-    getSesion().then((StoredSesion : any) => {
-      let sesion = JSON.parse(StoredSesion);
-      console.log(sesion);
-      const myHeaders = {
-        "Content-Type": "application/json",
-      };
-  
-      const data = {
-        project_id: idProject,
-      };
-  
-      axios
-        .post(
+    const fetchSessionAndUsers = async () => {
+      try {
+        console.log('Obteniendo sesion en vista miembros');
+        const storedSession = await getSesion();
+        if (!storedSession) {
+          throw new Error('No session found');
+        }
+        const session = JSON.parse(storedSession);
+        console.log(session);
+
+        const response = await axios.post(
           "https://centroesteticoedith.com/endpoint/project/check-attachment",
-          data,
-          {
-            headers: myHeaders,
-          }
-        )
-        .then((response) => {
-          const apiResponse: ApiResponse = response.data;
-          console.log(apiResponse.users);
-          apiResponse.users.filter((user) => {
-            console.log(`user.id: ${user.id} - dataUser?.id: ${sesion?.id}`);
-            console.log(sesion);
-            if(user.id == sesion?.id){
-              console.log(user.id == sesion?.id);
-              console.log(`user.is_admin ${user.is_admin} - dataUser?.is_admin ${sesion?.is_admin}`);
-              if(user.is_admin == 1 || sesion?.is_admin == 1){
-  
-                setIsAdmin(true);
-              }
-            }
-          });
-          setUsers(apiResponse.users);
-        })
-        .catch((error) => {
-          console.error(error);
-        });
-    })
-    .then(() => {
-      console.log(`isAdmin: ${isAdmin}`);
-    })
-  }, [ingresado]);
+          { project_id: idProject },
+          { headers: { "Content-Type": "application/json" } }
+        );
+
+        const apiResponse: ApiResponse = response.data;
+        console.log(apiResponse.users);
+
+        const isUserAdmin = apiResponse.users.some(user =>
+          user.id === session?.id && (user.is_admin === 1 || session?.is_admin === 1)
+        );
+
+        setIsAdmin(isUserAdmin);
+        setUsers(apiResponse.users);
+        console.log(`isAdmin: ${isUserAdmin}`);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    fetchSessionAndUsers();
+  }, [ingresado, idProject]);
+
+
 
 
 
