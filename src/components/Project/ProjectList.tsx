@@ -16,7 +16,10 @@ interface Project {
   title: string;
   subtitle: string;
   company: string;
+  start_date: string;
+  end_date: string;
   week: number;
+  week_current: number;
 }
 
 interface ProjectListProps {

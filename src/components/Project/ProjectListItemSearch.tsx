@@ -9,7 +9,10 @@ interface ProjectListItemProps {
   title: string;
   location: string;
   company: string;
+  start_date: string;
+  end_date: string;
   week: number;
+  week_current: number;
 }
 
 const ProjectListItem: React.FC<ProjectListItemProps> = ({

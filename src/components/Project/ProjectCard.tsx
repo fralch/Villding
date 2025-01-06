@@ -11,7 +11,10 @@ interface ProjectCardProps {
     subtitle: string;
     company: string;
     image: string;
+    start_date: string;
+    end_date: string;
     week: number;
+    week_current: number;
   };
 }
 
@@ -32,8 +35,9 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
         <Text style={styles.cardTitle}>{project.title}</Text>
         <Text style={styles.cardSubtitle}>{project.subtitle}</Text>
         <Text style={styles.cardCompany}>{project.company}</Text>
+        <Text style={[styles.cardCompany, { fontWeight: 'bold', fontSize: 12, color: '#8AA4A5'}]}>{project.start_date} - {project.end_date}</Text>
         <View style={styles.weekBadge}>
-          <Text style={styles.weekText}>Semana {project.week}</Text>
+          <Text style={styles.weekText}>Semana {project.week_current}</Text>
         </View>
       </TouchableOpacity>
     </View>

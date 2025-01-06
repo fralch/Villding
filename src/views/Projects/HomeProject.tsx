@@ -27,7 +27,10 @@ interface Project {
   subtitle: string;
   company: string;
   image: string;
+  start_date: string;
+  end_date: string;
   week: number;
+  week_current: number;
 }
 
 export default function HomeProject() {
@@ -143,7 +146,10 @@ export default function HomeProject() {
             image: project.uri.startsWith('http')
                 ? project.uri
                 : `https://centroesteticoedith.com/endpoint/images/projects/${project.uri}`,
+            start_date: formatDate(project.start_date),
+            end_date: formatDate(project.end_date),
             week: calculateWeekDifference(project.start_date, project.end_date),
+            week_current: calculateWeekCurrent(project.start_date, project.end_date),
         }));
 
         return mappedProjects;
@@ -175,6 +181,18 @@ export default function HomeProject() {
     const end = new Date(endDate);
     const msPerWeek = 1000 * 60 * 60 * 24 * 7;
     return Math.round((end.getTime() - start.getTime()) / msPerWeek);
+  }
+  function   calculateWeekCurrent(startDate: string, endDate: string): number {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    const current = new Date();
+    const msPerWeek = 1000 * 60 * 60 * 24 * 7;
+    return Math.round((current.getTime() - start.getTime()) / msPerWeek);
+  }
+
+  function formatDate(date: string): string {
+    const [day, month, year] = date.split('-');
+    return `${day}/${month}/${year}`;
   }
 
   return (

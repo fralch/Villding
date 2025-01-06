@@ -9,7 +9,10 @@ interface Project {
   title: string;
   subtitle: string;
   company: string;
+  start_date: string;
+  end_date: string;
   week: number;
+  week_current: number;
 }
 
 interface ProjectListProps {
@@ -28,6 +31,7 @@ const ProjectListSearch: React.FC<ProjectListProps> = ({ projects }) => {
             location={item.subtitle}
             company={item.company}
             week={item.week}
+            week_current={item.week_current}
           />
         )}
         keyExtractor={(item) => item.id}

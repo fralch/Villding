@@ -15,7 +15,10 @@ interface Project {
   image: string;
   subtitle: string;
   title: string;
+  start_date: string;
+  end_date: string;
   week: number;
+  week_current: number;
 }
 
 type RouteParams = {
