@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
+import { getProject } from '../../hooks/localStorageCurrentProject';
 
 interface Task {
   id: string;
@@ -55,6 +56,25 @@ const TaskList: React.FC = () => {
       setCurrentWeekIndex(currentWeekIndex - 1);
     }
   };
+
+  React.useEffect(() => {
+    getProject().then((project) => {
+      console.log(project);
+      /*
+      {
+        "id": "2",
+        "title": "Adc",
+        "subtitle": "Sm",
+        "company": "Sming",
+        "image": "https://centroesteticoedith.com/endpoint/images/projects/1735960143.jpg",
+        "start_date": "2024/11/11",
+        "end_date": "2025/05/11",
+        "week": 26,
+        "week_current": 8
+      }
+       */
+    });
+  }, []);
 
   return (
     <View style={styles.container}>

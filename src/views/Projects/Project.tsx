@@ -141,7 +141,7 @@ export default function Project(props: any) {
       <Drawer.Screen
         name={ProyectoActual?.title || 'Project'}
         component={TaskList}
-      />
+      /> 
     </Drawer.Navigator>
   );
 }
