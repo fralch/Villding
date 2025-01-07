@@ -44,8 +44,11 @@ const TaskList: React.FC = () => {
         const weeksArray = Array.from({length: number_weeks_project}, (_, i) => 
           `Semana ${i + 1}`
         );
+
         setWeeks(weeksArray);
         setCurrentWeekIndex(number_week_current_project - 1);
+        console.log(weeksArray);
+        console.log(number_week_current_project);
 
         // Aquí puedes ajustar las secciones según la información del proyecto
         const newSections: Section[] = [
