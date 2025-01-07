@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -25,25 +25,43 @@ interface Section {
   tasks: Task[];
 }
 
-const weeks = ['Semana 1', 'Semana 2', 'Semana 3', 'Semana 4'];
-
-const sections: Section[] = [
-  {
-    id: new Date().getTime().toString(),
-    tasks: [
-      { id: '3', title: 'Bloquetas SAC', checked: [1, 1, 0, -1] },
-      { id: '4', title: 'Bloquetas SAC', checked: [1, 1, 0, -1, -1, -1] },
-    ],
-  },
-  // Añadir más secciones según sea necesario
-];
-
 const TaskList: React.FC = () => {
   const navigation = useNavigation<NavigationProp<any>>();
 
   const [modalSeguimientoVisible, setModalSeguimientoVisible] = useState(false);
   const [modalSinAccesoVisible, setModalSinAccesoVisible] = useState(false);
-  const [currentWeekIndex, setCurrentWeekIndex] = useState(2); // Empieza en la "Semana 3"
+  const [currentWeekIndex, setCurrentWeekIndex] = useState(0);
+  const [weeks, setWeeks] = useState<string[]>([]);
+  const [sections, setSections] = useState<Section[]>([]);
+
+  useEffect(() => {
+    getProject().then((project) => {
+      if (project && typeof project === 'string') {
+        const projectObject = JSON.parse(project);
+        const number_weeks_project = projectObject.week;
+        const number_week_current_project = projectObject.week_current;
+
+        const weeksArray = Array.from({length: number_weeks_project}, (_, i) => 
+          `Semana ${i + 1}`
+        );
+        setWeeks(weeksArray);
+        setCurrentWeekIndex(number_week_current_project - 1);
+
+        // Aquí puedes ajustar las secciones según la información del proyecto
+        const newSections: Section[] = [
+          {
+            id: new Date().getTime().toString(),
+            tasks: [
+              { id: '3', title: 'Bloquetas SAC', checked: [1, 1, 0, -1] },
+              { id: '4', title: 'Bloquetas SAC', checked: [1, 1, 0, -1, -1, -1] },
+            ],
+          },
+          // Añadir más secciones según sea necesario
+        ];
+        setSections(newSections);
+      }
+    });
+  }, []);
 
   const handleNextWeek = () => {
     if (currentWeekIndex < weeks.length - 1) {
@@ -56,25 +74,6 @@ const TaskList: React.FC = () => {
       setCurrentWeekIndex(currentWeekIndex - 1);
     }
   };
-
-  React.useEffect(() => {
-    getProject().then((project) => {
-      console.log(project);
-      /*
-      {
-        "id": "2",
-        "title": "Adc",
-        "subtitle": "Sm",
-        "company": "Sming",
-        "image": "https://centroesteticoedith.com/endpoint/images/projects/1735960143.jpg",
-        "start_date": "2024/11/11",
-        "end_date": "2025/05/11",
-        "week": 26,
-        "week_current": 8
-      }
-       */
-    });
-  }, []);
 
   return (
     <View style={styles.container}>
