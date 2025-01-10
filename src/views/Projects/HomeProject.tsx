@@ -187,7 +187,7 @@ export default function HomeProject() {
     const end = new Date(endDate);
     const current = new Date();
     const msPerWeek = 1000 * 60 * 60 * 24 * 7;
-    return Math.round((current.getTime() - start.getTime()) / msPerWeek);
+    return Math.round((current.getTime() - start.getTime()) / msPerWeek) + 1;
   }
 
   function formatDate(date: string): string {

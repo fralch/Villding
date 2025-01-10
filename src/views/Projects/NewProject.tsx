@@ -469,7 +469,7 @@ const NewProject: React.FC = () => {
           </View>
         </View>
 
-        <Text style={styles.label}>Fecha estimada de fin:</Text>
+        <Text style={styles.label}>Fecha estimada de entrega:</Text>
         <Text style={styles.endDate}>{calculateEndDate()}</Text>
         <Text style={styles.label}>Foto de proyecto</Text>
 
