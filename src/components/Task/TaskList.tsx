@@ -137,7 +137,7 @@ const TaskList: React.FC = () => {
             style={styles.dayColumn}
           >
             <Text style={styles.dayText}>{day}</Text>
-            <Text style={styles.dateText}>{getDateForDay(index + 1)}</Text>
+            <Text style={styles.dateText}>{getDateForDay((index + 1) % 7)}</Text>
           </View>
         ))}
       </View>
