@@ -13,6 +13,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { getProject } from '../../hooks/localStorageCurrentProject';
+import axios from 'axios';
 
 interface Task {
   id: string;
@@ -31,37 +32,51 @@ const TaskList: React.FC = () => {
   const [modalSeguimientoVisible, setModalSeguimientoVisible] = useState(false);
   const [modalSinAccesoVisible, setModalSinAccesoVisible] = useState(false);
   const [currentWeekIndex, setCurrentWeekIndex] = useState(0);
+  const [arrayWeeks, setArrayWeeks] = useState<any[]>([]);
   const [weeks, setWeeks] = useState<string[]>([]);
   const [sections, setSections] = useState<Section[]>([]);
+  const [daysProject, setDaysProject] = useState<any[]>([]);
 
   useEffect(() => {
     getProject().then((project) => {
       if (project && typeof project === 'string') {
         const projectObject = JSON.parse(project);
-        const number_weeks_project = projectObject.week;
-        const number_week_current_project = projectObject.week_current;
+        console.log(projectObject);
+        axios.get(`https://centroesteticoedith.com/endpoint/weeks/${projectObject.id}`)
+          .then((response) => {
+            setArrayWeeks(response.data);
 
-        const weeksArray = Array.from({length: number_weeks_project}, (_, i) => 
-          `Semana ${i + 1}`
-        );
+            const weeksArray = Array.from({ length: response.data.length }, (_, i) =>
+              `Semana ${i + 1}`
+            );
+            setWeeks(weeksArray);
 
-        setWeeks(weeksArray);
-        setCurrentWeekIndex(number_week_current_project - 1);
-        console.log(weeksArray);
-        console.log(number_week_current_project);
+            const number_week_current_project = projectObject.week_current;
+            setCurrentWeekIndex(number_week_current_project - 1);
 
-        // Aquí puedes ajustar las secciones según la información del proyecto
-        const newSections: Section[] = [
-          {
-            id: new Date().getTime().toString(),
-            tasks: [
-              { id: '3', title: 'Bloquetas SAC', checked: [1, 1, 0, -1] },
-              { id: '4', title: 'Bloquetas SAC', checked: [1, 1, 0, -1, -1, -1] },
-            ],
-          },
-          // Añadir más secciones según sea necesario
-        ];
-        setSections(newSections);
+            const newSections: Section[] = [
+              {
+                id: new Date().getTime().toString(),
+                tasks: [
+                  { id: '3', title: 'Bloquetas SAC', checked: [1, 1, 0, -1] },
+                  { id: '4', title: 'Bloquetas SAC', checked: [1, 1, 0, -1, -1, -1] },
+                ],
+              },
+            ];
+            setSections(newSections);
+          })
+          .catch((error) => {
+            console.error(error);
+          });
+
+        axios.get(`https://centroesteticoedith.com/endpoint/days_project/${projectObject.id}`)
+          .then((response) => {
+            console.log(response.data);
+            setDaysProject(response.data);
+          })
+          .catch((error) => {
+            console.error(error);
+          });
       }
     });
   }, []);
@@ -78,9 +93,19 @@ const TaskList: React.FC = () => {
     }
   };
 
+  const getDatesForCurrentWeek = () => {
+    const currentWeekId = arrayWeeks[currentWeekIndex]?.id;
+    return daysProject.filter(day => day.week_id === currentWeekId);
+  };
+
+  const getDateForDay = (dayIndex: number) => {
+    const currentWeekDays = getDatesForCurrentWeek();
+    const dayData = currentWeekDays.find(day => new Date(day.date).getDay() === dayIndex);
+    return dayData ? new Date(dayData.date).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' }) : '';
+  };
+
   return (
     <View style={styles.container}>
-      {/* Week Selector */}
       <View style={styles.weekSelector}>
         <TouchableOpacity
           onPress={handlePreviousWeek}
@@ -89,7 +114,7 @@ const TaskList: React.FC = () => {
           <Ionicons
             name='chevron-back'
             size={30}
-            color={currentWeekIndex === 0 ? '#07374a' : 'white'} // Desactivar si es la primera semana
+            color={currentWeekIndex === 0 ? '#07374a' : 'white'}
           />
         </TouchableOpacity>
         <Text style={styles.weekTitle}>{weeks[currentWeekIndex]}</Text>
@@ -100,12 +125,11 @@ const TaskList: React.FC = () => {
           <Ionicons
             name='chevron-forward'
             size={30}
-            color={currentWeekIndex === weeks.length - 1 ? '#07374a' : 'white'} // Desactivar si es la última semana
+            color={currentWeekIndex === weeks.length - 1 ? '#07374a' : 'white'}
           />
         </TouchableOpacity>
       </View>
 
-      {/* Days of the week */}
       <View style={styles.daysRow}>
         {['Lu', 'Ma', 'Mi', 'Ju', 'Vi', 'Sa', 'Do'].map((day, index) => (
           <View
@@ -113,12 +137,11 @@ const TaskList: React.FC = () => {
             style={styles.dayColumn}
           >
             <Text style={styles.dayText}>{day}</Text>
-            <Text style={styles.dateText}>{`0${index + 5}/05`}</Text>
+            <Text style={styles.dateText}>{getDateForDay(index + 1)}</Text>
           </View>
         ))}
       </View>
 
-      {/* Task sections */}
       <FlatList
         style={styles.flatList}
         data={sections}
@@ -278,6 +301,7 @@ const TaskList: React.FC = () => {
     </View>
   );
 };
+
 
 const styles = StyleSheet.create({
   container: {
