@@ -32,6 +32,8 @@ const ProjectListSearch: React.FC<ProjectListProps> = ({ projects }) => {
             company={item.company}
             week={item.week}
             week_current={item.week_current}
+            start_date={item.start_date}
+            end_date={item.end_date}
           />
         )}
         keyExtractor={(item) => item.id}
