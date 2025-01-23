@@ -41,19 +41,29 @@ const TaskList: React.FC = () => {
     getProject().then((project) => {
       if (project && typeof project === 'string') {
         const projectObject = JSON.parse(project);
-        console.log(projectObject);
+        
+        // console.log(projectObject);
+        // Hace una petición GET a la API para obtener las semanas del proyecto actual
         axios.get(`https://centroesteticoedith.com/endpoint/weeks/${projectObject.id}`)
           .then((response) => {
+            // Guarda la respuesta de las semanas en el estado arrayWeeks
             setArrayWeeks(response.data);
 
+            // Crea un array con los nombres de las semanas (ej: "Semana 1", "Semana 2", etc)
+            // basado en la longitud de la respuesta
             const weeksArray = Array.from({ length: response.data.length }, (_, i) =>
               `Semana ${i + 1}`
             );
+            // Guarda el array de nombres de semanas en el estado
             setWeeks(weeksArray);
 
+            // Obtiene el número de la semana actual del proyecto
             const number_week_current_project = projectObject.week_current;
+            // Actualiza el índice de la semana actual (restando 1 porque los arrays empiezan en 0)
             setCurrentWeekIndex(number_week_current_project - 1);
 
+            // Crea una estructura inicial de secciones con tareas de ejemplo
+            // Esto parece ser datos de prueba/placeholder
             const newSections: Section[] = [
               {
                 id: new Date().getTime().toString(),
@@ -63,15 +73,18 @@ const TaskList: React.FC = () => {
                 ],
               },
             ];
+            // Guarda las secciones en el estado
             setSections(newSections);
+            
           })
           .catch((error) => {
+            // Si hay un error en la petición, lo muestra en la consola
             console.error(error);
           });
 
         axios.get(`https://centroesteticoedith.com/endpoint/days_project/${projectObject.id}`)
           .then((response) => {
-            console.log(response.data);
+            // console.log(response.data);
             setDaysProject(response.data);
           })
           .catch((error) => {
