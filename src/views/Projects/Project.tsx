@@ -107,19 +107,31 @@ export default function Project(props: any) {
   }, [props.route?.params, route.params]);
 
   useEffect(() => {
-   
-    axios.post(`https://centroesteticoedith.com/endpoint/project/entities/create`, {
-      project_id: ProyectoActual.id,
-      start_date: ProyectoActual.start_date,
-      end_date: ProyectoActual.end_date,
-      numero_semanas: ProyectoActual.week
-    })
+    // check si proyecto actual tiene semana y dias 
+    axios.get(`https://centroesteticoedith.com/endpoint/project/entities/check/${ProyectoActual.id}`)
     .then((response) => {
       console.log(response.data);
+      
+      if(!response.data.created){
+        axios.post(`https://centroesteticoedith.com/endpoint/project/entities/create`, {
+          project_id: ProyectoActual.id,
+          start_date: ProyectoActual.start_date,
+          end_date: ProyectoActual.end_date,
+          numero_semanas: ProyectoActual.week
+        })
+        .then((response) => {
+          console.log(response.data);
+        })
+        .catch((error) => {
+          console.error(error);
+        });
+      }
     })
     .catch((error) => {
       console.error(error);
     });
+   
+    
   }, []);
 
 
