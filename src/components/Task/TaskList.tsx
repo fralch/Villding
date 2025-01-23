@@ -41,8 +41,7 @@ const TaskList: React.FC = () => {
     getProject().then((project) => {
       if (project && typeof project === 'string') {
         const projectObject = JSON.parse(project);
-        
-        // console.log(projectObject);
+
         // Hace una petición GET a la API para obtener las semanas del proyecto actual
         axios.get(`https://centroesteticoedith.com/endpoint/weeks/${projectObject.id}`)
           .then((response) => {
@@ -75,7 +74,7 @@ const TaskList: React.FC = () => {
             ];
             // Guarda las secciones en el estado
             setSections(newSections);
-            
+
           })
           .catch((error) => {
             // Si hay un error en la petición, lo muestra en la consola
@@ -108,13 +107,13 @@ const TaskList: React.FC = () => {
 
   const getDatesForCurrentWeek = () => {
     const currentWeekId = arrayWeeks[currentWeekIndex]?.id;
-    return daysProject.filter(day => day.week_id === currentWeekId);
+    return daysProject.filter(day => day.week_id === currentWeekId).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
   };
 
   const getDateForDay = (dayIndex: number) => {
     const currentWeekDays = getDatesForCurrentWeek();
-    const dayData = currentWeekDays.find(day => new Date(day.date).getDay() === dayIndex);
-    return dayData ? new Date(dayData.date).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' }) : '';
+    const dayData = currentWeekDays[dayIndex];
+    return dayData ? new Date(dayData.date).toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit' }) : '';
   };
 
   return (
@@ -150,7 +149,7 @@ const TaskList: React.FC = () => {
             style={styles.dayColumn}
           >
             <Text style={styles.dayText}>{day}</Text>
-            <Text style={styles.dateText}>{getDateForDay((index + 1) % 7)}</Text>
+            <Text style={styles.dateText}>{getDateForDay(index)}</Text>
           </View>
         ))}
       </View>
