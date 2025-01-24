@@ -59,7 +59,7 @@ const TaskList: React.FC = () => {
             // Obtiene el número de la semana actual del proyecto
             const number_week_current_project = projectObject.week_current;
             // Actualiza el índice de la semana actual (restando 1 porque los arrays empiezan en 0)
-            setCurrentWeekIndex(number_week_current_project - 1);
+            setCurrentWeekIndex(number_week_current_project - 2);
 
             // Crea una estructura inicial de secciones con tareas de ejemplo
             // Esto parece ser datos de prueba/placeholder
