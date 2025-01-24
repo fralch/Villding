@@ -143,15 +143,24 @@ const TaskList: React.FC = () => {
       </View>
 
       <View style={styles.daysRow}>
-        {['Lu', 'Ma', 'Mi', 'Ju', 'Vi', 'Sa', 'Do'].map((day, index) => (
-          <View
-            key={index}
-            style={styles.dayColumn}
-          >
-            <Text style={styles.dayText}>{day}</Text>
-            <Text style={styles.dateText}>{getDateForDay(index)}</Text>
-          </View>
-        ))}
+        {['Lu', 'Ma', 'Mi', 'Ju', 'Vi', 'Sa', 'Do'].map((day, index) => {
+          const currentDate = getDateForDay(index);
+          const today = new Date().toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit' });
+          const isToday = currentDate === today;
+          
+          return (
+            <View
+              key={index}
+              style={[
+                styles.dayColumn,
+                isToday && { backgroundColor: '#0A3649', borderRadius: 8 }
+              ]}
+            >
+              <Text style={[styles.dayText, isToday && { color: '#4ABA8D' }]}>{day}</Text>
+              <Text style={[styles.dateText, isToday && { color: '#4ABA8D' }]}>{currentDate}</Text>
+            </View>
+          );
+        })}
       </View>
 
       <FlatList
