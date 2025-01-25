@@ -93,6 +93,11 @@ const TaskList: React.FC = () => {
     });
   }, []);
 
+
+ 
+
+
+
   const handleNextWeek = () => {
     if (currentWeekIndex < weeks.length - 1) {
       setCurrentWeekIndex(currentWeekIndex + 1);
@@ -110,12 +115,27 @@ const TaskList: React.FC = () => {
     return daysProject.filter(day => day.week_id === currentWeekId).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
   };
 
-  const getDateForDay = (dayIndex: number) => {
-    const currentWeekDays = getDatesForCurrentWeek();
-    const dayData = currentWeekDays[dayIndex];
-    return dayData ? new Date(dayData.date).toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit' }) : '';
-  };
 
+
+ // Calcula el índice del día actual
+ const getCurrentDayIndex = (): number => {
+  const today = new Date();
+  const jsDayIndex = today.getDay(); // 0 (domingo) a 6 (sábado)
+  return jsDayIndex === 0 ? 6 : jsDayIndex - 1;
+};
+
+// Calcula la fecha para cada día de la semana
+const getDateForDay = (index: number): string => {
+  const today = new Date();
+  const currentDayIndex = getCurrentDayIndex();
+  const dayDifference = index - currentDayIndex;
+  const targetDate = new Date(today);
+  targetDate.setDate(today.getDate() + dayDifference);
+  return targetDate.getDate().toString();
+};
+
+
+  
   return (
     <View style={styles.container}>
       <View style={styles.weekSelector}>
@@ -144,24 +164,29 @@ const TaskList: React.FC = () => {
 
       <View style={styles.daysRow}>
         {['Lu', 'Ma', 'Mi', 'Ju', 'Vi', 'Sa', 'Do'].map((day, index) => {
-          const currentDate = getDateForDay(index);
-          const today = new Date().toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit' });
-          const isToday = currentDate === today;
-          
+          const currentDate = getDateForDay(index); // Usa la función para obtener la fecha
+          const todayIndex = getCurrentDayIndex(); // Obtiene el índice del día actual
+          const isToday = index === todayIndex; // Comprueba si es hoy
+
           return (
             <View
               key={index}
               style={[
                 styles.dayColumn,
-                isToday && { backgroundColor: '#0A3649', borderRadius: 8 }
+                isToday && { backgroundColor: '#0A3649', borderRadius: 8 },
               ]}
             >
-              <Text style={[styles.dayText, isToday && { color: '#4ABA8D' }]}>{day}</Text>
-              <Text style={[styles.dateText, isToday && { color: '#4ABA8D' }]}>{currentDate}</Text>
+              <Text style={[styles.dayText, isToday && { color: '#4ABA8D' }]}>
+                {day}
+              </Text>
+              <Text style={[styles.dateText, isToday && { color: '#4ABA8D' }]}>
+                {currentDate}
+              </Text>
             </View>
           );
         })}
       </View>
+
 
       <FlatList
         style={styles.flatList}
@@ -322,7 +347,6 @@ const TaskList: React.FC = () => {
     </View>
   );
 };
-
 
 const styles = StyleSheet.create({
   container: {

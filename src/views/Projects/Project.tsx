@@ -118,6 +118,7 @@ export default function Project(props: any) {
     })
     .catch((error) => {
       console.error(error);
+      
     });
     
   }, []);
