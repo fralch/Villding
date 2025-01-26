@@ -39,7 +39,7 @@ export default function Project(props: any) {
   React.useEffect(() => {
     getSesion().then((StoredSesion: any) => {
       let sesion = JSON.parse(StoredSesion);
-      console.log(sesion.id);
+      // console.log(sesion.id);
       setImageUserSesion(sesion.uri);
       setUser(sesion);
     });
@@ -50,7 +50,7 @@ export default function Project(props: any) {
       // Esto se ejecuta cada vez que vuelves a la pantalla
       getSesion().then((StoredSesion: any) => {
         let sesion = JSON.parse(StoredSesion);
-        console.log(sesion.uri);
+        // console.log(sesion.uri);
         setImageUserSesion(sesion.uri);
         setUser(sesion);
       });
@@ -114,7 +114,7 @@ export default function Project(props: any) {
       numero_semanas: ProyectoActual.week
     })
     .then((response) => {
-      console.log(response.data);
+      // console.log(response.data);
     })
     .catch((error) => {
       console.error(error);

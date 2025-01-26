@@ -58,7 +58,7 @@ const TaskList: React.FC = () => {
 
             // Obtiene el número de la semana actual del proyecto
             const number_week_current_project = projectObject.week_current;
-            // Actualiza el índice de la semana actual (restando 1 porque los arrays empiezan en 0)
+            // Actualiza el índice de la semana actual (restando 2 porque los arrays empiezan en 0)
             setCurrentWeekIndex(number_week_current_project - 2);
 
             // Crea una estructura inicial de secciones con tareas de ejemplo
@@ -83,7 +83,7 @@ const TaskList: React.FC = () => {
 
         axios.get(`https://centroesteticoedith.com/endpoint/days_project/${projectObject.id}`)
           .then((response) => {
-            // console.log(response.data);
+            console.log(response.data);
             setDaysProject(response.data);
           })
           .catch((error) => {
@@ -105,23 +105,43 @@ const TaskList: React.FC = () => {
     }
   };
 
+  // Función que obtiene las fechas de la semana actual
   const getDatesForCurrentWeek = () => {
+    // Obtiene el ID de la semana actual usando el índice actual del array de semanas
     const currentWeekId = arrayWeeks[currentWeekIndex]?.id;
-    return daysProject.filter(day => day.week_id === currentWeekId).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+    // Filtra los días del proyecto para obtener solo los de la semana actual
+    // y los ordena cronológicamente por fecha
+    return daysProject.filter(day => day.week_id === currentWeekId)
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
   };
 
   // Calcula el índice del día actual
+  // Esta función obtiene el índice del día actual de la semana (0-6)
   const getCurrentDayIndex = (): number => {
+    // Crea un objeto Date con la fecha actual
     const today = new Date();
-    const jsDayIndex = today.getDay(); // 0 (domingo) a 6 (sábado)
-    return jsDayIndex === 0 ? 6 : jsDayIndex - 1;
+
+    // Obtiene el día de la semana (0=domingo, 1=lunes, ..., 6=sábado)
+    const jsDayIndex = today.getDay(); 
+
+    // Ajusta el índice para que la semana empiece en lunes:
+    // Si es domingo (0), devuelve 6
+    // Para otros días, resta 1 para que lunes=0, martes=1, etc.
+    return jsDayIndex === 0 ? 6 : jsDayIndex - 1; 
   };
 
   // Calcula la fecha para cada día de la semana
   const getDateForDay = (index: number): string => {
+    // Obtiene los días de la semana actual llamando a getDatesForCurrentWeek()
     const currentWeekDays = getDatesForCurrentWeek();
+    // Obtiene el día específico según el índice proporcionado
     const dayData = currentWeekDays[index];
-    return dayData ? new Date(dayData.date).toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit' }) : '';
+    // Si existe el día, formatea la fecha al formato dd/mm, si no retorna string vacío
+    if (!dayData) return '';
+    const date = new Date(dayData.date);
+    date.setDate(date.getDate() + 1); // Suma un día
+    return date.toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit' });
   };
 
   return (
