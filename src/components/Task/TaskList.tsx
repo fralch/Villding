@@ -93,11 +93,6 @@ const TaskList: React.FC = () => {
     });
   }, []);
 
-
- 
-
-
-
   const handleNextWeek = () => {
     if (currentWeekIndex < weeks.length - 1) {
       setCurrentWeekIndex(currentWeekIndex + 1);
@@ -115,27 +110,20 @@ const TaskList: React.FC = () => {
     return daysProject.filter(day => day.week_id === currentWeekId).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
   };
 
+  // Calcula el índice del día actual
+  const getCurrentDayIndex = (): number => {
+    const today = new Date();
+    const jsDayIndex = today.getDay(); // 0 (domingo) a 6 (sábado)
+    return jsDayIndex === 0 ? 6 : jsDayIndex - 1;
+  };
 
+  // Calcula la fecha para cada día de la semana
+  const getDateForDay = (index: number): string => {
+    const currentWeekDays = getDatesForCurrentWeek();
+    const dayData = currentWeekDays[index];
+    return dayData ? new Date(dayData.date).toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit' }) : '';
+  };
 
- // Calcula el índice del día actual
- const getCurrentDayIndex = (): number => {
-  const today = new Date();
-  const jsDayIndex = today.getDay(); // 0 (domingo) a 6 (sábado)
-  return jsDayIndex === 0 ? 6 : jsDayIndex - 1;
-};
-
-// Calcula la fecha para cada día de la semana
-const getDateForDay = (index: number): string => {
-  const today = new Date();
-  const currentDayIndex = getCurrentDayIndex();
-  const dayDifference = index - currentDayIndex;
-  const targetDate = new Date(today);
-  targetDate.setDate(today.getDate() + dayDifference);
-  return targetDate.getDate().toString();
-};
-
-
-  
   return (
     <View style={styles.container}>
       <View style={styles.weekSelector}>
@@ -186,7 +174,6 @@ const getDateForDay = (index: number): string => {
           );
         })}
       </View>
-
 
       <FlatList
         style={styles.flatList}
