@@ -37,7 +37,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
         <Text style={styles.cardCompany}>{project.company}</Text>
         <Text style={[styles.cardCompany, { fontWeight: 'bold', fontSize: 12, color: '#8AA4A5'}]}>{project.start_date} - {project.end_date}</Text>
         <View style={styles.weekBadge}>
-          <Text style={styles.weekText}>Semana {project.week_current}</Text>
+          <Text style={styles.weekText}>Semana {project.week_current > 1 ? project.week_current - 1 : project.week_current}</Text>
         </View>
       </TouchableOpacity>
     </View>
