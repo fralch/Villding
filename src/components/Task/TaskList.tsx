@@ -15,15 +15,24 @@ import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { getProject } from '../../hooks/localStorageCurrentProject';
 import axios from 'axios';
 
-interface Task {
-  id: string;
+interface Tracking {
+  id: number;
+  week_id: number;
+  project_id: number;
+  user_id: number;
   title: string;
-  checked: number[];
+  description: string;
+  date_start: string | null;
+  date_end: string | null;
+  status: number;
+  created_at: string;
+  updated_at: string;
+  checked: number[]; // Manteniendo la propiedad checked si es necesaria
 }
 
-interface Section {
+interface TrackingSection {
   id: string;
-  tasks: Task[];
+  trackings: Tracking[];
 }
 
 const TaskList: React.FC = () => {
@@ -34,63 +43,57 @@ const TaskList: React.FC = () => {
   const [currentWeekIndex, setCurrentWeekIndex] = useState(0);
   const [arrayWeeks, setArrayWeeks] = useState<any[]>([]);
   const [weeks, setWeeks] = useState<string[]>([]);
-  const [sections, setSections] = useState<Section[]>([]);
+  const [trackingSections, setTrackingSections] = useState<TrackingSection[]>([]);
   const [daysProject, setDaysProject] = useState<any[]>([]);
 
   useEffect(() => {
-    getProject().then((project) => {
+    const fetchData = async () => {
+      const project = await getProject();
       if (project && typeof project === 'string') {
         const projectObject = JSON.parse(project);
 
-        // Hace una petición GET a la API para obtener las semanas del proyecto actual
-        axios.get(`https://centroesteticoedith.com/endpoint/weeks/${projectObject.id}`)
-          .then((response) => {
-            // Guarda la respuesta de las semanas en el estado arrayWeeks
-            setArrayWeeks(response.data);
+        try {
+          // Hace una petición GET a la API para obtener las semanas del proyecto actual
+          const weeksResponse = await axios.get(`https://centroesteticoedith.com/endpoint/weeks/${projectObject.id}`);
+          setArrayWeeks(weeksResponse.data);
 
-            // Crea un array con los nombres de las semanas (ej: "Semana 1", "Semana 2", etc)
-            // basado en la longitud de la respuesta
-            const weeksArray = Array.from({ length: response.data.length }, (_, i) =>
-              `Semana ${i + 1}`
-            );
-            // Guarda el array de nombres de semanas en el estado
-            setWeeks(weeksArray);
+          // Crea un array con los nombres de las semanas (ej: "Semana 1", "Semana 2", etc)
+          const weeksArray = Array.from({ length: weeksResponse.data.length }, (_, i) => `Semana ${i + 1}`);
+          setWeeks(weeksArray);
 
-            // Obtiene el número de la semana actual del proyecto
-            const number_week_current_project = projectObject.week_current;
-            // Actualiza el índice de la semana actual (restando 2 porque los arrays empiezan en 0)
-            setCurrentWeekIndex(number_week_current_project - 2);
+          // Obtiene el número de la semana actual del proyecto
+          const number_week_current_project = projectObject.week_current;
+          // Actualiza el índice de la semana actual (restando 2 porque los arrays empiezan en 0)
+          setCurrentWeekIndex(number_week_current_project - 2);
 
-            // Crea una estructura inicial de secciones con tareas de ejemplo
-            // Esto parece ser datos de prueba/placeholder
-            const newSections: Section[] = [
-              {
-                id: new Date().getTime().toString(),
-                tasks: [
-                  { id: '3', title: 'Bloquetas SAC', checked: [1, 1, 0, -1] },
-                  { id: '4', title: 'Bloquetas SAC', checked: [1, 1, 0, -1, -1, -1] },
-                ],
-              },
-            ];
-            // Guarda las secciones en el estado
-            setSections(newSections);
+          // Obtiene los datos de la API de trackings
+          const trackingResponse = await axios.get(`https://centroesteticoedith.com/endpoint/trackings_project/${projectObject.id}`);
+          const trackingData = trackingResponse.data;
 
-          })
-          .catch((error) => {
-            // Si hay un error en la petición, lo muestra en la consola
-            console.error(error);
-          });
+          // Transforma los datos de la API en el formato deseado
+          const newTrackingSections: TrackingSection[] = [
+            {
+              id: new Date().getTime().toString(),
+              trackings: trackingData.map((item: any) => ({
+                ...item,
+                checked: Array.from({ length: 6 }, (_, index) => index < item.week_id ? 1 : -1),
+              })),
+            },
+          ];
 
-        axios.get(`https://centroesteticoedith.com/endpoint/days_project/${projectObject.id}`)
-          .then((response) => {
-            console.log(response.data);
-            setDaysProject(response.data);
-          })
-          .catch((error) => {
-            console.error(error);
-          });
+          // Guarda las secciones en el estado
+          setTrackingSections(newTrackingSections);
+
+          // Obtiene los días del proyecto
+          const daysResponse = await axios.get(`https://centroesteticoedith.com/endpoint/days_project/${projectObject.id}`);
+          setDaysProject(daysResponse.data);
+        } catch (error) {
+          console.error('Error fetching data:', error);
+        }
       }
-    });
+    };
+
+    fetchData();
   }, []);
 
   const handleNextWeek = () => {
@@ -123,12 +126,12 @@ const TaskList: React.FC = () => {
     const today = new Date();
 
     // Obtiene el día de la semana (0=domingo, 1=lunes, ..., 6=sábado)
-    const jsDayIndex = today.getDay(); 
+    const jsDayIndex = today.getDay();
 
     // Ajusta el índice para que la semana empiece en lunes:
     // Si es domingo (0), devuelve 6
     // Para otros días, resta 1 para que lunes=0, martes=1, etc.
-    return jsDayIndex === 0 ? 6 : jsDayIndex - 1; 
+    return jsDayIndex === 0 ? 6 : jsDayIndex - 1;
   };
 
   // Calcula la fecha para cada día de la semana
@@ -197,20 +200,20 @@ const TaskList: React.FC = () => {
 
       <FlatList
         style={styles.flatList}
-        data={sections}
+        data={trackingSections}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
-          <ScrollView style={styles.section}>
-            {item.tasks.map((task) => (
+          <ScrollView style={styles.trackingSection}>
+            {item.trackings.map((tracking: Tracking) => (
               <TouchableOpacity
-                key={task.id}
+                key={tracking.id}
                 style={styles.taskRow}
                 onLongPress={() => setModalSinAccesoVisible(true)}
                 onPress={() => navigation.navigate('Task')}
               >
-                <Text style={styles.taskTitle}>{task.title}</Text>
+                <Text style={styles.taskTitle}>{tracking.title}</Text>
                 <View style={styles.iconRow}>
-                  {task.checked.map((isChecked, i) => (
+                  {tracking.checked.map((isChecked, i) => (
                     <View
                       key={i}
                       style={[
@@ -406,7 +409,7 @@ const styles = StyleSheet.create({
     color: '#7bc4c4',
     fontSize: 12,
   },
-  section: {
+  trackingSection: {
     marginVertical: 0,
   },
   sectionTitle: {
