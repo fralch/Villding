@@ -64,7 +64,9 @@ const TaskList: React.FC = () => {
           // Obtiene el número de la semana actual del proyecto
           const number_week_current_project = projectObject.week_current;
           // Actualiza el índice de la semana actual (restando 2 porque los arrays empiezan en 0)
-          setCurrentWeekIndex(number_week_current_project - 2);
+          const today = new Date();
+          const isSunday = today.getDay() === 0;
+          setCurrentWeekIndex(number_week_current_project - (isSunday ? 2 : 1));
 
           // Obtiene los datos de la API de trackings
           const trackingResponse = await axios.get(`https://centroesteticoedith.com/endpoint/trackings_project/${projectObject.id}`);
