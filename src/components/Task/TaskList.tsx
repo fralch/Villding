@@ -27,11 +27,12 @@ interface Tracking {
   status: number;
   created_at: string;
   updated_at: string;
-  checked: number[]; // Manteniendo la propiedad checked si es necesaria
+  checked?: number[]; // Propiedad opcional
 }
 
 interface TrackingSection {
   id: string;
+  week_id: number;
   trackings: Tracking[];
 }
 
@@ -73,15 +74,14 @@ const TaskList: React.FC = () => {
           const trackingData = trackingResponse.data;
 
           // Transforma los datos de la API en el formato deseado
-          const newTrackingSections: TrackingSection[] = [
-            {
-              id: new Date().getTime().toString(),
-              trackings: trackingData.map((item: any) => ({
-                ...item,
-                checked: Array.from({ length: 6 }, (_, index) => index < item.week_id ? 1 : -1),
-              })),
-            },
-          ];
+          const newTrackingSections: TrackingSection[] = trackingData.map((week: any) => ({
+            id: week.id.toString(),
+            week_id: week.id,
+            trackings: week.trackings.map((tracking: any) => ({
+              ...tracking, // Copia todas las propiedades existentes del tracking
+              checked: tracking.checked || [], // Si `checked` no existe, usa un array vacío
+            })),
+          }));
 
           // Guarda las secciones en el estado
           setTrackingSections(newTrackingSections);
@@ -122,30 +122,19 @@ const TaskList: React.FC = () => {
   };
 
   // Calcula el índice del día actual
-  // Esta función obtiene el índice del día actual de la semana (0-6)
   const getCurrentDayIndex = (): number => {
-    // Crea un objeto Date con la fecha actual
     const today = new Date();
-
-    // Obtiene el día de la semana (0=domingo, 1=lunes, ..., 6=sábado)
     const jsDayIndex = today.getDay();
-
-    // Ajusta el índice para que la semana empiece en lunes:
-    // Si es domingo (0), devuelve 6
-    // Para otros días, resta 1 para que lunes=0, martes=1, etc.
     return jsDayIndex === 0 ? 6 : jsDayIndex - 1;
   };
 
   // Calcula la fecha para cada día de la semana
   const getDateForDay = (index: number): string => {
-    // Obtiene los días de la semana actual llamando a getDatesForCurrentWeek()
     const currentWeekDays = getDatesForCurrentWeek();
-    // Obtiene el día específico según el índice proporcionado
     const dayData = currentWeekDays[index];
-    // Si existe el día, formatea la fecha al formato dd/mm, si no retorna string vacío
     if (!dayData) return '';
     const date = new Date(dayData.date);
-    date.setDate(date.getDate() + 1); // Suma un día
+    date.setDate(date.getDate() + 1);
     return date.toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit' });
   };
 
@@ -177,9 +166,9 @@ const TaskList: React.FC = () => {
 
       <View style={styles.daysRow}>
         {['Lu', 'Ma', 'Mi', 'Ju', 'Vi', 'Sa', 'Do'].map((day, index) => {
-          const currentDate = getDateForDay(index); // Usa la función para obtener la fecha
-          const todayIndex = getCurrentDayIndex(); // Obtiene el índice del día actual
-          const isToday = index === todayIndex; // Comprueba si es hoy
+          const currentDate = getDateForDay(index);
+          const todayIndex = getCurrentDayIndex();
+          const isToday = index === todayIndex;
 
           return (
             <View
@@ -202,7 +191,7 @@ const TaskList: React.FC = () => {
 
       <FlatList
         style={styles.flatList}
-        data={trackingSections}
+        data={trackingSections.filter(section => section.week_id === arrayWeeks[currentWeekIndex]?.id)}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <ScrollView style={styles.trackingSection}>
@@ -215,7 +204,7 @@ const TaskList: React.FC = () => {
               >
                 <Text style={styles.taskTitle}>{tracking.title}</Text>
                 <View style={styles.iconRow}>
-                  {tracking.checked.map((isChecked, i) => (
+                  {tracking.checked && tracking.checked.map((isChecked, i) => (
                     <View
                       key={i}
                       style={[
@@ -364,16 +353,16 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#07374a',
-    paddingHorizontal: 0, // Elimina el padding horizontal para permitir que los elementos internos ocupen todo el ancho
+    paddingHorizontal: 0,
   },
   weekSelector: {
     backgroundColor: '#05222F',
     flexDirection: 'row',
-    justifyContent: 'space-between', // Cambié a space-between para distribuir los íconos de manera adecuada
+    justifyContent: 'space-between',
     alignItems: 'center',
     paddingVertical: 15,
-    paddingHorizontal: 30, // Añadí algo de padding lateral para separar los íconos de los bordes
-    alignSelf: 'stretch', // Esto asegura que ocupe todo el ancho disponible
+    paddingHorizontal: 30,
+    alignSelf: 'stretch',
     marginVertical: 10,
     borderRadius: 10,
     marginHorizontal: 10,
@@ -388,20 +377,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingVertical: 10,
-    alignSelf: 'stretch', // Opción alternativa para ocupar todo el ancho
-    // Sombra en iOS
+    alignSelf: 'stretch',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
     shadowRadius: 4,
-
-    // Sombra en Android
     elevation: 15,
     zIndex: 1,
   },
   dayColumn: {
     alignItems: 'center',
-    flex: 1, // Asegura que cada columna ocupe el mismo espacio
+    flex: 1,
   },
   dayText: {
     color: 'white',
@@ -435,7 +421,7 @@ const styles = StyleSheet.create({
   },
   iconRow: {
     flexDirection: 'row',
-    alignItems: 'center', // Centra los iconos verticalmente
+    alignItems: 'center',
     marginTop: 5,
   },
   iconContainer: {
@@ -491,7 +477,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 20,
   },
-
   modalButton: {
     backgroundColor: '#fff',
     borderRadius: 8,
@@ -513,13 +498,10 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     borderColor: '#0A3649',
     borderWidth: 1,
-    // Sombra en iOS
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
     shadowRadius: 4,
-
-    // Sombra en Android
     elevation: 5,
   },
   titleContainer: {
