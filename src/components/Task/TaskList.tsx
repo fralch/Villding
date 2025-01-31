@@ -13,6 +13,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { getProject } from '../../hooks/localStorageCurrentProject';
+import { getSesion} from '../../hooks/localStorageUser';
 import axios from 'axios';
 
 interface Tracking {
@@ -36,6 +37,32 @@ interface TrackingSection {
   trackings: Tracking[];
 }
 
+interface Project {
+  company: string;
+  id: string;
+  image: string;
+  subtitle: string;
+  title: string;
+  start_date: string;
+  end_date: string;
+  week: number;
+  week_current: number;
+}
+
+interface User {
+  id: any;
+  nombres: string;
+  apellidos: string;
+  email: string;
+  email_contact?: string;
+  password: string;
+  rol: string;
+  user_code: string;
+  telefono?: string;
+  edad? : number;
+  uri?: string;
+}
+
 const TaskList: React.FC = () => {
   const navigation = useNavigation<NavigationProp<any>>();
 
@@ -46,12 +73,18 @@ const TaskList: React.FC = () => {
   const [weeks, setWeeks] = useState<string[]>([]);
   const [trackingSections, setTrackingSections] = useState<TrackingSection[]>([]);
   const [daysProject, setDaysProject] = useState<any[]>([]);
+  // estados para crear nuevo seguimiento
+  const [project, setProject] = useState<Project | null>(null);
+  const [user, setUser] = useState<User | null>(null);
+  const [titleTracking, setTitleTracking] = useState('');
+
 
   useEffect(() => {
     const fetchData = async () => {
       const project = await getProject();
       if (project && typeof project === 'string') {
         const projectObject = JSON.parse(project);
+        setProject(projectObject);
 
         try {
           // Hace una petición GET a la API para obtener las semanas del proyecto actual
@@ -98,6 +131,14 @@ const TaskList: React.FC = () => {
     fetchData();
   }, []);
 
+  React.useEffect(() => {
+      getSesion().then((StoredSesion : any) => {
+        let sesion = JSON.parse(StoredSesion);
+        console.log(sesion);
+        setUser(sesion);
+      });
+  }, [ ]);
+
   const handleNextWeek = () => {
     if (currentWeekIndex < weeks.length - 1) {
       setCurrentWeekIndex(currentWeekIndex + 1);
@@ -136,6 +177,31 @@ const TaskList: React.FC = () => {
     const date = new Date(dayData.date);
     date.setDate(date.getDate() + 1);
     return date.toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit' });
+  };
+
+
+  const handleNewTracking = () => {
+    const data = {
+      project_id: project?.id, 
+      user_id:  user?.id,
+      title: titleTracking,
+      description: "Descripcion"
+    };
+    
+    const config = {
+      headers: {
+        "Content-Type": "application/json"
+      }
+    };
+    console.log(data);
+    
+    // axios.post("https://centroesteticoedith.com/endpoint/trackings/create", data, config)
+    //   .then((response) => {
+    //     console.log(response.data);
+    //   })
+    //   .catch((error) => {
+    //     console.error(error);
+    //   });
   };
 
   return (
@@ -270,6 +336,7 @@ const TaskList: React.FC = () => {
               style={styles.modalInput}
               placeholder='Nombre del seguimiento'
               placeholderTextColor='#777'
+              onChangeText={(text: string) => setTitleTracking(text)}
             />
             <View
               style={{
@@ -279,6 +346,19 @@ const TaskList: React.FC = () => {
                 marginTop: 16,
               }}
             >
+                  <TouchableOpacity
+                    style={styles.modalButton}
+                    onPress={() => {
+                      setModalSeguimientoVisible(false);
+                      handleNewTracking();
+                    }}
+                  >
+                    <Text
+                      style={[styles.modalButtonText, { paddingHorizontal: 10 }]}
+                    >
+                      Guardar
+                    </Text>
+                  </TouchableOpacity>
               <TouchableOpacity
                 style={[
                   styles.modalButton,
@@ -297,16 +377,6 @@ const TaskList: React.FC = () => {
                   ]}
                 >
                   Cerrar
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.modalButton}
-                onPress={() => setModalSeguimientoVisible(false)}
-              >
-                <Text
-                  style={[styles.modalButtonText, { paddingHorizontal: 10 }]}
-                >
-                  Guardar
                 </Text>
               </TouchableOpacity>
             </View>
