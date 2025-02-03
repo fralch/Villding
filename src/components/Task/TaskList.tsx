@@ -182,26 +182,46 @@ const TaskList: React.FC = () => {
 
   const handleNewTracking = () => {
     const data = {
-      project_id: project?.id, 
-      user_id:  user?.id,
+      project_id: project?.id,
+      user_id: user?.id,
       title: titleTracking,
       description: "Descripcion"
     };
-    
+  
     const config = {
       headers: {
         "Content-Type": "application/json"
       }
     };
-    console.log(data);
-    
-    // axios.post("https://centroesteticoedith.com/endpoint/trackings/create", data, config)
-    //   .then((response) => {
-    //     console.log(response.data);
-    //   })
-    //   .catch((error) => {
-    //     console.error(error);
-    //   });
+  
+    axios.post("https://centroesteticoedith.com/endpoint/trackings/create", data, config)
+      .then((response) => {
+        console.log(response.data);
+  
+        // Obtén la lista de trackings de la respuesta
+        const newTrackings: Tracking[] = response.data.trackings; // Aquí se agrega la anotación de tipo
+  
+        // Actualiza el estado para cada semana
+        const updatedSections = trackingSections.map(section => {
+          const weekTrackings = newTrackings.filter((tracking: Tracking) => tracking.week_id === section.week_id); // Aquí se agrega la anotación de tipo
+          if (weekTrackings.length > 0) {
+            return {
+              ...section,
+              trackings: [...section.trackings, ...weekTrackings]
+            };
+          }
+          return section;
+        });
+  
+        // Actualiza el estado con las secciones modificadas
+        setTrackingSections(updatedSections);
+  
+        // Cierra el modal
+        setModalSeguimientoVisible(false);
+      })
+      .catch((error) => {
+        console.error(error);
+      });
   };
 
   return (
