@@ -63,6 +63,16 @@ interface User {
   uri?: string;
 }
 
+// Definimos la interfaz para los días del proyecto
+interface DiaProyecto {
+  id: number;
+  project_id: number;
+  week_id: number;
+  date: string; // La fecha viene como string desde la API
+  created_at: string;
+  updated_at: string;
+}
+
 const TaskList: React.FC = () => {
   const navigation = useNavigation<NavigationProp<any>>();
 
@@ -77,6 +87,8 @@ const TaskList: React.FC = () => {
   const [project, setProject] = useState<Project | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [titleTracking, setTitleTracking] = useState('');
+
+
 
 
   useEffect(() => {
@@ -138,6 +150,38 @@ const TaskList: React.FC = () => {
         setUser(sesion);
       });
   }, [ ]);
+
+  useEffect(() => {
+    if (project?.id) {
+      axios.get<DiaProyecto[]>(`https://centroesteticoedith.com/endpoint/days_project/${project.id}`)
+        .then(response => {
+          const diasProyecto = response.data;
+          const fechaActual = new Date();
+          const fechaInicio = new Date(diasProyecto[0]?.date);
+          const fechaFin = new Date(diasProyecto[diasProyecto.length - 1]?.date);
+
+          if (fechaActual < fechaInicio) {
+            console.log("El tracking del proyecto no ha comenzado.");
+          } else if (fechaActual > fechaFin) {
+            console.log("El tracking del proyecto ya ha concluido.");
+          } else {
+            const diaEnProyecto = diasProyecto.some(dia => {
+              const fechaDia = new Date(dia.date);
+              return fechaDia.toDateString() === fechaActual.toDateString();
+            });
+
+            if (diaEnProyecto) {
+              console.log("Hoy es un día de tracking del proyecto.");
+            } else {
+              console.log("Hoy no es un día de tracking del proyecto.");
+            }
+          }
+        })
+        .catch(error => {
+          console.error("Error al obtener los días del proyecto:", error);
+        });
+    }
+  }, [project]);
 
   const handleNextWeek = () => {
     if (currentWeekIndex < weeks.length - 1) {
