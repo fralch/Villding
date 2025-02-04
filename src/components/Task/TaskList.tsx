@@ -14,6 +14,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { getProject } from '../../hooks/localStorageCurrentProject';
 import { getSesion} from '../../hooks/localStorageUser';
+import ConfirmModal from "../../components/Alerta/ConfirmationModal";
 import axios from 'axios';
 
 interface Tracking {
@@ -87,6 +88,9 @@ const TaskList: React.FC = () => {
   const [project, setProject] = useState<Project | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [titleTracking, setTitleTracking] = useState('');
+  // useEstate para mostrar el modal de confirmación
+  const [showModal, setShowModal] = useState(false);
+  const [msjeModal, setMsjeModal] = useState("El usuario se ha registrado correctamente."); 
 
 
 
@@ -162,8 +166,12 @@ const TaskList: React.FC = () => {
 
           if (fechaActual < fechaInicio) {
             console.log("El tracking del proyecto no ha comenzado.");
+            setShowModal(true);
+            setMsjeModal("El Proyecto no ha comenzado.");
           } else if (fechaActual > fechaFin) {
             console.log("El tracking del proyecto ya ha concluido.");
+            setShowModal(true);
+            setMsjeModal("El Proyecto ya ha concluido.");
           } else {
             const diaEnProyecto = diasProyecto.some(dia => {
               const fechaDia = new Date(dia.date);
@@ -268,8 +276,20 @@ const TaskList: React.FC = () => {
       });
   };
 
+  const backToProject = () => {
+    navigation.navigate("HomeProject");
+  }
+
   return (
     <View style={styles.container}>
+       <ConfirmModal
+        visible={showModal}
+        message={msjeModal}
+        onClose={() => {
+          setShowModal(false);
+          backToProject();
+        }}
+      />
       <View style={styles.weekSelector}>
         <TouchableOpacity
           onPress={handlePreviousWeek}
@@ -479,6 +499,7 @@ const TaskList: React.FC = () => {
           </View>
         </Pressable>
       </Modal>
+     
     </View>
   );
 };
