@@ -191,6 +191,29 @@ const TaskList: React.FC = () => {
     }
   }, [project]);
 
+  useEffect(() => {
+    const adjustWeekBasedOnDate = () => {
+      const today = new Date();
+      const currentWeekDays = getDatesForCurrentWeek();
+  
+      if (currentWeekDays.length === 0) return;
+  
+      const currentWeekStartDate = new Date(currentWeekDays[0].date);
+      const currentWeekEndDate = new Date(currentWeekDays[currentWeekDays.length - 1].date);
+  
+      if (today < currentWeekStartDate) {
+        // Si la fecha actual es menor que la fecha de inicio de la semana actual, retrocede una semana
+        setCurrentWeekIndex((prevIndex) => Math.max(prevIndex - 1, 0));
+      } else if (today > currentWeekEndDate) {
+        // Si la fecha actual es mayor que la fecha de fin de la semana actual, avanza una semana
+        setCurrentWeekIndex((prevIndex) => Math.min(prevIndex + 1, weeks.length - 1));
+      }
+    };
+  
+    adjustWeekBasedOnDate();
+  }, [ daysProject]);
+  
+
   const handleNextWeek = () => {
     if (currentWeekIndex < weeks.length - 1) {
       setCurrentWeekIndex(currentWeekIndex + 1);
