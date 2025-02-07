@@ -13,10 +13,11 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { getProject } from '../../hooks/localStorageCurrentProject';
-import { getSesion} from '../../hooks/localStorageUser';
+import { getSesion } from '../../hooks/localStorageUser';
 import ConfirmModal from "../../components/Alerta/ConfirmationModal";
 import axios from 'axios';
 
+// Definición de interfaces para los tipos de datos utilizados en el componente
 interface Tracking {
   id: number;
   week_id: number;
@@ -29,7 +30,7 @@ interface Tracking {
   status: number;
   created_at: string;
   updated_at: string;
-  checked?: number[]; // Propiedad opcional
+  checked?: number[];
 }
 
 interface TrackingSection {
@@ -60,11 +61,10 @@ interface User {
   rol: string;
   user_code: string;
   telefono?: string;
-  edad? : number;
+  edad?: number;
   uri?: string;
 }
 
-// Definimos la interfaz para los días del proyecto
 interface DiaProyecto {
   id: number;
   project_id: number;
@@ -77,24 +77,21 @@ interface DiaProyecto {
 const TaskList: React.FC = () => {
   const navigation = useNavigation<NavigationProp<any>>();
 
+  // Estados para manejar la visibilidad de los modales y otros datos
   const [modalSeguimientoVisible, setModalSeguimientoVisible] = useState(false);
   const [modalSinAccesoVisible, setModalSinAccesoVisible] = useState(false);
   const [currentWeekIndex, setCurrentWeekIndex] = useState(0);
   const [arrayWeeks, setArrayWeeks] = useState<any[]>([]);
   const [weeks, setWeeks] = useState<string[]>([]);
   const [trackingSections, setTrackingSections] = useState<TrackingSection[]>([]);
-  const [daysProject, setDaysProject] = useState<any[]>([]);
-  // estados para crear nuevo seguimiento
+  const [daysProject, setDaysProject] = useState<DiaProyecto[]>([]);
   const [project, setProject] = useState<Project | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [titleTracking, setTitleTracking] = useState('');
-  // useEstate para mostrar el modal de confirmación
   const [showModal, setShowModal] = useState(false);
-  const [msjeModal, setMsjeModal] = useState("El usuario se ha registrado correctamente."); 
+  const [msjeModal, setMsjeModal] = useState("El usuario se ha registrado correctamente.");
 
-
-
-
+  // useEffect para cargar datos del proyecto y semanas al montar el componente
   useEffect(() => {
     const fetchData = async () => {
       const project = await getProject();
@@ -103,39 +100,37 @@ const TaskList: React.FC = () => {
         setProject(projectObject);
 
         try {
-          // Hace una petición GET a la API para obtener las semanas del proyecto actual
+          // Obtener semanas del proyecto
           const weeksResponse = await axios.get(`https://centroesteticoedith.com/endpoint/weeks/${projectObject.id}`);
           setArrayWeeks(weeksResponse.data);
 
-          // Crea un array con los nombres de las semanas (ej: "Semana 1", "Semana 2", etc)
+          // Crear un array de nombres de semanas
           const weeksArray = Array.from({ length: weeksResponse.data.length }, (_, i) => `Semana ${i + 1}`);
           setWeeks(weeksArray);
 
-          // Obtiene el número de la semana actual del proyecto
+          // Determinar la semana actual
           const number_week_current_project = projectObject.week_current;
-          // Actualiza el índice de la semana actual (restando 2 porque los arrays empiezan en 0)
           const today = new Date();
           const isSunday = today.getDay() === 0;
           setCurrentWeekIndex(number_week_current_project - (isSunday ? 2 : 1));
 
-          // Obtiene los datos de la API de trackings
+          // Obtener seguimientos del proyecto
           const trackingResponse = await axios.get(`https://centroesteticoedith.com/endpoint/trackings_project/${projectObject.id}`);
           const trackingData = trackingResponse.data;
 
-          // Transforma los datos de la API en el formato deseado
+          // Mapear los datos de seguimiento a la estructura TrackingSection
           const newTrackingSections: TrackingSection[] = trackingData.map((week: any) => ({
             id: week.id.toString(),
             week_id: week.id,
             trackings: week.trackings.map((tracking: any) => ({
-              ...tracking, // Copia todas las propiedades existentes del tracking
-              checked: tracking.checked || [], // Si `checked` no existe, usa un array vacío
+              ...tracking,
+              checked: tracking.checked || [],
             })),
           }));
 
-          // Guarda las secciones en el estado
           setTrackingSections(newTrackingSections);
 
-          // Obtiene los días del proyecto
+          // Obtener días del proyecto
           const daysResponse = await axios.get(`https://centroesteticoedith.com/endpoint/days_project/${projectObject.id}`);
           setDaysProject(daysResponse.data);
         } catch (error) {
@@ -147,14 +142,15 @@ const TaskList: React.FC = () => {
     fetchData();
   }, []);
 
-  React.useEffect(() => {
-      getSesion().then((StoredSesion : any) => {
-        let sesion = JSON.parse(StoredSesion);
-        console.log(sesion);
-        setUser(sesion);
-      });
-  }, [ ]);
+  // useEffect para obtener la sesión del usuario
+  useEffect(() => {
+    getSesion().then((StoredSesion: any) => {
+      let sesion = JSON.parse(StoredSesion);
+      setUser(sesion);
+    });
+  }, []);
 
+  // useEffect para verificar si el proyecto ha comenzado o ha concluido
   useEffect(() => {
     if (project?.id) {
       axios.get<DiaProyecto[]>(`https://centroesteticoedith.com/endpoint/days_project/${project.id}`)
@@ -165,24 +161,11 @@ const TaskList: React.FC = () => {
           const fechaFin = new Date(diasProyecto[diasProyecto.length - 1]?.date);
 
           if (fechaActual < fechaInicio) {
-            console.log("El tracking del proyecto no ha comenzado.");
             setShowModal(true);
             setMsjeModal("El Proyecto no ha comenzado.");
           } else if (fechaActual > fechaFin) {
-            console.log("El tracking del proyecto ya ha concluido.");
             setShowModal(true);
             setMsjeModal("El Proyecto ya ha concluido.");
-          } else {
-            const diaEnProyecto = diasProyecto.some(dia => {
-              const fechaDia = new Date(dia.date);
-              return fechaDia.toDateString() === fechaActual.toDateString();
-            });
-
-            if (diaEnProyecto) {
-              console.log("Hoy es un día de tracking del proyecto.");
-            } else {
-              console.log("Hoy no es un día de tracking del proyecto.");
-            }
           }
         })
         .catch(error => {
@@ -191,60 +174,56 @@ const TaskList: React.FC = () => {
     }
   }, [project]);
 
+  // useEffect para ajustar la semana basada en la fecha actual
   useEffect(() => {
     const adjustWeekBasedOnDate = () => {
       const today = new Date();
       const currentWeekDays = getDatesForCurrentWeek();
-  
+
       if (currentWeekDays.length === 0) return;
-  
+
       const currentWeekStartDate = new Date(currentWeekDays[0].date);
       const currentWeekEndDate = new Date(currentWeekDays[currentWeekDays.length - 1].date);
-  
+
       if (today < currentWeekStartDate) {
-        // Si la fecha actual es menor que la fecha de inicio de la semana actual, retrocede una semana
         setCurrentWeekIndex((prevIndex) => Math.max(prevIndex - 1, 0));
       } else if (today > currentWeekEndDate) {
-        // Si la fecha actual es mayor que la fecha de fin de la semana actual, avanza una semana
         setCurrentWeekIndex((prevIndex) => Math.min(prevIndex + 1, weeks.length - 1));
       }
     };
-  
-    adjustWeekBasedOnDate();
-  }, [ daysProject]);
-  
 
+    adjustWeekBasedOnDate();
+  }, [daysProject]);
+
+  // Función para manejar la navegación a la siguiente semana
   const handleNextWeek = () => {
     if (currentWeekIndex < weeks.length - 1) {
       setCurrentWeekIndex(currentWeekIndex + 1);
     }
   };
 
+  // Función para manejar la navegación a la semana anterior
   const handlePreviousWeek = () => {
     if (currentWeekIndex > 0) {
       setCurrentWeekIndex(currentWeekIndex - 1);
     }
   };
 
-  // Función que obtiene las fechas de la semana actual
+  // Función para obtener las fechas de la semana actual
   const getDatesForCurrentWeek = () => {
-    // Obtiene el ID de la semana actual usando el índice actual del array de semanas
     const currentWeekId = arrayWeeks[currentWeekIndex]?.id;
-
-    // Filtra los días del proyecto para obtener solo los de la semana actual
-    // y los ordena cronológicamente por fecha
     return daysProject.filter(day => day.week_id === currentWeekId)
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
   };
 
-  // Calcula el índice del día actual
+  // Función para obtener el índice del día actual
   const getCurrentDayIndex = (): number => {
     const today = new Date();
     const jsDayIndex = today.getDay();
     return jsDayIndex === 0 ? 6 : jsDayIndex - 1;
   };
 
-  // Calcula la fecha para cada día de la semana
+  // Función para obtener la fecha para un día específico
   const getDateForDay = (index: number): string => {
     const currentWeekDays = getDatesForCurrentWeek();
     const dayData = currentWeekDays[index];
@@ -254,7 +233,7 @@ const TaskList: React.FC = () => {
     return date.toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit' });
   };
 
-
+  // Función para manejar la creación de un nuevo seguimiento
   const handleNewTracking = () => {
     const data = {
       project_id: project?.id,
@@ -262,23 +241,15 @@ const TaskList: React.FC = () => {
       title: titleTracking,
       description: "Descripcion"
     };
-  
-    const config = {
-      headers: {
-        "Content-Type": "application/json"
-      }
-    };
-  
-    axios.post("https://centroesteticoedith.com/endpoint/trackings/create", data, config)
+
+    axios.post("https://centroesteticoedith.com/endpoint/trackings/create", data, {
+      headers: { "Content-Type": "application/json" }
+    })
       .then((response) => {
-        console.log(response.data);
-  
-        // Obtén la lista de trackings de la respuesta
-        const newTrackings: Tracking[] = response.data.trackings; // Aquí se agrega la anotación de tipo
-  
-        // Actualiza el estado para cada semana
+        const newTrackings: Tracking[] = response.data.trackings;
+
         const updatedSections = trackingSections.map(section => {
-          const weekTrackings = newTrackings.filter((tracking: Tracking) => tracking.week_id === section.week_id); // Aquí se agrega la anotación de tipo
+          const weekTrackings = newTrackings.filter((tracking: Tracking) => tracking.week_id === section.week_id);
           if (weekTrackings.length > 0) {
             return {
               ...section,
@@ -287,11 +258,8 @@ const TaskList: React.FC = () => {
           }
           return section;
         });
-  
-        // Actualiza el estado con las secciones modificadas
+
         setTrackingSections(updatedSections);
-  
-        // Cierra el modal
         setModalSeguimientoVisible(false);
       })
       .catch((error) => {
@@ -299,13 +267,14 @@ const TaskList: React.FC = () => {
       });
   };
 
+  // Función para volver al proyecto
   const backToProject = () => {
     navigation.navigate("HomeProject");
-  }
+  };
 
   return (
     <View style={styles.container}>
-       <ConfirmModal
+      <ConfirmModal
         visible={showModal}
         message={msjeModal}
         onClose={() => {
@@ -314,26 +283,12 @@ const TaskList: React.FC = () => {
         }}
       />
       <View style={styles.weekSelector}>
-        <TouchableOpacity
-          onPress={handlePreviousWeek}
-          disabled={currentWeekIndex === 0}
-        >
-          <Ionicons
-            name='chevron-back'
-            size={30}
-            color={currentWeekIndex === 0 ? '#07374a' : 'white'}
-          />
+        <TouchableOpacity onPress={handlePreviousWeek} disabled={currentWeekIndex === 0}>
+          <Ionicons name='chevron-back' size={30} color={currentWeekIndex === 0 ? '#07374a' : 'white'} />
         </TouchableOpacity>
         <Text style={styles.weekTitle}>{weeks[currentWeekIndex]}</Text>
-        <TouchableOpacity
-          onPress={handleNextWeek}
-          disabled={currentWeekIndex === weeks.length - 1}
-        >
-          <Ionicons
-            name='chevron-forward'
-            size={30}
-            color={currentWeekIndex === weeks.length - 1 ? '#07374a' : 'white'}
-          />
+        <TouchableOpacity onPress={handleNextWeek} disabled={currentWeekIndex === weeks.length - 1}>
+          <Ionicons name='chevron-forward' size={30} color={currentWeekIndex === weeks.length - 1 ? '#07374a' : 'white'} />
         </TouchableOpacity>
       </View>
 
@@ -344,19 +299,9 @@ const TaskList: React.FC = () => {
           const isToday = index === todayIndex;
 
           return (
-            <View
-              key={index}
-              style={[
-                styles.dayColumn,
-                isToday && { backgroundColor: '#0A3649', borderRadius: 8 },
-              ]}
-            >
-              <Text style={[styles.dayText, isToday && { color: '#4ABA8D' }]}>
-                {day}
-              </Text>
-              <Text style={[styles.dateText, isToday && { color: '#4ABA8D' }]}>
-                {currentDate}
-              </Text>
+            <View key={index} style={[styles.dayColumn, isToday && { backgroundColor: '#0A3649', borderRadius: 8 }]}>
+              <Text style={[styles.dayText, isToday && { color: '#4ABA8D' }]}>{day}</Text>
+              <Text style={[styles.dateText, isToday && { color: '#4ABA8D' }]}>{currentDate}</Text>
             </View>
           );
         })}
@@ -378,24 +323,9 @@ const TaskList: React.FC = () => {
                 <Text style={styles.taskTitle}>{tracking.title}</Text>
                 <View style={styles.iconRow}>
                   {tracking.checked && tracking.checked.map((isChecked, i) => (
-                    <View
-                      key={i}
-                      style={[
-                        styles.iconContainer,
-                        {
-                          backgroundColor:
-                            isChecked === -1 ? '#004e66' : '#0A3649',
-                        },
-                      ]}
-                    >
+                    <View key={i} style={[styles.iconContainer, { backgroundColor: isChecked === -1 ? '#004e66' : '#0A3649' }]}>
                       <Ionicons
-                        name={
-                          isChecked == 1
-                            ? 'checkmark'
-                            : isChecked == -1
-                            ? 'ellipse-outline'
-                            : 'ellipse-sharp'
-                        }
+                        name={isChecked == 1 ? 'checkmark' : isChecked == -1 ? 'ellipse-outline' : 'ellipse-sharp'}
                         size={isChecked === 1 ? 24 : 12}
                         color={isChecked === 1 ? '#4ABA8D' : '#D1A44C'}
                         style={styles.icon}
@@ -409,34 +339,18 @@ const TaskList: React.FC = () => {
         )}
       />
 
-      <TouchableOpacity
-        style={styles.addButton}
-        onPress={() => setModalSeguimientoVisible(true)}
-      >
-        <Ionicons
-          name='add-circle-outline'
-          size={24}
-          color='#7bc4c4'
-        />
+      <TouchableOpacity style={styles.addButton} onPress={() => setModalSeguimientoVisible(true)}>
+        <Ionicons name='add-circle-outline' size={24} color='#7bc4c4' />
         <Text style={styles.addButtonText}>Añadir seguimiento</Text>
       </TouchableOpacity>
 
-      <Modal
-        visible={modalSeguimientoVisible}
-        animationType='slide'
-        transparent={true}
-        onRequestClose={() => setModalSeguimientoVisible(false)}
-      >
+      <Modal visible={modalSeguimientoVisible} animationType='slide' transparent={true} onRequestClose={() => setModalSeguimientoVisible(false)}>
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
             <View style={styles.titleContainer}>
               <Text style={styles.modalTitle}>Añadir seguimiento</Text>
               <Pressable onPress={() => setModalSeguimientoVisible(false)}>
-                <Ionicons
-                  name='close-outline'
-                  size={30}
-                  color='white'
-                />
+                <Ionicons name='close-outline' size={30} color='white' />
               </Pressable>
             </View>
             <TextInput
@@ -445,84 +359,28 @@ const TaskList: React.FC = () => {
               placeholderTextColor='#777'
               onChangeText={(text: string) => setTitleTracking(text)}
             />
-            <View
-              style={{
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                gap: 8,
-                marginTop: 16,
-              }}
-            >
-                  <TouchableOpacity
-                    style={styles.modalButton}
-                    onPress={() => {
-                      setModalSeguimientoVisible(false);
-                      handleNewTracking();
-                    }}
-                  >
-                    <Text
-                      style={[styles.modalButtonText, { paddingHorizontal: 10 }]}
-                    >
-                      Guardar
-                    </Text>
-                  </TouchableOpacity>
-              <TouchableOpacity
-                style={[
-                  styles.modalButton,
-                  {
-                    backgroundColor: '#004e66',
-                    borderColor: 'white',
-                    borderWidth: 1,
-                  },
-                ]}
-                onPress={() => setModalSeguimientoVisible(false)}
-              >
-                <Text
-                  style={[
-                    styles.modalButtonText,
-                    { color: 'white', paddingHorizontal: 10 },
-                  ]}
-                >
-                  Cerrar
-                </Text>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 8, marginTop: 16 }}>
+              <TouchableOpacity style={[styles.modalButton, { backgroundColor: '#004e66', borderColor: 'white', borderWidth: 1 }]} onPress={() => setModalSeguimientoVisible(false)}>
+                <Text style={[styles.modalButtonText, { color: 'white', paddingHorizontal: 10 }]}>Cerrar</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.modalButton} onPress={() => { setModalSeguimientoVisible(false); handleNewTracking(); }}>
+                <Text style={[styles.modalButtonText, { paddingHorizontal: 10 }]}>Guardar</Text>
               </TouchableOpacity>
             </View>
           </View>
         </View>
       </Modal>
-      <Modal
-        visible={modalSinAccesoVisible}
-        animationType='slide'
-        transparent={true}
-        onRequestClose={() => setModalSinAccesoVisible(false)}
-      >
-        <Pressable
-          style={[styles.modalContainer, { justifyContent: 'flex-end' }]}
-          onPress={() => setModalSinAccesoVisible(false)}
-        >
+
+      <Modal visible={modalSinAccesoVisible} animationType='slide' transparent={true} onRequestClose={() => setModalSinAccesoVisible(false)}>
+        <Pressable style={[styles.modalContainer, { justifyContent: 'flex-end' }]} onPress={() => setModalSinAccesoVisible(false)}>
           <View style={[styles.modalContent, { backgroundColor: '#CFA54A' }]}>
             <View style={styles.titleContainer}>
-              <Text
-                style={[
-                  styles.modalTitle,
-                  { color: '#07374a', marginBottom: 0 },
-                ]}
-              >
-                No tienes acceso
-              </Text>
+              <Text style={[styles.modalTitle, { color: '#07374a', marginBottom: 0 }]}>No tienes acceso</Text>
             </View>
-            <Text
-              style={{
-                color: '#07374a',
-                fontSize: 16,
-              }}
-            >
-              Pídele al administrador que te comparta esta actividad
-            </Text>
+            <Text style={{ color: '#07374a', fontSize: 16 }}>Pídele al administrador que te comparta esta actividad</Text>
           </View>
         </Pressable>
       </Modal>
-     
     </View>
   );
 };
@@ -577,11 +435,6 @@ const styles = StyleSheet.create({
   },
   trackingSection: {
     marginVertical: 0,
-  },
-  sectionTitle: {
-    color: 'white',
-    fontSize: 16,
-    marginBottom: 5,
   },
   taskRow: {
     flexDirection: 'column',
