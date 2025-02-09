@@ -14,7 +14,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { getProject } from '../../hooks/localStorageCurrentProject';
 import { getSesion } from '../../hooks/localStorageUser';
-import ConfirmModal from "../../components/Alerta/ConfirmationModal";
+import ConfirmModal from "../Alerta/ConfirmationModal";
 import axios from 'axios';
 
 // Definición de interfaces para los tipos de datos utilizados en el componente
@@ -74,7 +74,7 @@ interface DiaProyecto {
   updated_at: string;
 }
 
-const TaskList: React.FC = () => {
+const ActivityList: React.FC = () => {
   const navigation = useNavigation<NavigationProp<any>>();
 
   // Estados para manejar la visibilidad de los modales y otros datos
@@ -543,4 +543,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default TaskList;
+export default ActivityList;

@@ -22,11 +22,11 @@ import {
   AntDesign, 
 } from "@expo/vector-icons";
 
-interface TaskItemCreateProps {
+interface ActivityItemCreateProps {
   tipo: string;
 }
 
-const TaskItemCreate: React.FC<TaskItemCreateProps> = ({ tipo }) => {
+const ActivityItemCreate: React.FC<ActivityItemCreateProps> = ({ tipo }) => {
   const recentIcons: Array<keyof typeof MaterialIcons.glyphMap> = [
     "local-shipping",
     "directions-car",
@@ -343,4 +343,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default TaskItemCreate;
+export default ActivityItemCreate;

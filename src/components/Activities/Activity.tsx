@@ -20,7 +20,7 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import Feather from '@expo/vector-icons/Feather';
 import { Ionicons } from '@expo/vector-icons';
-import TaskItemCreate from './TaskItemCreate';
+import ActivityItemCreate from './ActivityItemCreate';
 
 
 interface Task {
@@ -30,7 +30,7 @@ interface Task {
 }
 
 interface TaskCardProps extends Task {
-  setTaskItemCreateType: (type: string) => void; // Agrega setTaskItemCreateType como prop
+  setActivityItemCreateType: (type: string) => void; // Agrega setActivityItemCreateType como prop
   showModal: () => void; // Agrega showModal como prop
 }
 
@@ -38,20 +38,20 @@ interface DayTasksProps {
   day: string;
   tasks: Task[];
   showModal: () => void;
-  setTaskItemCreateType: (type: string) => void; // Agrega setTaskItemCreateType como prop
+  setActivityItemCreateType: (type: string) => void; // Agrega setActivityItemCreateType como prop
 }
 
 
 const { height } = Dimensions.get('window');
 
-export default function TaskScreen() {
+export default function ActivityScreen() {
   const navigation = useNavigation<NavigationProp<any>>();
 
   const screenWidth = Dimensions.get('window').width;
   const headerWidth = React.useRef(new Animated.Value(screenWidth)).current;
   const [currentWeekIndex, setCurrentWeekIndex] = useState(2);
   const [modalOptionsVisible, setModalOptionsVisible] = useState(false);
-  const [TaskItemCreateType , setTaskItemCreateType] = useState('Programado');
+  const [ActivityItemCreateType , setActivityItemCreateType] = useState('Programado');
 
 
   const [isVisible, setIsVisible] = useState(false);
@@ -199,7 +199,7 @@ export default function TaskScreen() {
             },
           ]}
           showModal={showModal}  // Aquí pasamos showModal como prop
-          setTaskItemCreateType={setTaskItemCreateType} // Pasa setTaskItemCreateType aquí
+          setActivityItemCreateType={setActivityItemCreateType} // Pasa setActivityItemCreateType aquí
         />
         <DayTasks
           day='Jueves 15, Junio'
@@ -216,19 +216,19 @@ export default function TaskScreen() {
             },
           ]}
           showModal={showModal}  // Aquí pasamos showModal como prop
-          setTaskItemCreateType={setTaskItemCreateType} // Pasa setTaskItemCreateType aquí
+          setActivityItemCreateType={setActivityItemCreateType} // Pasa setActivityItemCreateType aquí
         />
         <DayTasks
           day='Jueves 16, Junio'
           tasks={[]}
           showModal={showModal}  // Aquí pasamos showModal como prop
-          setTaskItemCreateType={setTaskItemCreateType} // Pasa setTaskItemCreateType aquí
+          setActivityItemCreateType={setActivityItemCreateType} // Pasa setActivityItemCreateType aquí
         />
         <DayTasks
           day='Jueves 17, Junio'
           tasks={[]}
           showModal={showModal}  // Aquí pasamos showModal como prop
-          setTaskItemCreateType={setTaskItemCreateType} // Pasa setTaskItemCreateType aquí
+          setActivityItemCreateType={setActivityItemCreateType} // Pasa setActivityItemCreateType aquí
         />
       </ScrollView>
       <Modal
@@ -290,7 +290,7 @@ export default function TaskScreen() {
                 <Text  style={{ color: 'white' }}>Guardar</Text>
               </TouchableOpacity>
             </View>
-            <TaskItemCreate tipo={TaskItemCreateType} />
+            <ActivityItemCreate tipo={ActivityItemCreateType} />
           </Animated.View>
         </View>
       </Modal>
@@ -299,7 +299,7 @@ export default function TaskScreen() {
 }
 
 // Componente que agrupa las tareas por día
-const DayTasks: React.FC<DayTasksProps> = ({ day, tasks, showModal, setTaskItemCreateType }) => (
+const DayTasks: React.FC<DayTasksProps> = ({ day, tasks, showModal, setActivityItemCreateType }) => (
   <View style={styles.dayContainer}>
     <Text style={[styles.dayTitle, { width: '100%', textAlign: 'right' }]}>
       {day}
@@ -309,7 +309,7 @@ const DayTasks: React.FC<DayTasksProps> = ({ day, tasks, showModal, setTaskItemC
       <TaskCard
         key={index}
         {...task}
-        setTaskItemCreateType={setTaskItemCreateType} // Pasa setTaskItemCreateType a TaskCard
+        setActivityItemCreateType={setActivityItemCreateType} // Pasa setActivityItemCreateType a TaskCard
         showModal={showModal}
       />
     ))}
@@ -321,15 +321,15 @@ const DayTasks: React.FC<DayTasksProps> = ({ day, tasks, showModal, setTaskItemC
 
 // Componente para cada tarjeta de tarea
 interface TaskCardProps extends Task {
-  setTaskItemCreateType: (type: string) => void; // Agrega setTaskItemCreateType como prop
+  setActivityItemCreateType: (type: string) => void; // Agrega setActivityItemCreateType como prop
 }
 
-const TaskCard: React.FC<TaskCardProps> = ({ title, time, status, setTaskItemCreateType, showModal }) => (
+const TaskCard: React.FC<TaskCardProps> = ({ title, time, status, setActivityItemCreateType, showModal }) => (
   <TouchableOpacity
     style={styles.taskCard}
     onPress={() => {
       console.log("Presionada la tarea: ", title);  // Verifica si el evento onPress se está llamando
-      setTaskItemCreateType(status === 'Completado' ? 'Completado' : status === 'Pendiente' ? 'Pendiente' : 'Programado');
+      setActivityItemCreateType(status === 'Completado' ? 'Completado' : status === 'Pendiente' ? 'Pendiente' : 'Programado');
       showModal();  // Verifica si esta función se llama correctamente
     }}
   >

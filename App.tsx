@@ -12,7 +12,7 @@ import EditUser from './src/views/Login/EditUser';
 import HomeProject from './src/views/Projects/HomeProject';
 import NewProject from './src/views/Projects/NewProject';
 import Project from './src/views/Projects/Project';
-import Task from './src/components/Task/Task';
+import Task from './src/components/Activities/Activity';
 import VistaMiembros from './src/views/Accesos/VistaMiembros';
 
 SplashScreen.preventAutoHideAsync(); // Evita que el splash screen desaparezca automáticamente
