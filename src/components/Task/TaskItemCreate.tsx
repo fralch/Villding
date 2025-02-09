@@ -21,6 +21,7 @@ import {
   MaterialIcons,
   AntDesign, 
 } from "@expo/vector-icons";
+
 interface TaskItemCreateProps {
   tipo: string;
 }
@@ -32,6 +33,7 @@ const TaskItemCreate: React.FC<TaskItemCreateProps> = ({ tipo }) => {
   ];
 
   const [tipoTask, setTipoTask] = useState(tipo);
+  const [titulo, setTitulo] = useState(""); // Estado para el título
 
   // Arreglo de íconos para "Todos los íconos"
   const allIcons: Array<keyof typeof MaterialIcons.glyphMap> = [
@@ -112,31 +114,40 @@ const TaskItemCreate: React.FC<TaskItemCreateProps> = ({ tipo }) => {
             </Text>
           </View>
           <View style={{ backgroundColor: "#0a3649", padding: 20 }}>
-            <Text
-              style={{
-                fontSize: 35,
-                width: "70%",
-                color: "white",
-                marginBottom: 10,
-              }}
-            >
-              Compactación sector 05
+          <TextInput
+            style={{
+              fontSize: 35,
+              width: "70%",
+              color: "white",
+              marginBottom: 10,
+              textAlignVertical: "top", // Alinea el texto en la parte superior
+            }}
+            value={titulo}
+            onChangeText={setTitulo}
+            placeholder="Ingrese el título"
+            placeholderTextColor="#888"
+            multiline={true} // Permite múltiples líneas
+            numberOfLines={4} // Número inicial de líneas visibles (opcional)
+          />
+          <View style={styles.hr} />
+          <TouchableOpacity
+            style={{
+              justifyContent: "center",
+              alignItems: "center",
+              marginTop: 10,
+              backgroundColor: "#dedede",
+              borderRadius: 5,
+            }}
+            onPress={() => {
+              // Aquí puedes agregar la lógica para finalizar
+              console.log("Título ingresado:", titulo);
+            }}
+          >
+            <Text style={{ fontSize: 14, color: "#0a455e", padding: 15 }}>
+              Finalizar
             </Text>
-            <View style={styles.hr} />
-            <TouchableOpacity
-              style={{
-                justifyContent: "center",
-                alignItems: "center",
-                marginTop: 10,
-                backgroundColor: "#dedede",
-                borderRadius: 5,
-              }}
-            >
-              <Text style={{ fontSize: 14, color: "#0a455e", padding: 15 }}>
-                Finalizar
-              </Text>
-            </TouchableOpacity>
-          </View>
+          </TouchableOpacity>
+        </View>
           <View>
             <View style={styles.inputContainer}>
               <Entypo name="text" size={24} color="white" />
