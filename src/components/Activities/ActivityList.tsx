@@ -9,6 +9,7 @@ import {
   TextInput,
   Modal,
   Pressable,
+  Dimensions
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation, NavigationProp } from "@react-navigation/native";
@@ -16,49 +17,8 @@ import { getProject } from "../../hooks/localStorageCurrentProject";
 import { getSesion } from "../../hooks/localStorageUser";
 import ConfirmModal from "../Alerta/ConfirmationModal";
 import axios from "axios";
+import { Tracking, TrackingSection, Project, User } from "../../types/interfaces";
 
-// Definición de interfaces para los tipos de datos utilizados en el componente
-interface Tracking {
-  id: number;
-  project_id: number;
-  title: string;
-  description: string;
-  date_start: string | null;
-  date_end: string | null;
-  status: number;
-  created_at: string;
-  updated_at: string;
-  checked?: number[];
-}
-
-interface TrackingSection {
-  id: string;
-  trackings: Tracking[];
-}
-
-interface Project {
-  company: string;
-  id: string;
-  image: string;
-  subtitle: string;
-  title: string;
-  start_date: string;
-  end_date: string;
-}
-
-interface User {
-  id: any;
-  nombres: string;
-  apellidos: string;
-  email: string;
-  email_contact?: string;
-  password: string;
-  rol: string;
-  user_code: string;
-  telefono?: string;
-  edad?: number;
-  uri?: string;
-}
 
 const ActivityList: React.FC = () => {
   const navigation = useNavigation<NavigationProp<any>>();
