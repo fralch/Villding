@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -10,8 +10,7 @@ import {
   Dimensions,
   Modal,
   Pressable,
-   PanResponder,
-   SwitchComponent
+  PanResponder,
 } from 'react-native';
 import { StatusBar as ExpoStatusBar } from 'expo-status-bar';
 import { useFocusEffect } from '@react-navigation/native';
@@ -22,7 +21,6 @@ import Feather from '@expo/vector-icons/Feather';
 import { Ionicons } from '@expo/vector-icons';
 import ActivityItemCreate from './ActivityItemCreate';
 
-
 interface Task {
   title: string;
   time: string;
@@ -30,32 +28,31 @@ interface Task {
 }
 
 interface TaskCardProps extends Task {
-  setActivityItemCreateType: (type: string) => void; // Agrega setActivityItemCreateType como prop
-  showModal: () => void; // Agrega showModal como prop
+  setActivityItemCreateType: (type: string) => void;
+  showModal: () => void;
 }
 
 interface DayTasksProps {
   day: string;
   tasks: Task[];
   showModal: () => void;
-  setActivityItemCreateType: (type: string) => void; // Agrega setActivityItemCreateType como prop
+  setActivityItemCreateType: (type: string) => void;
 }
-
 
 const { height } = Dimensions.get('window');
 
-export default function ActivityScreen() {
+export default function ActivityScreen( prop : any) {
   const navigation = useNavigation<NavigationProp<any>>();
-
+  console.log(prop.route.params.tracking);
   const screenWidth = Dimensions.get('window').width;
   const headerWidth = React.useRef(new Animated.Value(screenWidth)).current;
   const [currentWeekIndex, setCurrentWeekIndex] = useState(2);
   const [modalOptionsVisible, setModalOptionsVisible] = useState(false);
-  const [ActivityItemCreateType , setActivityItemCreateType] = useState('Programado');
-
-
+  const [ActivityItemCreateType, setActivityItemCreateType] = useState('Programado');
   const [isVisible, setIsVisible] = useState(false);
   const slideAnim = useRef(new Animated.Value(height)).current;
+  const [tasksData, setTasksData] = useState<{ [key: string]: Task[] }>({});
+  const [titleTracking, setTitleTracking] = useState(prop.route.params.tracking.title);
 
   const weeks = ['Semana 1', 'Semana 2', 'Semana 3', 'Semana 4'];
   const handleNextWeek = () => {
@@ -72,222 +69,129 @@ export default function ActivityScreen() {
     navigation.goBack();
   };
 
-  // MODAL 
   const showModal = () => {
     setIsVisible(true);
     Animated.timing(slideAnim, {
-      toValue: 0, // Aparece desde el fondo
+      toValue: 0,
       duration: 300,
       useNativeDriver: true,
     }).start();
   };
 
-  // Ocultar el modal con animación hacia abajo
   const hideModal = () => {
     Animated.timing(slideAnim, {
-      toValue: height, // Deslizar hacia abajo para salir
+      toValue: height,
       duration: 300,
       useNativeDriver: true,
     }).start(() => setIsVisible(false));
   };
 
-  // PanResponder para detectar el gesto de deslizamiento hacia abajo
   const panResponder = useRef(
     PanResponder.create({
       onMoveShouldSetPanResponder: (_, gestureState) => {
-        return gestureState.dy > 0; // Solo responde a movimientos hacia abajo
+        return gestureState.dy > 0;
       },
       onPanResponderMove: (_, gestureState) => {
         if (gestureState.dy > 0) {
-          slideAnim.setValue(gestureState.dy); // Mueve el modal con el gesto
+          slideAnim.setValue(gestureState.dy);
         }
       },
       onPanResponderRelease: (_, gestureState) => {
         if (gestureState.dy > 100) {
-          hideModal(); // Cierra el modal si se desliza lo suficiente hacia abajo
+          hideModal();
         } else {
           Animated.spring(slideAnim, {
-            toValue: 0, // Regresa el modal a su posición original si el deslizamiento no fue suficiente
+            toValue: 0,
             useNativeDriver: true,
           }).start();
         }
       },
     })
   ).current;
+
+  useEffect(() => {
+    // Simulamos la llamada a la API
+    const apiData = [{"id":8,"day_id":8,"project_id":1,"user_id":1,"name":"Reuni\u00f3n de equipo","description":"Reuni\u00f3n semanal para discutir el progreso del proyecto.","location":"Sala de conferencias","hour_start":"09:00:00","hour_end":"10:00:00","status":"pendiente","icon":"calendar","image":null,"comments":"Traer el informe de avance.","created_at":"2025-02-09T18:22:20.000000Z","updated_at":"2025-02-09T18:22:20.000000Z"},{"id":50,"day_id":8,"project_id":1,"user_id":1,"name":"Reuni\u00f3n de Planificaci\u00f3n","description":"Reuni\u00f3n para planificar las actividades del pr\u00f3ximo mes.","location":"Sala de Conferencias A","hour_start":"09:00:00","hour_end":"10:00:00","status":"programada","icon":"calendar-icon.png","image":null,"comments":"Traer informes del mes pasado.","created_at":"2025-02-11T02:02:41.000000Z","updated_at":"2025-02-11T02:02:41.000000Z"},{"id":92,"day_id":8,"project_id":1,"user_id":1,"name":"Reuni\u00f3n de TERCERA","description":"Reuni\u00f3n para planificar las actividades del pr\u00f3ximo mes.","location":"Sala de Conferencias A","hour_start":"09:00:00","hour_end":"10:00:00","status":"programada","icon":"calendar-icon.png","image":null,"comments":"Traer informes del mes pasado.","created_at":"2025-02-11T03:21:49.000000Z","updated_at":"2025-02-11T03:21:49.000000Z"},{"id":9,"day_id":9,"project_id":1,"user_id":1,"name":"Reuni\u00f3n de equipo","description":"Reuni\u00f3n semanal para discutir el progreso del proyecto.","location":"Sala de conferencias","hour_start":"09:00:00","hour_end":"10:00:00","status":"pendiente","icon":"calendar","image":null,"comments":"Traer el informe de avance.","created_at":"2025-02-09T18:22:20.000000Z","updated_at":"2025-02-09T18:22:20.000000Z"},{"id":51,"day_id":9,"project_id":1,"user_id":1,"name":"Reuni\u00f3n de Planificaci\u00f3n","description":"Reuni\u00f3n para planificar las actividades del pr\u00f3ximo mes.","location":"Sala de Conferencias A","hour_start":"09:00:00","hour_end":"10:00:00","status":"programada","icon":"calendar-icon.png","image":null,"comments":"Traer informes del mes pasado.","created_at":"2025-02-11T02:02:41.000000Z","updated_at":"2025-02-11T02:02:41.000000Z"},{"id":93,"day_id":9,"project_id":1,"user_id":1,"name":"Reuni\u00f3n de TERCERA","description":"Reuni\u00f3n para planificar las actividades del pr\u00f3ximo mes.","location":"Sala de Conferencias A","hour_start":"09:00:00","hour_end":"10:00:00","status":"programada","icon":"calendar-icon.png","image":null,"comments":"Traer informes del mes pasado.","created_at":"2025-02-11T03:21:49.000000Z","updated_at":"2025-02-11T03:21:49.000000Z"},{"id":10,"day_id":10,"project_id":1,"user_id":1,"name":"Reuni\u00f3n de equipo","description":"Reuni\u00f3n semanal para discutir el progreso del proyecto.","location":"Sala de conferencias","hour_start":"09:00:00","hour_end":"10:00:00","status":"pendiente","icon":"calendar","image":null,"comments":"Traer el informe de avance.","created_at":"2025-02-09T18:22:20.000000Z","updated_at":"2025-02-09T18:22:20.000000Z"},{"id":52,"day_id":10,"project_id":1,"user_id":1,"name":"Reuni\u00f3n de Planificaci\u00f3n","description":"Reuni\u00f3n para planificar las actividades del pr\u00f3ximo mes.","location":"Sala de Conferencias A","hour_start":"09:00:00","hour_end":"10:00:00","status":"programada","icon":"calendar-icon.png","image":null,"comments":"Traer informes del mes pasado.","created_at":"2025-02-11T02:02:41.000000Z","updated_at":"2025-02-11T02:02:41.000000Z"},{"id":94,"day_id":10,"project_id":1,"user_id":1,"name":"Reuni\u00f3n de TERCERA","description":"Reuni\u00f3n para planificar las actividades del pr\u00f3ximo mes.","location":"Sala de Conferencias A","hour_start":"09:00:00","hour_end":"10:00:00","status":"programada","icon":"calendar-icon.png","image":null,"comments":"Traer informes del mes pasado.","created_at":"2025-02-11T03:21:49.000000Z","updated_at":"2025-02-11T03:21:49.000000Z"},{"id":11,"day_id":11,"project_id":1,"user_id":1,"name":"Reuni\u00f3n de equipo","description":"Reuni\u00f3n semanal para discutir el progreso del proyecto.","location":"Sala de conferencias","hour_start":"09:00:00","hour_end":"10:00:00","status":"pendiente","icon":"calendar","image":null,"comments":"Traer el informe de avance.","created_at":"2025-02-09T18:22:20.000000Z","updated_at":"2025-02-09T18:22:20.000000Z"},{"id":53,"day_id":11,"project_id":1,"user_id":1,"name":"Reuni\u00f3n de Planificaci\u00f3n","description":"Reuni\u00f3n para planificar las actividades del pr\u00f3ximo mes.","location":"Sala de Conferencias A","hour_start":"09:00:00","hour_end":"10:00:00","status":"programada","icon":"calendar-icon.png","image":null,"comments":"Traer informes del mes pasado.","created_at":"2025-02-11T02:02:41.000000Z","updated_at":"2025-02-11T02:02:41.000000Z"},{"id":95,"day_id":11,"project_id":1,"user_id":1,"name":"Reuni\u00f3n de TERCERA","description":"Reuni\u00f3n para planificar las actividades del pr\u00f3ximo mes.","location":"Sala de Conferencias A","hour_start":"09:00:00","hour_end":"10:00:00","status":"programada","icon":"calendar-icon.png","image":null,"comments":"Traer informes del mes pasado.","created_at":"2025-02-11T03:21:49.000000Z","updated_at":"2025-02-11T03:21:49.000000Z"},{"id":12,"day_id":12,"project_id":1,"user_id":1,"name":"Reuni\u00f3n de equipo","description":"Reuni\u00f3n semanal para discutir el progreso del proyecto.","location":"Sala de conferencias","hour_start":"09:00:00","hour_end":"10:00:00","status":"pendiente","icon":"calendar","image":null,"comments":"Traer el informe de avance.","created_at":"2025-02-09T18:22:20.000000Z","updated_at":"2025-02-09T18:22:20.000000Z"},{"id":54,"day_id":12,"project_id":1,"user_id":1,"name":"Reuni\u00f3n de Planificaci\u00f3n","description":"Reuni\u00f3n para planificar las actividades del pr\u00f3ximo mes.","location":"Sala de Conferencias A","hour_start":"09:00:00","hour_end":"10:00:00","status":"programada","icon":"calendar-icon.png","image":null,"comments":"Traer informes del mes pasado.","created_at":"2025-02-11T02:02:41.000000Z","updated_at":"2025-02-11T02:02:41.000000Z"},{"id":96,"day_id":12,"project_id":1,"user_id":1,"name":"Reuni\u00f3n de TERCERA","description":"Reuni\u00f3n para planificar las actividades del pr\u00f3ximo mes.","location":"Sala de Conferencias A","hour_start":"09:00:00","hour_end":"10:00:00","status":"programada","icon":"calendar-icon.png","image":null,"comments":"Traer informes del mes pasado.","created_at":"2025-02-11T03:21:49.000000Z","updated_at":"2025-02-11T03:21:49.000000Z"},{"id":13,"day_id":13,"project_id":1,"user_id":1,"name":"Reuni\u00f3n de equipo","description":"Reuni\u00f3n semanal para discutir el progreso del proyecto.","location":"Sala de conferencias","hour_start":"09:00:00","hour_end":"10:00:00","status":"pendiente","icon":"calendar","image":null,"comments":"Traer el informe de avance.","created_at":"2025-02-09T18:22:20.000000Z","updated_at":"2025-02-09T18:22:20.000000Z"},{"id":55,"day_id":13,"project_id":1,"user_id":1,"name":"Reuni\u00f3n de Planificaci\u00f3n","description":"Reuni\u00f3n para planificar las actividades del pr\u00f3ximo mes.","location":"Sala de Conferencias A","hour_start":"09:00:00","hour_end":"10:00:00","status":"programada","icon":"calendar-icon.png","image":null,"comments":"Traer informes del mes pasado.","created_at":"2025-02-11T02:02:41.000000Z","updated_at":"2025-02-11T02:02:41.000000Z"},{"id":97,"day_id":13,"project_id":1,"user_id":1,"name":"Reuni\u00f3n de TERCERA","description":"Reuni\u00f3n para planificar las actividades del pr\u00f3ximo mes.","location":"Sala de Conferencias A","hour_start":"09:00:00","hour_end":"10:00:00","status":"programada","icon":"calendar-icon.png","image":null,"comments":"Traer informes del mes pasado.","created_at":"2025-02-11T03:21:49.000000Z","updated_at":"2025-02-11T03:21:49.000000Z"},{"id":14,"day_id":14,"project_id":1,"user_id":1,"name":"Reuni\u00f3n de equipo","description":"Reuni\u00f3n semanal para discutir el progreso del proyecto.","location":"Sala de conferencias","hour_start":"09:00:00","hour_end":"10:00:00","status":"pendiente","icon":"calendar","image":null,"comments":"Traer el informe de avance.","created_at":"2025-02-09T18:22:20.000000Z","updated_at":"2025-02-09T18:22:20.000000Z"},{"id":56,"day_id":14,"project_id":1,"user_id":1,"name":"Reuni\u00f3n de Planificaci\u00f3n","description":"Reuni\u00f3n para planificar las actividades del pr\u00f3ximo mes.","location":"Sala de Conferencias A","hour_start":"09:00:00","hour_end":"10:00:00","status":"programada","icon":"calendar-icon.png","image":null,"comments":"Traer informes del mes pasado.","created_at":"2025-02-11T02:02:41.000000Z","updated_at":"2025-02-11T02:02:41.000000Z"},{"id":98,"day_id":14,"project_id":1,"user_id":1,"name":"Reuni\u00f3n de TERCERA","description":"Reuni\u00f3n para planificar las actividades del pr\u00f3ximo mes.","location":"Sala de Conferencias A","hour_start":"09:00:00","hour_end":"10:00:00","status":"programada","icon":"calendar-icon.png","image":null,"comments":"Traer informes del mes pasado.","created_at":"2025-02-11T03:21:49.000000Z","updated_at":"2025-02-11T03:21:49.000000Z"}]
+
+    // Transformar los datos de la API
+    const transformedData: { [key: string]: Task[] } = {};
+    apiData.forEach((item) => {
+      const day = `Día ${item.day_id}`;
+      if (!transformedData[day]) {
+        transformedData[day] = [];
+      }
+      transformedData[day].push({
+        title: item.name,
+        time: `${item.hour_start.slice(0, 5)} - ${item.hour_end.slice(0, 5)}`,
+        status: item.status === 'pendiente' ? 'Pendiente' : item.status === 'programada' ? 'Programado' : 'Completado',
+      });
+    });
+
+    setTasksData(transformedData);
+  }, []);
+
   return (
     <View style={styles.container}>
-
       <ExpoStatusBar style='light' />
-      {/* Header */}
       <View style={[styles.header, { width: headerWidth }]}>
         <TouchableOpacity onPress={goBack}>
-          <MaterialIcons
-            name='arrow-back'
-            size={24}
-            color='white'
-          />
+          <MaterialIcons name='arrow-back' size={24} color='white' />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Primer piso - torre "A"</Text>
+        <Text style={styles.headerTitle}> {titleTracking}</Text>
         <TouchableOpacity onPress={() => setModalOptionsVisible(true)}>
-          <MaterialIcons
-            name='more-vert'
-            size={24}
-            color='white'
-          />
+          <MaterialIcons name='more-vert' size={24} color='white' />
         </TouchableOpacity>
       </View>
       <ScrollView style={styles.scrollContainer}>
-        {/* Semana selector */}
         <View style={{ backgroundColor: '#034757' }}>
           <View style={styles.weekContainer}>
-            <Text
-              style={{
-                fontSize: 40,
-                color: 'white',
-                width: '80%',
-                fontWeight: 'bold',
-                alignSelf: 'flex-start',
-              }}
-            >
-              Primer piso - torre "A"
+            <Text style={{ fontSize: 40, color: 'white', width: '80%', fontWeight: 'bold', alignSelf: 'flex-start' }}>
+              {titleTracking}
             </Text>
             <Text style={styles.weekText}>Semana 03</Text>
             <Text style={styles.pendingText}>3 pendientes</Text>
           </View>
-
-          {/* Selector de semana con flechas */}
-          <View style={styles.weekSelector}>
-            <TouchableOpacity
-              onPress={handlePreviousWeek}
-              disabled={currentWeekIndex === 0}
-            >
-              <Ionicons
-                name='chevron-back'
-                size={30}
-                color={currentWeekIndex === 0 ? '#07374a' : 'white'} // Desactivar si es la primera semana
-              />
-            </TouchableOpacity>
-            <Text style={styles.weekTitle}>{weeks[currentWeekIndex]}</Text>
-            <TouchableOpacity
-              onPress={handleNextWeek}
-              disabled={currentWeekIndex === weeks.length - 1}
-            >
-              <Ionicons
-                name='chevron-forward'
-                size={30}
-                color={
-                  currentWeekIndex === weeks.length - 1 ? '#07374a' : 'white'
-                } // Desactivar si es la última semana
-              />
-            </TouchableOpacity>
-          </View>
         </View>
-        {/* Lista de tareas */}
-
-        <DayTasks
-          day='Miércoles 14, Junio'
-          tasks={[
-            {
-              title: 'Descarga de afirmado',
-              time: '11:00 - 12:00',
-              status: 'Pendiente',
-            },
-            {
-              title: 'Inter',
-              time: '11:00 - 12:00',
-              status: 'Pendiente',
-            },
-          ]}
-          showModal={showModal}  // Aquí pasamos showModal como prop
-          setActivityItemCreateType={setActivityItemCreateType} // Pasa setActivityItemCreateType aquí
-        />
-        <DayTasks
-          day='Jueves 15, Junio'
-          tasks={[
-            {
-              title: 'Descarga de afirmado',
-              time: '11:00 - 12:00',
-              status: 'Completado',
-            },
-            {
-              title: 'Compactación sector 05',
-              time: '11:00 - 12:00',
-              status: 'Programado',
-            },
-          ]}
-          showModal={showModal}  // Aquí pasamos showModal como prop
-          setActivityItemCreateType={setActivityItemCreateType} // Pasa setActivityItemCreateType aquí
-        />
-        <DayTasks
-          day='Jueves 16, Junio'
-          tasks={[]}
-          showModal={showModal}  // Aquí pasamos showModal como prop
-          setActivityItemCreateType={setActivityItemCreateType} // Pasa setActivityItemCreateType aquí
-        />
-        <DayTasks
-          day='Jueves 17, Junio'
-          tasks={[]}
-          showModal={showModal}  // Aquí pasamos showModal como prop
-          setActivityItemCreateType={setActivityItemCreateType} // Pasa setActivityItemCreateType aquí
-        />
+        {Object.keys(tasksData).map((day) => (
+          <DayTasks
+            key={day}
+            day={day}
+            tasks={tasksData[day]}
+            showModal={showModal}
+            setActivityItemCreateType={setActivityItemCreateType}
+          />
+        ))}
       </ScrollView>
-      <Modal
-        visible={modalOptionsVisible}
-        animationType='fade'
-        transparent={true}
-        onRequestClose={() => setModalOptionsVisible(false)}
-      >
+      <Modal visible={modalOptionsVisible} animationType='fade' transparent={true} onRequestClose={() => setModalOptionsVisible(false)}>
         <View style={styles.modalContainer}>
-        <Pressable
-          style={styles.modalContainerOptions}
-          onPressOut={() => setModalOptionsVisible(false)}
-        >
-          <Text
-            style={{
-              fontSize: 18,
-              fontWeight: 'bold',
-              marginBottom: 10,
-              color: 'white',
-            }}
-          >
-            Seguimiento
-          </Text>
-          <View style={{ marginLeft: 0 }}>
-            <TouchableOpacity style={{ flexDirection: 'row', height: 40, alignItems: 'center' }}>
-              <Ionicons name="share-social-sharp" size={18} color="white" />
-              <Text style={{ marginLeft: 10, color: 'white' }}>Compartir enlace</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={{  flexDirection: 'row', height: 40, alignItems: 'center' }}>
-              <MaterialCommunityIcons name="pencil" size={18} color="white" />
-              <Text style={{ marginLeft: 10, color: 'white'}}>Renombrar</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={{  flexDirection: 'row', height: 40, alignItems: 'center' }}>
-            <Ionicons name="settings" size={18} color="white" />
-              <Text style={{ marginLeft: 10, color: 'white'}}>Configurar seguimiento</Text>
-            </TouchableOpacity>
-
-          </View>
-        </Pressable>
+          <Pressable style={styles.modalContainerOptions} onPressOut={() => setModalOptionsVisible(false)}>
+            <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 10, color: 'white' }}>Seguimiento</Text>
+            <View style={{ marginLeft: 0 }}>
+              <TouchableOpacity style={{ flexDirection: 'row', height: 40, alignItems: 'center' }}>
+                <Ionicons name="share-social-sharp" size={18} color="white" />
+                <Text style={{ marginLeft: 10, color: 'white' }}>Compartir enlace</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={{ flexDirection: 'row', height: 40, alignItems: 'center' }}>
+                <MaterialCommunityIcons name="pencil" size={18} color="white" />
+                <Text style={{ marginLeft: 10, color: 'white' }}>Renombrar</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={{ flexDirection: 'row', height: 40, alignItems: 'center' }}>
+                <Ionicons name="settings" size={18} color="white" />
+                <Text style={{ marginLeft: 10, color: 'white' }}>Configurar seguimiento</Text>
+              </TouchableOpacity>
+            </View>
+          </Pressable>
         </View>
       </Modal>
-      {/*  MODAL INFERIOR */}
-     
-
       <Modal transparent visible={isVisible} animationType="none">
         <View style={styles.modalBackground}>
-          <Animated.View
-            style={[
-              styles.modalContainerInferior,
-              { transform: [{ translateY: slideAnim }] },
-            ]}
-            {...panResponder.panHandlers}
-          >
+          <Animated.View style={[styles.modalContainerInferior, { transform: [{ translateY: slideAnim }] }]} {...panResponder.panHandlers}>
             <View style={{ backgroundColor: '#05222f', flexDirection: 'row', justifyContent: 'space-between' }}>
-            <TouchableOpacity onPress={hideModal}  style={{  width: '50%', paddingVertical: 10 , paddingLeft: 10}}>
-              <Text style={{ color: 'white' }} >Cancelar</Text>
-            </TouchableOpacity>
-              <TouchableOpacity  style={{ width: '50%', paddingVertical: 10 , paddingRight: 10, alignItems: 'flex-end'}}>
-                <Text  style={{ color: 'white' }}>Guardar</Text>
+              <TouchableOpacity onPress={hideModal} style={{ width: '50%', paddingVertical: 10, paddingLeft: 10 }}>
+                <Text style={{ color: 'white' }}>Cancelar</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={{ width: '50%', paddingVertical: 10, paddingRight: 10, alignItems: 'flex-end' }}>
+                <Text style={{ color: 'white' }}>Guardar</Text>
               </TouchableOpacity>
             </View>
             <ActivityItemCreate tipo={ActivityItemCreateType} />
@@ -298,53 +202,30 @@ export default function ActivityScreen() {
   );
 }
 
-// Componente que agrupa las tareas por día
 const DayTasks: React.FC<DayTasksProps> = ({ day, tasks, showModal, setActivityItemCreateType }) => (
   <View style={styles.dayContainer}>
-    <Text style={[styles.dayTitle, { width: '100%', textAlign: 'right' }]}>
-      {day}
-    </Text>
-
+    <Text style={[styles.dayTitle, { width: '100%', textAlign: 'right' }]}>{day}</Text>
     {tasks.map((task, index) => (
-      <TaskCard
-        key={index}
-        {...task}
-        setActivityItemCreateType={setActivityItemCreateType} // Pasa setActivityItemCreateType a TaskCard
-        showModal={showModal}
-      />
+      <TaskCard key={index} {...task} setActivityItemCreateType={setActivityItemCreateType} showModal={showModal} />
     ))}
-    <TouchableOpacity style={styles.addNewTaskButton} onPress={showModal}> 
+    <TouchableOpacity style={styles.addNewTaskButton} onPress={showModal}>
       <Text style={styles.addNewTaskText}>+ Nuevo</Text>
     </TouchableOpacity>
   </View>
 );
 
-// Componente para cada tarjeta de tarea
-interface TaskCardProps extends Task {
-  setActivityItemCreateType: (type: string) => void; // Agrega setActivityItemCreateType como prop
-}
-
 const TaskCard: React.FC<TaskCardProps> = ({ title, time, status, setActivityItemCreateType, showModal }) => (
-  <TouchableOpacity
-    style={styles.taskCard}
-    onPress={() => {
-      console.log("Presionada la tarea: ", title);  // Verifica si el evento onPress se está llamando
-      setActivityItemCreateType(status === 'Completado' ? 'Completado' : status === 'Pendiente' ? 'Pendiente' : 'Programado');
-      showModal();  // Verifica si esta función se llama correctamente
-    }}
-  >
+  <TouchableOpacity style={styles.taskCard} onPress={() => {
+    setActivityItemCreateType(status === 'Completado' ? 'Completado' : status === 'Pendiente' ? 'Pendiente' : 'Programado');
+    showModal();
+  }}>
     <View style={styles.taskHeader}>
-      <Text
-        style={[
-          styles.taskStatus,
-          {
-            backgroundColor: status === 'Pendiente' ? '#F4C724' : status === 'Completado' ? '#4ec291' : '#056375',
-            color: status === 'Programado' ? '#F4C724' : '#0D465E',
-            borderColor: status === 'Programado' ? '#F4C724' : 'white',
-            borderWidth: status === 'Programado' ? 1 : 0,
-          },
-        ]}
-      >
+      <Text style={[styles.taskStatus, {
+        backgroundColor: status === 'Pendiente' ? '#F4C724' : status === 'Completado' ? '#4ec291' : '#056375',
+        color: status === 'Programado' ? '#F4C724' : '#0D465E',
+        borderColor: status === 'Programado' ? '#F4C724' : 'white',
+        borderWidth: status === 'Programado' ? 1 : 0,
+      }]}>
         {status}
       </Text>
       <Feather name="truck" size={24} color="white" />

@@ -318,7 +318,7 @@ const ActivityList: React.FC = () => {
                 key={tracking.id}
                 style={styles.taskRow}
                 onLongPress={() => setModalSinAccesoVisible(true)}
-                onPress={() => navigation.navigate('Task')}
+                onPress={() => navigation.navigate('Task', { tracking})}
               >
                 <Text style={styles.taskTitle}>{tracking.title}</Text>
                 <View style={styles.iconRow}>
