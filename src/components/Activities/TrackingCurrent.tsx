@@ -9,18 +9,20 @@ import {
   TextInput,
   Modal,
   Pressable,
-  Dimensions
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation, NavigationProp } from "@react-navigation/native";
 import { getProject } from "../../hooks/localStorageCurrentProject";
-import { getSesion } from "../../hooks/localStorageUser";
 import ConfirmModal from "../Alerta/ConfirmationModal";
 import axios from "axios";
 import { Tracking, TrackingSection, Project, User } from "../../types/interfaces";
 
+// Definición del componente funcional TrackingCurrent
 const TrackingCurrent: React.FC = () => {
+  // Hook para la navegación
   const navigation = useNavigation<NavigationProp<any>>();
+
+  // Estados locales del componente
   const [datesToWeekCurrent, setDatesToWeekCurrent] = useState<string[]>([]);
   const [modalSeguimientoVisible, setModalSeguimientoVisible] = useState(false);
   const [modalSinAccesoVisible, setModalSinAccesoVisible] = useState(false);
@@ -30,88 +32,100 @@ const TrackingCurrent: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const [titleTracking, setTitleTracking] = useState("");
   const [showModal, setShowModal] = useState(false);
-  const [msjeModal, setMsjeModal] = useState(
-    "El usuario se ha registrado correctamente."
-  );
+  const [msjeModal, setMsjeModal] = useState("El usuario se ha registrado correctamente.");
 
+
+
+  // useEffect para cargar el proyecto y las fechas al montar el componente
   useEffect(() => {
-    getProject().then((StoredProject: any) => {
-      const proyecto = JSON.parse(StoredProject);
-      setProject(proyecto);
-    });
+    fetchProjectAndDates();
   }, []);
 
-  const handleNextWeek = () => {
-    if (!project?.start_date || !project?.end_date) {
-      console.log("Fechas no definidas");
-      return;
-    }
-
-    const startDate = new Date(project.start_date.replace(/\//g, "-"));
-    const endDate = new Date(project.end_date.replace(/\//g, "-"));
-
-    if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
-      console.log("Formato de fecha inválido:", project.start_date, project.end_date);
-      return;
-    }
-
-    const totalWeeks = Math.ceil((endDate.getTime() - startDate.getTime()) / (7 * 24 * 60 * 60 * 1000));
-
-    if (currentWeekIndex < totalWeeks - 1) {
-      setCurrentWeekIndex(currentWeekIndex + 1);
-      updateDatesForWeek(currentWeekIndex + 1);
-    }
-  };
-
-  const handlePreviousWeek = () => {
-    if (currentWeekIndex > 0) {
-      setCurrentWeekIndex(currentWeekIndex - 1);
-      updateDatesForWeek(currentWeekIndex - 1);
-    }
-  };
-
-  const updateDatesForWeek = (weekIndex: number) => {
+  useEffect(() => {
     if (!project?.start_date) return;
   
     const startDate = new Date(project.start_date.replace(/\//g, "-"));
-  
-    // Calcular el lunes de la semana inicial
-    const initialMonday = new Date(startDate);
-    const dayOfWeek = initialMonday.getDay(); // 0 (Domingo) - 6 (Sábado)
-    initialMonday.setDate(startDate.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
-  
-    // Calcular el lunes de la semana actual
-    const weekStartDate = new Date(initialMonday);
-    weekStartDate.setDate(initialMonday.getDate() + weekIndex * 7);
-  
-    const weekDates = Array.from({ length: 7 }, (_, index) => {
-      const currentDate = new Date(weekStartDate);
-      currentDate.setDate(weekStartDate.getDate() + index);
-      return currentDate.toLocaleDateString("es-PE", { day: "2-digit", month: "2-digit" });
-    });
-  
-    setDatesToWeekCurrent(weekDates);
-  };
-  
-
-  const getDatesForCurrentWeek = (): string[] => {
     const today = new Date();
-    const dayOfWeek = today.getDay(); // 0 (Domingo) - 6 (Sábado)
+  
+    if (isNaN(startDate.getTime())) {
+      console.error("Fecha de inicio del proyecto no válida");
+      return;
+    }
+  
+    const weekIndex = Math.floor((today.getTime() - startDate.getTime()) / (7 * 24 * 60 * 60 * 1000));
+    console.log("Semana actual:", weekIndex);
+    setCurrentWeekIndex(weekIndex);
+    updateDatesForWeek(weekIndex); // Actualiza las fechas de la semana actual
+  }, [project?.start_date]);
 
-    const monday = new Date(today);
-    monday.setDate(today.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
 
-    return Array.from({ length: 7 }, (_, index) => {
+  // Función para obtener el proyecto y las fechas de la semana actual
+  const fetchProjectAndDates = async () => {
+    const storedProject = await getProject();
+    if (storedProject) {
+      const proyecto = JSON.parse(storedProject);
+      setProject(proyecto);
+    }
+    const today = new Date();
+    const monday = getMonday(today);
+
+    // Obtener las fechas de la semana actual
+    let dates = Array.from({ length: 7 }, (_, index) => {
       const currentDate = new Date(monday);
       currentDate.setDate(monday.getDate() + index);
       return currentDate.toLocaleDateString("es-PE", { day: "2-digit", month: "2-digit" });
     });
+
+    setDatesToWeekCurrent(dates);
   };
 
-  useEffect(() => {
-    setDatesToWeekCurrent(getDatesForCurrentWeek());
-  }, []);
+  // Función para cambiar la semana actual
+  const handleWeekChange = (increment: number) => {
+    if (!project?.start_date || !project?.end_date) return; // Verificar si el proyecto tiene fechas de inicio y fin
 
+    const startDate = new Date(project.start_date.replace(/\//g, "-")); // Convertir la fecha de inicio a objeto Date
+    const endDate = new Date(project.end_date.replace(/\//g, "-")); // Convertir la fecha de fin a objeto Date
+
+    if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) return; // Verificar si las fechas son válidas
+
+    const totalWeeks = Math.ceil((endDate.getTime() - startDate.getTime()) / (7 * 24 * 60 * 60 * 1000)); // Calcular el total de semanas
+    const newIndex = currentWeekIndex + increment; // Calcular el nuevo índice de la semana
+
+    if (newIndex >= 0 && newIndex < totalWeeks) {
+      setCurrentWeekIndex(newIndex);
+      updateDatesForWeek(newIndex);
+    }
+  };
+
+  // Función para actualizar las fechas de la semana seleccionada
+  const updateDatesForWeek = (weekIndex: number) => {
+    if (!project?.start_date) return;
+
+    const startDate = new Date(project.start_date.replace(/\//g, "-")); // Convertir la fecha de inicio a objeto Date
+    const initialMonday = getMonday(startDate); // Obtener el lunes de la semana inicial
+    const weekStartDate = new Date(initialMonday); // Crear una copia de la fecha
+    weekStartDate.setDate(initialMonday.getDate() + weekIndex * 7); // Calcular la fecha de inicio de la semana
+
+    const weekDates = Array.from({ length: 7 }, (_, index) => { // Generar las fechas de la semana
+      const currentDate = new Date(weekStartDate); // Crear una copia de la fecha
+      currentDate.setDate(weekStartDate.getDate() + index); // Calcular la fecha de la semana
+      return currentDate.toLocaleDateString("es-PE", { day: "2-digit", month: "2-digit" }); // Devolver la fecha como cadena
+    });
+
+    setDatesToWeekCurrent(weekDates); // Establecer las fechas de la semana en el estado local
+  };
+
+  // Función para obtener el lunes de semana de una fecha dada
+  const getMonday = (date: Date) => {
+    const dayOfWeek = date.getDay(); // Obtener el día de la semana actual
+    const monday = new Date(date); // Crear una copia de la fecha
+    monday.setDate(date.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1)); // Calcular el lunes de la fecha
+    return monday;
+  };
+
+ 
+
+  // Función para manejar la creación de un nuevo seguimiento
   const handleNewTracking = () => {
     const data = {
       project_id: project?.id,
@@ -126,26 +140,7 @@ const TrackingCurrent: React.FC = () => {
       })
       .then((response) => {
         const newTrackings: Tracking[] = response.data.trackings;
-
-        const updatedSections = trackingSections.map((section) => {
-          const weekTrackings = newTrackings.filter((tracking: Tracking) => {
-            const trackingDate = new Date(tracking.date_start || "");
-            const sectionStartDate = new Date(section.id);
-            return (
-              trackingDate >= sectionStartDate &&
-              trackingDate <
-                new Date(sectionStartDate.getTime() + 7 * 24 * 60 * 60 * 1000)
-            );
-          });
-          if (weekTrackings.length > 0) {
-            return {
-              ...section,
-              trackings: [...section.trackings, ...weekTrackings],
-            };
-          }
-          return section;
-        });
-
+        const updatedSections = updateTrackingSections(newTrackings);
         setTrackingSections(updatedSections);
         setModalSeguimientoVisible(false);
       })
@@ -154,9 +149,82 @@ const TrackingCurrent: React.FC = () => {
       });
   };
 
+  // Función para actualizar las secciones de seguimiento con nuevos seguimientos
+  const updateTrackingSections = (newTrackings: Tracking[]) => {
+    return trackingSections.map((section) => {
+      const weekTrackings = newTrackings.filter((tracking) => {
+        const trackingDate = new Date(tracking.date_start || "");
+        const sectionStartDate = new Date(section.id);
+        return (
+          trackingDate >= sectionStartDate &&
+          trackingDate < new Date(sectionStartDate.getTime() + 7 * 24 * 60 * 60 * 1000)
+        );
+      });
+      if (weekTrackings.length > 0) {
+        return {
+          ...section,
+          trackings: [...section.trackings, ...weekTrackings],
+        };
+      }
+      return section;
+    });
+  };
+
+  // Función para volver al proyecto
   const backToProject = () => {
     navigation.navigate("HomeProject");
   };
+
+  // Función para renderizar una columna de día
+  const renderDayColumn = (day: string, index: number) => {
+    const currentDate = datesToWeekCurrent[index];
+    const today = new Date();
+    const isToday = today.toLocaleDateString("es-PE", { day: "2-digit", month: "2-digit" }) === currentDate;
+
+    return (
+      <View key={index} style={[styles.dayColumn, isToday && { backgroundColor: "#0A3649", borderRadius: 8 }]}>
+        <Text style={[styles.dayText, isToday && { color: "#4ABA8D" }]}>{day}</Text>
+        <Text style={[styles.dateText, isToday && { color: "#4ABA8D" }]}>{currentDate}</Text>
+      </View>
+    );
+  };
+
+  // Función para renderizar una sección de seguimiento
+  const renderTrackingSection = ({ item }: { item: TrackingSection }) => (
+    <ScrollView style={styles.trackingSection}>
+      {item.trackings.map((tracking) => (
+        <TouchableOpacity
+          key={tracking.id}
+          style={styles.taskRow}
+          onLongPress={() => setModalSinAccesoVisible(true)}
+          onPress={() => navigation.navigate("Task", { tracking })}
+        >
+          <Text style={styles.taskTitle}>{tracking.title}</Text>
+          <View style={styles.iconRow}>
+            {tracking.checked &&
+              tracking.checked.map((isChecked, i) => (
+                <View
+                  key={i}
+                  style={[
+                    styles.iconContainer,
+                    {
+                      backgroundColor: isChecked === -1 ? "#004e66" : "#0A3649",
+                    },
+                  ]}
+                >
+                  <Ionicons
+                    name={isChecked == 1 ? "checkmark" : isChecked == -1 ? "ellipse-outline" : "ellipse-sharp"}
+                    size={isChecked === 1 ? 24 : 12}
+                    color={isChecked === 1 ? "#4ABA8D" : "#D1A44C"}
+                    style={styles.icon}
+                  />
+                </View>
+              ))}
+          </View>
+        </TouchableOpacity>
+      ))}
+    </ScrollView>
+  );
 
   return (
     <View style={styles.container}>
@@ -169,64 +237,24 @@ const TrackingCurrent: React.FC = () => {
         }}
       />
       <View style={styles.weekSelector}>
-        <TouchableOpacity
-          onPress={handlePreviousWeek}
-          disabled={currentWeekIndex === 0}
-        >
-          <Ionicons
-            name="chevron-back"
-            size={30}
-            color={currentWeekIndex === 0 ? "#07374a" : "white"}
-          />
+        <TouchableOpacity onPress={() => handleWeekChange(-1)} disabled={currentWeekIndex === 0}>
+          <Ionicons name="chevron-back" size={30} color={currentWeekIndex === 0 ? "#07374a" : "white"} />
         </TouchableOpacity>
         <Text style={styles.weekTitle}>Semana {currentWeekIndex + 1}</Text>
         <TouchableOpacity
-          onPress={handleNextWeek}
-          disabled={
-            currentWeekIndex ===
-            Math.ceil(
-              (new Date(project?.end_date || "").getTime() -
-                new Date(project?.start_date || "").getTime()) /
-                (7 * 24 * 60 * 60 * 1000)
-            ) -
-              1
-          }
+          onPress={() => handleWeekChange(1)}
+          disabled={currentWeekIndex === Math.ceil((new Date(project?.end_date || "").getTime() - new Date(project?.start_date || "").getTime()) / (7 * 24 * 60 * 60 * 1000)) - 1}
         >
           <Ionicons
             name="chevron-forward"
             size={30}
-            color={
-              currentWeekIndex ===
-              Math.ceil(
-                (new Date(project?.end_date || "").getTime() -
-                  new Date(project?.start_date || "").getTime()) /
-                  (7 * 24 * 60 * 60 * 1000)
-              ) -
-                1
-                ? "#07374a"
-                : "white"
-            }
+            color={currentWeekIndex === Math.ceil((new Date(project?.end_date || "").getTime() - new Date(project?.start_date || "").getTime()) / (7 * 24 * 60 * 60 * 1000)) - 1 ? "#07374a" : "white"}
           />
         </TouchableOpacity>
       </View>
 
       <View style={styles.daysRow}>
-        {["Lu", "Ma", "Mi", "Ju", "Vi", "Sa", "Do"].map((day, index) => {
-          const currentDate = datesToWeekCurrent[index];
-          const today = new Date();
-          const isToday =
-            today.toLocaleDateString("es-PE", { day: "2-digit", month: "2-digit" }) === currentDate;
-
-          return (
-            <View
-              key={index}
-              style={[styles.dayColumn, isToday && { backgroundColor: "#0A3649", borderRadius: 8 }]}
-            >
-              <Text style={[styles.dayText, isToday && { color: "#4ABA8D" }]}>{day}</Text>
-              <Text style={[styles.dateText, isToday && { color: "#4ABA8D" }]}>{currentDate}</Text>
-            </View>
-          );
-        })}
+        {["Lu", "Ma", "Mi", "Ju", "Vi", "Sa", "Do"].map(renderDayColumn)}
       </View>
 
       <FlatList
@@ -234,64 +262,17 @@ const TrackingCurrent: React.FC = () => {
         data={trackingSections.filter((section) => {
           const sectionStartDate = new Date(section.id);
           const currentWeekStartDate = new Date(project?.start_date || "");
-          currentWeekStartDate.setDate(
-            currentWeekStartDate.getDate() + currentWeekIndex * 7
-          );
+          currentWeekStartDate.setDate(currentWeekStartDate.getDate() + currentWeekIndex * 7);
           return (
             sectionStartDate >= currentWeekStartDate &&
-            sectionStartDate <
-              new Date(currentWeekStartDate.getTime() + 7 * 24 * 60 * 60 * 1000)
+            sectionStartDate < new Date(currentWeekStartDate.getTime() + 7 * 24 * 60 * 60 * 1000)
           );
         })}
         keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <ScrollView style={styles.trackingSection}>
-            {item.trackings.map((tracking: Tracking) => (
-              <TouchableOpacity
-                key={tracking.id}
-                style={styles.taskRow}
-                onLongPress={() => setModalSinAccesoVisible(true)}
-                onPress={() => navigation.navigate("Task", { tracking })}
-              >
-                <Text style={styles.taskTitle}>{tracking.title}</Text>
-                <View style={styles.iconRow}>
-                  {tracking.checked &&
-                    tracking.checked.map((isChecked, i) => (
-                      <View
-                        key={i}
-                        style={[
-                          styles.iconContainer,
-                          {
-                            backgroundColor:
-                              isChecked === -1 ? "#004e66" : "#0A3649",
-                          },
-                        ]}
-                      >
-                        <Ionicons
-                          name={
-                            isChecked == 1
-                              ? "checkmark"
-                              : isChecked == -1
-                              ? "ellipse-outline"
-                              : "ellipse-sharp"
-                          }
-                          size={isChecked === 1 ? 24 : 12}
-                          color={isChecked === 1 ? "#4ABA8D" : "#D1A44C"}
-                          style={styles.icon}
-                        />
-                      </View>
-                    ))}
-                </View>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-        )}
+        renderItem={renderTrackingSection}
       />
 
-      <TouchableOpacity
-        style={styles.addButton}
-        onPress={() => setModalSeguimientoVisible(true)}
-      >
+      <TouchableOpacity style={styles.addButton} onPress={() => setModalSeguimientoVisible(true)}>
         <Ionicons name="add-circle-outline" size={24} color="#7bc4c4" />
         <Text style={styles.addButtonText}>Añadir seguimiento</Text>
       </TouchableOpacity>
@@ -316,33 +297,12 @@ const TrackingCurrent: React.FC = () => {
               placeholderTextColor="#777"
               onChangeText={(text: string) => setTitleTracking(text)}
             />
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                gap: 8,
-                marginTop: 16,
-              }}
-            >
+            <View style={{ flexDirection: "row", justifyContent: "space-between", gap: 8, marginTop: 16 }}>
               <TouchableOpacity
-                style={[
-                  styles.modalButton,
-                  {
-                    backgroundColor: "#004e66",
-                    borderColor: "white",
-                    borderWidth: 1,
-                  },
-                ]}
+                style={[styles.modalButton, { backgroundColor: "#004e66", borderColor: "white", borderWidth: 1 }]}
                 onPress={() => setModalSeguimientoVisible(false)}
               >
-                <Text
-                  style={[
-                    styles.modalButtonText,
-                    { color: "white", paddingHorizontal: 10 },
-                  ]}
-                >
-                  Cerrar
-                </Text>
+                <Text style={[styles.modalButtonText, { color: "white", paddingHorizontal: 10 }]}>Cerrar</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={styles.modalButton}
@@ -351,11 +311,7 @@ const TrackingCurrent: React.FC = () => {
                   handleNewTracking();
                 }}
               >
-                <Text
-                  style={[styles.modalButtonText, { paddingHorizontal: 10 }]}
-                >
-                  Guardar
-                </Text>
+                <Text style={[styles.modalButtonText, { paddingHorizontal: 10 }]}>Guardar</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -368,24 +324,12 @@ const TrackingCurrent: React.FC = () => {
         transparent={true}
         onRequestClose={() => setModalSinAccesoVisible(false)}
       >
-        <Pressable
-          style={[styles.modalContainer, { justifyContent: "flex-end" }]}
-          onPress={() => setModalSinAccesoVisible(false)}
-        >
+        <Pressable style={[styles.modalContainer, { justifyContent: "flex-end" }]} onPress={() => setModalSinAccesoVisible(false)}>
           <View style={[styles.modalContent, { backgroundColor: "#CFA54A" }]}>
             <View style={styles.titleContainer}>
-              <Text
-                style={[
-                  styles.modalTitle,
-                  { color: "#07374a", marginBottom: 0 },
-                ]}
-              >
-                No tienes acceso
-              </Text>
+              <Text style={[styles.modalTitle, { color: "#07374a", marginBottom: 0 }]}>No tienes acceso</Text>
             </View>
-            <Text style={{ color: "#07374a", fontSize: 16 }}>
-              Pídele al administrador que te comparta esta actividad
-            </Text>
+            <Text style={{ color: "#07374a", fontSize: 16 }}>Pídele al administrador que te comparta esta actividad</Text>
           </View>
         </Pressable>
       </Modal>
@@ -393,6 +337,7 @@ const TrackingCurrent: React.FC = () => {
   );
 };
 
+// Estilos del componente
 const styles = StyleSheet.create({
   container: {
     flex: 1,
