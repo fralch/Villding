@@ -20,16 +20,14 @@ import axios from "axios";
 import { Tracking, TrackingSection, Project, User } from "../../types/interfaces";
 
 
-const ActivityList: React.FC = () => {
+const TrackingCurrent: React.FC = () => {
   const navigation = useNavigation<NavigationProp<any>>();
 
   // Estados para manejar la visibilidad de los modales y otros datos
   const [modalSeguimientoVisible, setModalSeguimientoVisible] = useState(false);
   const [modalSinAccesoVisible, setModalSinAccesoVisible] = useState(false);
-  const [currentWeekIndex, setCurrentWeekIndex] = useState(0);
-  const [trackingSections, setTrackingSections] = useState<TrackingSection[]>(
-    []
-  );
+  const [currentWeekIndex, setCurrentWeekIndex] = useState(2);
+  const [trackingSections, setTrackingSections] = useState<TrackingSection[]>([]);
   const [project, setProject] = useState<Project | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [titleTracking, setTitleTracking] = useState("");
@@ -38,33 +36,7 @@ const ActivityList: React.FC = () => {
     "El usuario se ha registrado correctamente."
   );
 
-  // useEffect para ajustar la semana basada en la fecha actual
-  useEffect(() => {
-    const adjustWeekBasedOnDate = () => {
-      const today = new Date();
-      const projectStartDate = new Date(project?.start_date || "");
-      const projectEndDate = new Date(project?.end_date || "");
 
-      if (today < projectStartDate) {
-        setCurrentWeekIndex(0);
-      } else if (today > projectEndDate) {
-        setCurrentWeekIndex(
-          Math.ceil(
-            (projectEndDate.getTime() - projectStartDate.getTime()) /
-              (7 * 24 * 60 * 60 * 1000)
-          ) - 1
-        );
-      } else {
-        const weeksDiff = Math.ceil(
-          (today.getTime() - projectStartDate.getTime()) /
-            (7 * 24 * 60 * 60 * 1000)
-        );
-        setCurrentWeekIndex(weeksDiff);
-      }
-    };
-
-    adjustWeekBasedOnDate();
-  }, [project]);
 
   // Función para manejar la navegación a la siguiente semana
   const handleNextWeek = () => {
@@ -552,4 +524,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ActivityList;
+export default TrackingCurrent;

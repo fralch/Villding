@@ -4,7 +4,7 @@ import { useRoute, RouteProp } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { TouchableOpacity, Image, StyleSheet } from 'react-native';
 import Hamburguesa from '../../components/Hamburguesa';
-import ActivityList from '../../components/Activities/ActivityList';
+import TrackingCurrent from '../../components/Activities/TrackingCurrent';
 import { storeProject } from '../../hooks/localStorageCurrentProject';
 import { useNavigation, NavigationProp, useFocusEffect } from "@react-navigation/native";
 import { getSesion } from "../../hooks/localStorageUser";
@@ -161,7 +161,7 @@ export default function Project(props: any) {
     >
       <Drawer.Screen
         name={ProyectoActual?.title || 'Project'}
-        component={ActivityList}
+        component={TrackingCurrent}
       /> 
     </Drawer.Navigator>
   );
