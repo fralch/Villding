@@ -19,11 +19,9 @@ import ConfirmModal from "../Alerta/ConfirmationModal";
 import axios from "axios";
 import { Tracking, TrackingSection, Project, User } from "../../types/interfaces";
 
-
 const TrackingCurrent: React.FC = () => {
   const navigation = useNavigation<NavigationProp<any>>();
   const [datesToWeekCurrent, setDatesToWeekCurrent] = useState<string[]>([]);
-  // Estados para manejar la visibilidad de los modales y otros datos
   const [modalSeguimientoVisible, setModalSeguimientoVisible] = useState(false);
   const [modalSinAccesoVisible, setModalSinAccesoVisible] = useState(false);
   const [currentWeekIndex, setCurrentWeekIndex] = useState(0);
@@ -36,93 +34,84 @@ const TrackingCurrent: React.FC = () => {
     "El usuario se ha registrado correctamente."
   );
 
-
   useEffect(() => {
-    // get project
     getProject().then((StoredProject: any) => {
       const proyecto = JSON.parse(StoredProject);
       setProject(proyecto);
-      
     });
   }, []);
 
-  // Función para manejar la navegación a la siguiente semana
- // Función para manejar la navegación a la siguiente semana
-const handleNextWeek = () => {
+  const handleNextWeek = () => {
+    if (!project?.start_date || !project?.end_date) {
+      console.log("Fechas no definidas");
+      return;
+    }
 
-   if (!project?.start_date || !project?.end_date) {
-    console.log("Fechas no definidas");
-    return;
-  }
+    const startDate = new Date(project.start_date.replace(/\//g, "-"));
+    const endDate = new Date(project.end_date.replace(/\//g, "-"));
 
-  // Reemplazar "/" por "-" para evitar problemas de compatibilidad
-  const startDate = new Date(project.start_date.replace(/\//g, "-"));
-  const endDate = new Date(project.end_date.replace(/\//g, "-"));
+    if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+      console.log("Formato de fecha inválido:", project.start_date, project.end_date);
+      return;
+    }
 
-  if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
-    console.log("Formato de fecha inválido:", project.start_date, project.end_date);
-    return;
-  }
+    const totalWeeks = Math.ceil((endDate.getTime() - startDate.getTime()) / (7 * 24 * 60 * 60 * 1000));
 
-  // Calcular la diferencia en semanas
-  const totalWeeks = Math.ceil((endDate.getTime() - startDate.getTime()) / (7 * 24 * 60 * 60 * 1000));
-  
-  
-
-  if (currentWeekIndex < totalWeeks - 1) {
-    setCurrentWeekIndex(currentWeekIndex + 1);
-
-    // Recalcular las fechas de la semana incrementada
-    // Obtener la última fecha de la semana actual
-    const lastDateString = datesToWeekCurrent[datesToWeekCurrent.length - 1];
-    console.log("Fecha anterior:", lastDateString);
-
-    // Convertir el string a un objeto Date
-    const lastDate = new Date(
-      lastDateString.split("/").reverse().join("-") // Asegura el formato "YYYY-MM-DD"
-    );
-
-    // Obtener la fecha del día siguiente
-    const nextDate = new Date(lastDate);
-    nextDate.setDate(lastDate.getDate() + 7);
-
-    // Convertir la fecha a string
-    const nextDateString = nextDate.toLocaleDateString("es-PE", {
-      day: "2-digit",
-      month: "2-digit",
-    });
-
-    // Agregar la fecha al array de fechas de la semana actual
-    setDatesToWeekCurrent([...datesToWeekCurrent, nextDateString]);
-  }
-};
-
-  
-
-  // Función para manejar la navegación a la semana anterior
-  const handlePreviousWeek = () => {
-    if (currentWeekIndex > 0) {
-      setCurrentWeekIndex(currentWeekIndex - 1);
+    if (currentWeekIndex < totalWeeks - 1) {
+      setCurrentWeekIndex(currentWeekIndex + 1);
+      updateDatesForWeek(currentWeekIndex + 1);
     }
   };
 
-  // Función para obtener la fecha para un día específico
-  const getDateForDay = (index: number): string => {
+  const handlePreviousWeek = () => {
+    if (currentWeekIndex > 0) {
+      setCurrentWeekIndex(currentWeekIndex - 1);
+      updateDatesForWeek(currentWeekIndex - 1);
+    }
+  };
+
+  const updateDatesForWeek = (weekIndex: number) => {
+    if (!project?.start_date) return;
+  
+    const startDate = new Date(project.start_date.replace(/\//g, "-"));
+  
+    // Calcular el lunes de la semana inicial
+    const initialMonday = new Date(startDate);
+    const dayOfWeek = initialMonday.getDay(); // 0 (Domingo) - 6 (Sábado)
+    initialMonday.setDate(startDate.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
+  
+    // Calcular el lunes de la semana actual
+    const weekStartDate = new Date(initialMonday);
+    weekStartDate.setDate(initialMonday.getDate() + weekIndex * 7);
+  
+    const weekDates = Array.from({ length: 7 }, (_, index) => {
+      const currentDate = new Date(weekStartDate);
+      currentDate.setDate(weekStartDate.getDate() + index);
+      return currentDate.toLocaleDateString("es-PE", { day: "2-digit", month: "2-digit" });
+    });
+  
+    setDatesToWeekCurrent(weekDates);
+  };
+  
+
+  const getDatesForCurrentWeek = (): string[] => {
     const today = new Date();
     const dayOfWeek = today.getDay(); // 0 (Domingo) - 6 (Sábado)
-    // Calcular el lunes de la semana actual
+
     const monday = new Date(today);
     monday.setDate(today.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
-    // Obtener la fecha específica sumando el índice
-    const currentDate = new Date(monday);
-    currentDate.setDate(monday.getDate() + index);
-    return currentDate.toLocaleDateString("es-PE", {
-      day: "2-digit",
-      month: "2-digit",
+
+    return Array.from({ length: 7 }, (_, index) => {
+      const currentDate = new Date(monday);
+      currentDate.setDate(monday.getDate() + index);
+      return currentDate.toLocaleDateString("es-PE", { day: "2-digit", month: "2-digit" });
     });
   };
 
-  // Función para manejar la creación de un nuevo seguimiento
+  useEffect(() => {
+    setDatesToWeekCurrent(getDatesForCurrentWeek());
+  }, []);
+
   const handleNewTracking = () => {
     const data = {
       project_id: project?.id,
@@ -165,31 +154,9 @@ const handleNextWeek = () => {
       });
   };
 
-  // Función para volver al proyecto
   const backToProject = () => {
     navigation.navigate("HomeProject");
   };
-
-   // Función para calcular las fechas de la semana actual (lunes a domingo)
-   const getDatesForCurrentWeek = (): string[] => {
-    const today = new Date();
-    const dayOfWeek = today.getDay(); // 0 (Domingo) - 6 (Sábado)
-
-    // Obtener el lunes de la semana actual
-    const monday = new Date(today);
-    monday.setDate(today.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
-
-    // Crear un array con las fechas de lunes a domingo
-    return Array.from({ length: 7 }, (_, index) => {
-      const currentDate = new Date(monday);
-      currentDate.setDate(monday.getDate() + index);
-      return currentDate.toLocaleDateString("es-PE", { day: "2-digit", month: "2-digit" });
-    });
-  };
-
-  useEffect(() => {
-    setDatesToWeekCurrent(getDatesForCurrentWeek());
-  }, []);
 
   return (
     <View style={styles.container}>
@@ -243,7 +210,7 @@ const handleNextWeek = () => {
         </TouchableOpacity>
       </View>
 
-       <View style={styles.daysRow}>
+      <View style={styles.daysRow}>
         {["Lu", "Ma", "Mi", "Ju", "Vi", "Sa", "Do"].map((day, index) => {
           const currentDate = datesToWeekCurrent[index];
           const today = new Date();
