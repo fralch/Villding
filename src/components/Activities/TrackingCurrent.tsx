@@ -52,11 +52,19 @@ const TrackingCurrent: React.FC = () => {
       return;
     }
   
-    const weekIndex = Math.floor((today.getTime() - startDate.getTime()) / (7 * 24 * 60 * 60 * 1000));
+    // Calcular la diferencia en días
+    const timeDiff = today.getTime() - startDate.getTime();
+    const dayDiff = timeDiff / (24 * 60 * 60 * 1000);
+  
+    // Dividir la diferencia en días por 7 para obtener la diferencia en semanas
+    const weekIndex = Math.floor(dayDiff / 7);
+  
+    console.log("Inicio del proyecto:", startDate);
     console.log("Semana actual:", weekIndex);
     setCurrentWeekIndex(weekIndex);
     updateDatesForWeek(weekIndex); // Actualiza las fechas de la semana actual
   }, [project?.start_date]);
+  
 
 
   // Función para obtener el proyecto y las fechas de la semana actual
@@ -123,7 +131,20 @@ const TrackingCurrent: React.FC = () => {
     return monday;
   };
 
- 
+   // Función para renderizar una columna de día
+   const renderDayColumn = (day: string, index: number) => {
+    const currentDate = datesToWeekCurrent[index];
+    const today = new Date();
+    const isToday = today.toLocaleDateString("es-PE", { day: "2-digit", month: "2-digit" }) === currentDate;
+
+    return (
+      <View key={index} style={[styles.dayColumn, isToday && { backgroundColor: "#0A3649", borderRadius: 8 }]}>
+        <Text style={[styles.dayText, isToday && { color: "#4ABA8D" }]}>{day}</Text>
+        <Text style={[styles.dateText, isToday && { color: "#4ABA8D" }]}>{currentDate}</Text>
+      </View>
+    );
+  };
+
 
   // Función para manejar la creación de un nuevo seguimiento
   const handleNewTracking = () => {
@@ -175,19 +196,6 @@ const TrackingCurrent: React.FC = () => {
     navigation.navigate("HomeProject");
   };
 
-  // Función para renderizar una columna de día
-  const renderDayColumn = (day: string, index: number) => {
-    const currentDate = datesToWeekCurrent[index];
-    const today = new Date();
-    const isToday = today.toLocaleDateString("es-PE", { day: "2-digit", month: "2-digit" }) === currentDate;
-
-    return (
-      <View key={index} style={[styles.dayColumn, isToday && { backgroundColor: "#0A3649", borderRadius: 8 }]}>
-        <Text style={[styles.dayText, isToday && { color: "#4ABA8D" }]}>{day}</Text>
-        <Text style={[styles.dateText, isToday && { color: "#4ABA8D" }]}>{currentDate}</Text>
-      </View>
-    );
-  };
 
   // Función para renderizar una sección de seguimiento
   const renderTrackingSection = ({ item }: { item: TrackingSection }) => (
