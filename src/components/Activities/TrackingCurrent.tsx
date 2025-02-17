@@ -22,11 +22,11 @@ import { Tracking, TrackingSection, Project, User } from "../../types/interfaces
 
 const TrackingCurrent: React.FC = () => {
   const navigation = useNavigation<NavigationProp<any>>();
-
+  const [datesToWeekCurrent, setDatesToWeekCurrent] = useState<string[]>([]);
   // Estados para manejar la visibilidad de los modales y otros datos
   const [modalSeguimientoVisible, setModalSeguimientoVisible] = useState(false);
   const [modalSinAccesoVisible, setModalSinAccesoVisible] = useState(false);
-  const [currentWeekIndex, setCurrentWeekIndex] = useState(2);
+  const [currentWeekIndex, setCurrentWeekIndex] = useState(0);
   const [trackingSections, setTrackingSections] = useState<TrackingSection[]>([]);
   const [project, setProject] = useState<Project | null>(null);
   const [user, setUser] = useState<User | null>(null);
@@ -37,18 +37,67 @@ const TrackingCurrent: React.FC = () => {
   );
 
 
+  useEffect(() => {
+    // get project
+    getProject().then((StoredProject: any) => {
+      const proyecto = JSON.parse(StoredProject);
+      setProject(proyecto);
+      
+    });
+  }, []);
 
   // Función para manejar la navegación a la siguiente semana
-  const handleNextWeek = () => {
-    const totalWeeks = Math.ceil(
-      (new Date(project?.end_date || "").getTime() -
-        new Date(project?.start_date || "").getTime()) /
-        (7 * 24 * 60 * 60 * 1000)
+ // Función para manejar la navegación a la siguiente semana
+const handleNextWeek = () => {
+
+   if (!project?.start_date || !project?.end_date) {
+    console.log("Fechas no definidas");
+    return;
+  }
+
+  // Reemplazar "/" por "-" para evitar problemas de compatibilidad
+  const startDate = new Date(project.start_date.replace(/\//g, "-"));
+  const endDate = new Date(project.end_date.replace(/\//g, "-"));
+
+  if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+    console.log("Formato de fecha inválido:", project.start_date, project.end_date);
+    return;
+  }
+
+  // Calcular la diferencia en semanas
+  const totalWeeks = Math.ceil((endDate.getTime() - startDate.getTime()) / (7 * 24 * 60 * 60 * 1000));
+  
+  
+
+  if (currentWeekIndex < totalWeeks - 1) {
+    setCurrentWeekIndex(currentWeekIndex + 1);
+
+    // Recalcular las fechas de la semana incrementada
+    // Obtener la última fecha de la semana actual
+    const lastDateString = datesToWeekCurrent[datesToWeekCurrent.length - 1];
+    console.log("Fecha anterior:", lastDateString);
+
+    // Convertir el string a un objeto Date
+    const lastDate = new Date(
+      lastDateString.split("/").reverse().join("-") // Asegura el formato "YYYY-MM-DD"
     );
-    if (currentWeekIndex < totalWeeks - 1) {
-      setCurrentWeekIndex(currentWeekIndex + 1);
-    }
-  };
+
+    // Obtener la fecha del día siguiente
+    const nextDate = new Date(lastDate);
+    nextDate.setDate(lastDate.getDate() + 7);
+
+    // Convertir la fecha a string
+    const nextDateString = nextDate.toLocaleDateString("es-PE", {
+      day: "2-digit",
+      month: "2-digit",
+    });
+
+    // Agregar la fecha al array de fechas de la semana actual
+    setDatesToWeekCurrent([...datesToWeekCurrent, nextDateString]);
+  }
+};
+
+  
 
   // Función para manejar la navegación a la semana anterior
   const handlePreviousWeek = () => {
@@ -121,6 +170,27 @@ const TrackingCurrent: React.FC = () => {
     navigation.navigate("HomeProject");
   };
 
+   // Función para calcular las fechas de la semana actual (lunes a domingo)
+   const getDatesForCurrentWeek = (): string[] => {
+    const today = new Date();
+    const dayOfWeek = today.getDay(); // 0 (Domingo) - 6 (Sábado)
+
+    // Obtener el lunes de la semana actual
+    const monday = new Date(today);
+    monday.setDate(today.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
+
+    // Crear un array con las fechas de lunes a domingo
+    return Array.from({ length: 7 }, (_, index) => {
+      const currentDate = new Date(monday);
+      currentDate.setDate(monday.getDate() + index);
+      return currentDate.toLocaleDateString("es-PE", { day: "2-digit", month: "2-digit" });
+    });
+  };
+
+  useEffect(() => {
+    setDatesToWeekCurrent(getDatesForCurrentWeek());
+  }, []);
+
   return (
     <View style={styles.container}>
       <ConfirmModal
@@ -173,30 +243,20 @@ const TrackingCurrent: React.FC = () => {
         </TouchableOpacity>
       </View>
 
-      <View style={styles.daysRow}>
+       <View style={styles.daysRow}>
         {["Lu", "Ma", "Mi", "Ju", "Vi", "Sa", "Do"].map((day, index) => {
-          const currentDate = getDateForDay(index);
+          const currentDate = datesToWeekCurrent[index];
           const today = new Date();
           const isToday =
-            today.toLocaleDateString("es-PE", {
-              day: "2-digit",
-              month: "2-digit",
-            }) === currentDate;
+            today.toLocaleDateString("es-PE", { day: "2-digit", month: "2-digit" }) === currentDate;
 
           return (
             <View
               key={index}
-              style={[
-                styles.dayColumn,
-                isToday && { backgroundColor: "#0A3649", borderRadius: 8 },
-              ]}
+              style={[styles.dayColumn, isToday && { backgroundColor: "#0A3649", borderRadius: 8 }]}
             >
-              <Text style={[styles.dayText, isToday && { color: "#4ABA8D" }]}>
-                {day}
-              </Text>
-              <Text style={[styles.dateText, isToday && { color: "#4ABA8D" }]}>
-                {currentDate}
-              </Text>
+              <Text style={[styles.dayText, isToday && { color: "#4ABA8D" }]}>{day}</Text>
+              <Text style={[styles.dateText, isToday && { color: "#4ABA8D" }]}>{currentDate}</Text>
             </View>
           );
         })}
