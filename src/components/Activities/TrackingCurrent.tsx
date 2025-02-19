@@ -16,6 +16,7 @@ import { getProject } from "../../hooks/localStorageCurrentProject";
 import ConfirmModal from "../Alerta/ConfirmationModal";
 import axios from "axios";
 import { Tracking, TrackingSection, Project, User } from "../../types/interfaces";
+import { styles } from "./styles/TrackingCurrentStyles";
 
 // Definición del componente funcional TrackingCurrent
 const TrackingCurrent: React.FC = () => {
@@ -63,7 +64,7 @@ const TrackingCurrent: React.FC = () => {
     console.log("Semana actual:", weekIndex);
     setCurrentWeekIndex(weekIndex);
     updateDatesForWeek(weekIndex); // Actualiza las fechas de la semana actual
-  }, [project?.start_date]);
+  }, []);
   
 
 
@@ -120,6 +121,7 @@ const TrackingCurrent: React.FC = () => {
       return currentDate.toLocaleDateString("es-PE", { day: "2-digit", month: "2-digit" }); // Devolver la fecha como cadena
     });
 
+    console.log(weekDates);
     setDatesToWeekCurrent(weekDates); // Establecer las fechas de la semana en el estado local
   };
 
@@ -345,163 +347,5 @@ const TrackingCurrent: React.FC = () => {
   );
 };
 
-// Estilos del componente
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#07374a",
-    paddingHorizontal: 0,
-  },
-  weekSelector: {
-    backgroundColor: "#05222F",
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingVertical: 15,
-    paddingHorizontal: 30,
-    alignSelf: "stretch",
-    marginVertical: 10,
-    borderRadius: 10,
-    marginHorizontal: 10,
-  },
-  weekTitle: {
-    color: "white",
-    fontSize: 20,
-    marginHorizontal: 10,
-  },
-  daysRow: {
-    backgroundColor: "#05222F",
-    flexDirection: "row",
-    justifyContent: "space-between",
-    paddingVertical: 10,
-    alignSelf: "stretch",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 15,
-    zIndex: 1,
-  },
-  dayColumn: {
-    alignItems: "center",
-    flex: 1,
-  },
-  dayText: {
-    color: "white",
-    fontSize: 14,
-  },
-  dateText: {
-    color: "#7bc4c4",
-    fontSize: 12,
-  },
-  trackingSection: {
-    marginVertical: 0,
-  },
-  taskRow: {
-    flexDirection: "column",
-    justifyContent: "space-between",
-    height: 80,
-    paddingVertical: 10,
-    paddingHorizontal: 10,
-    backgroundColor: "#004e66",
-    borderRadius: 8,
-    marginBottom: 5,
-  },
-  taskTitle: {
-    color: "white",
-    fontSize: 16,
-  },
-  iconRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginTop: 5,
-  },
-  iconContainer: {
-    backgroundColor: "#0A3649",
-    borderRadius: 5,
-    padding: 5,
-    alignItems: "center",
-    justifyContent: "center",
-    textAlign: "center",
-    width: "14%",
-    height: 40,
-  },
-  icon: {
-    alignSelf: "center",
-    alignItems: "center",
-    justifyContent: "center",
-    textAlign: "center",
-  },
-  addButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    marginTop: 20,
-    padding: 15,
-    backgroundColor: "#07374a",
-    borderRadius: 8,
-  },
-  addButtonText: {
-    color: "#7bc4c4",
-    fontSize: 18,
-    marginLeft: 10,
-  },
-  flatList: {
-    flex: 1,
-    backgroundColor: "#07374a",
-  },
-  modalContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-  },
-  modalContent: {
-    backgroundColor: "#0A3649",
-    borderRadius: 8,
-    padding: 20,
-    alignItems: "center",
-    width: "90%",
-  },
-  modalTitle: {
-    color: "white",
-    fontSize: 22,
-    fontWeight: "bold",
-    marginBottom: 20,
-  },
-  modalButton: {
-    backgroundColor: "#fff",
-    borderRadius: 8,
-    padding: 10,
-    alignItems: "center",
-  },
-  modalButtonText: {
-    color: "#0A3649",
-    fontSize: 16,
-  },
-  modalInput: {
-    backgroundColor: "#05222F",
-    color: "white",
-    fontSize: 16,
-    width: "80%",
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    marginBottom: 10,
-    borderColor: "#0A3649",
-    borderWidth: 1,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 5,
-  },
-  titleContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 10,
-    width: "100%",
-  },
-});
 
 export default TrackingCurrent;
