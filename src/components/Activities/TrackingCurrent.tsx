@@ -43,28 +43,28 @@ const TrackingCurrent: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (!project?.start_date) return;
+    if (!project?.start_date) return; // Verificar si el proyecto tiene fechas de inicio
+   
+    const startDate = new Date(project.start_date.replace(/\//g, "-")); // Convertir la fecha de inicio a objeto Date
+
+    const today = new Date(); // Obtener la fecha actual
   
-    const startDate = new Date(project.start_date.replace(/\//g, "-"));
-    const today = new Date();
-  
-    if (isNaN(startDate.getTime())) {
+    if (isNaN(startDate.getTime())) { // Verificar si la fecha de inicio es válida
       console.error("Fecha de inicio del proyecto no válida");
       return;
     }
   
     // Calcular la diferencia en días
-    const timeDiff = today.getTime() - startDate.getTime();
-    const dayDiff = timeDiff / (24 * 60 * 60 * 1000);
+    const timeDiff = today.getTime() - startDate.getTime(); // Obtener la diferencia en tiempo
+    const dayDiff = timeDiff / (24 * 60 * 60 * 1000); // Dividir la diferencia en días
   
     // Dividir la diferencia en días por 7 para obtener la diferencia en semanas
-    const weekIndex = Math.floor(dayDiff / 7);
+    const weekIndex = Math.floor(dayDiff / 7); // Obtener la semana actual
   
     console.log("Inicio del proyecto:", startDate);
     console.log("Semana actual:", weekIndex);
     setCurrentWeekIndex(weekIndex);
-    updateDatesForWeek(weekIndex); // Actualiza las fechas de la semana actual
-  }, []);
+  }, [project]);
   
 
 
@@ -89,41 +89,31 @@ const TrackingCurrent: React.FC = () => {
   };
 
   // Función para cambiar la semana actual
-  const handleWeekChange = (increment: number) => {
-    if (!project?.start_date || !project?.end_date) return; // Verificar si el proyecto tiene fechas de inicio y fin
-
-    const startDate = new Date(project.start_date.replace(/\//g, "-")); // Convertir la fecha de inicio a objeto Date
-    const endDate = new Date(project.end_date.replace(/\//g, "-")); // Convertir la fecha de fin a objeto Date
-
-    if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) return; // Verificar si las fechas son válidas
-
-    const totalWeeks = Math.ceil((endDate.getTime() - startDate.getTime()) / (7 * 24 * 60 * 60 * 1000)); // Calcular el total de semanas
-    const newIndex = currentWeekIndex + increment; // Calcular el nuevo índice de la semana
-
-    if (newIndex >= 0 && newIndex < totalWeeks) {
-      setCurrentWeekIndex(newIndex);
-      updateDatesForWeek(newIndex);
+  const handleWeekChange = (direccion: string) => {
+    if (datesToWeekCurrent.length === 0) return;
+  
+    const [day, month] = datesToWeekCurrent[0].split("/").map(Number);
+    const currentMonday = new Date(new Date().getFullYear(), month - 1, day);
+  
+    if (direccion === "right") {
+      // Avanzar 1 semana
+      currentMonday.setDate(currentMonday.getDate() + 7);
+    } else if (direccion === "left") {
+      // Retroceder 1 semana
+      currentMonday.setDate(currentMonday.getDate() - 7);
     }
-  };
-
-  // Función para actualizar las fechas de la semana seleccionada
-  const updateDatesForWeek = (weekIndex: number) => {
-    if (!project?.start_date) return;
-
-    const startDate = new Date(project.start_date.replace(/\//g, "-")); // Convertir la fecha de inicio a objeto Date
-    const initialMonday = getMonday(startDate); // Obtener el lunes de la semana inicial
-    const weekStartDate = new Date(initialMonday); // Crear una copia de la fecha
-    weekStartDate.setDate(initialMonday.getDate() + weekIndex * 7); // Calcular la fecha de inicio de la semana
-
-    const weekDates = Array.from({ length: 7 }, (_, index) => { // Generar las fechas de la semana
-      const currentDate = new Date(weekStartDate); // Crear una copia de la fecha
-      currentDate.setDate(weekStartDate.getDate() + index); // Calcular la fecha de la semana
-      return currentDate.toLocaleDateString("es-PE", { day: "2-digit", month: "2-digit" }); // Devolver la fecha como cadena
+  
+    const newWeekDates = Array.from({ length: 7 }, (_, index) => {
+      const date = new Date(currentMonday);
+      date.setDate(currentMonday.getDate() + index);
+      return date.toLocaleDateString("es-PE", { day: "2-digit", month: "2-digit" });
     });
-
-    console.log(weekDates);
-    setDatesToWeekCurrent(weekDates); // Establecer las fechas de la semana en el estado local
+  
+    setDatesToWeekCurrent(newWeekDates);
   };
+  
+  
+
 
   // Función para obtener el lunes de semana de una fecha dada
   const getMonday = (date: Date) => {
@@ -247,12 +237,12 @@ const TrackingCurrent: React.FC = () => {
         }}
       />
       <View style={styles.weekSelector}>
-        <TouchableOpacity onPress={() => handleWeekChange(-1)} disabled={currentWeekIndex === 0}>
+        <TouchableOpacity onPress={() => handleWeekChange( 'left' )} disabled={currentWeekIndex === 0}>
           <Ionicons name="chevron-back" size={30} color={currentWeekIndex === 0 ? "#07374a" : "white"} />
         </TouchableOpacity>
         <Text style={styles.weekTitle}>Semana {currentWeekIndex + 1}</Text>
         <TouchableOpacity
-          onPress={() => handleWeekChange(1)}
+          onPress={() => handleWeekChange( 'right' )}
           disabled={currentWeekIndex === Math.ceil((new Date(project?.end_date || "").getTime() - new Date(project?.start_date || "").getTime()) / (7 * 24 * 60 * 60 * 1000)) - 1}
         >
           <Ionicons

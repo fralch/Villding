@@ -24,6 +24,7 @@ interface Project {
   title: string;
   start_date: string;
   end_date: string;
+  week_current: number;
 }
 
 interface User {
