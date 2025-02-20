@@ -63,6 +63,7 @@ const TrackingCurrent: React.FC = () => {
   
     console.log("Inicio del proyecto:", startDate);
     console.log("Semana actual:", weekIndex);
+    console.log(project)
     setCurrentWeekIndex(weekIndex);
   }, [project]);
   
@@ -90,26 +91,36 @@ const TrackingCurrent: React.FC = () => {
 
   // Función para cambiar la semana actual
   const handleWeekChange = (direccion: string) => {
-    if (datesToWeekCurrent.length === 0) return;
-  
-    const [day, month] = datesToWeekCurrent[0].split("/").map(Number);
-    const currentMonday = new Date(new Date().getFullYear(), month - 1, day);
-  
-    if (direccion === "right") {
-      // Avanzar 1 semana
-      currentMonday.setDate(currentMonday.getDate() + 7);
-    } else if (direccion === "left") {
-      // Retroceder 1 semana
-      currentMonday.setDate(currentMonday.getDate() - 7);
+    if (project?.week){
+      let semanas  = parseInt(project?.week); 
+      console.log(direccion)
+      console.log(currentWeekIndex > semanas)
+      if (direccion === "left" && currentWeekIndex === 0) return;
+      if (direccion === "right" && currentWeekIndex === semanas -1  ) return;
+      if (datesToWeekCurrent.length === 0) return;  
+      const [day, month] = datesToWeekCurrent[0].split("/").map(Number);
+      const currentMonday = new Date(new Date().getFullYear(), month - 1, day);
+    
+      if (direccion === "right") {
+        // Avanzar 1 semana
+        
+        currentMonday.setDate(currentMonday.getDate() + 7);
+        setCurrentWeekIndex(currentWeekIndex + 1);
+      } else if (direccion === "left") {
+        // Retroceder 1 semana
+        currentMonday.setDate(currentMonday.getDate() - 7);
+        setCurrentWeekIndex(currentWeekIndex - 1);
+      }
+    
+      const newWeekDates = Array.from({ length: 7 }, (_, index) => {
+        const date = new Date(currentMonday);
+        date.setDate(currentMonday.getDate() + index);
+        return date.toLocaleDateString("es-PE", { day: "2-digit", month: "2-digit" });
+      });
+    
+      setDatesToWeekCurrent(newWeekDates);
     }
-  
-    const newWeekDates = Array.from({ length: 7 }, (_, index) => {
-      const date = new Date(currentMonday);
-      date.setDate(currentMonday.getDate() + index);
-      return date.toLocaleDateString("es-PE", { day: "2-digit", month: "2-digit" });
-    });
-  
-    setDatesToWeekCurrent(newWeekDates);
+    
   };
   
   
