@@ -147,15 +147,15 @@ const TrackingCurrent: React.FC = () => {
       </View>
     );
   };
-
-
+ 
   // Función para manejar la creación de un nuevo seguimiento
   const handleNewTracking = () => {
     const data = {
       project_id: project?.id,
-      user_id: user?.id,
       title: titleTracking,
       description: "Descripcion",
+      date_start: project?.start_date,
+      duration:parseInt(project?.week)
     };
 
     axios
