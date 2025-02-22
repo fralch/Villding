@@ -72,9 +72,11 @@ const TrackingCurrent: React.FC = () => {
   // Función para obtener el proyecto y las fechas de la semana actual
   const fetchProjectAndDates = async () => {
     const storedProject = await getProject();
-    if (storedProject) {
+    if (storedProject && typeof storedProject === 'string') {
       const proyecto = JSON.parse(storedProject);
       setProject(proyecto);
+    }else if (storedProject) {
+      setProject(storedProject);
     }
     const today = new Date();
     const monday = getMonday(today);
@@ -92,7 +94,7 @@ const TrackingCurrent: React.FC = () => {
   // Función para cambiar la semana actual
   const handleWeekChange = (direccion: string) => {
     if (project?.week){
-      let semanas  = parseInt(project?.week); 
+      let semanas = project?.week ? parseInt(project.week.toString()) : 0;
       console.log(direccion)
       console.log(currentWeekIndex > semanas)
       if (direccion === "left" && currentWeekIndex === 0) return;
@@ -155,7 +157,7 @@ const TrackingCurrent: React.FC = () => {
       title: titleTracking,
       description: "Descripcion",
       date_start: project?.start_date,
-      duration:parseInt(project?.week)
+      duration: parseInt(project?.week?.toString() || '0')
     };
 
     axios
