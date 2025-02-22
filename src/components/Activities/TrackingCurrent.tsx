@@ -149,6 +149,11 @@ const TrackingCurrent: React.FC = () => {
     );
   };
  
+
+  const obtenerSeguimientos = async () => {
+  // Obtener los seguimientos del usuario con get 
+    
+  }
   // Función para manejar la creación de un nuevo seguimiento
   const handleNewTracking = () => {
     const data = {
