@@ -124,8 +124,7 @@ const TrackingCurrent: React.FC = () => {
     }
     
   };
-  
-  
+    
 
 
   // Función para obtener el lunes de semana de una fecha dada
@@ -154,10 +153,10 @@ const TrackingCurrent: React.FC = () => {
   const handleNewTracking = () => {
     const data = {
       project_id: project?.id,
-      title: titleTracking,
+      title: titleTracking.trim(), // remover espacios al principio y final
       description: "Descripcion",
       date_start: project?.start_date,
-      duration: parseInt(project?.week?.toString() || '0')
+      duration_days: parseInt(project?.week?.toString() || '0')
     };
 
     axios
