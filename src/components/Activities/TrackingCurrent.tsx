@@ -154,41 +154,18 @@ const TrackingCurrent: React.FC = () => {
 
     axios.request(config)
       .then((response: any) => {
-        console.log(JSON.stringify(response.data));
+        // console.log(JSON.stringify(response.data));
         const trackings = response.data;
         const updatedSections = updateTrackingSections(trackings);
-       
         setTrackingSections(updatedSections);
+        console.log(updatedSections);
       })
       .catch((error: Error) => {
         console.log(error);
       });
   };
 
-  // Función para manejar la creación de un nuevo seguimiento
-  const handleNewTracking = () => {
-    const data = {
-      project_id: project?.id,
-      title: titleTracking.trim(), // remover espacios al principio y final
-      description: "Descripcion",
-      date_start: project?.start_date,
-      duration_days: parseInt(project?.week?.toString() || '0')
-    };
-
-    axios
-      .post("https://centroesteticoedith.com/endpoint/trackings/create", data, {
-        headers: { "Content-Type": "application/json" },
-      })
-      .then((response) => {
-        const newTrackings: Tracking[] = response.data.trackings;
-        const updatedSections = updateTrackingSections(newTrackings);
-        setTrackingSections(updatedSections);
-        setModalSeguimientoVisible(false);
-      })
-      .catch((error) => {
-        console.error(error);
-      });
-  };
+  
 
   // Función para actualizar las secciones de seguimiento con nuevos seguimientos
   const updateTrackingSections = (newTrackings: Tracking[]) => {
@@ -215,6 +192,32 @@ const TrackingCurrent: React.FC = () => {
     sections.sort((a, b) => new Date(a.id).getTime() - new Date(b.id).getTime());
     return sections;
   };
+
+  // Función para manejar la creación de un nuevo seguimiento
+  const handleNewTracking = () => {
+    const data = {
+      project_id: project?.id,
+      title: titleTracking.trim(), // remover espacios al principio y final
+      description: "Descripcion",
+      date_start: project?.start_date,
+      duration_days: parseInt(project?.week?.toString() || '0')
+    };
+
+    axios
+      .post("https://centroesteticoedith.com/endpoint/trackings/create", data, {
+        headers: { "Content-Type": "application/json" },
+      })
+      .then((response) => {
+        const newTrackings: Tracking[] = response.data.trackings;
+        const updatedSections = updateTrackingSections(newTrackings);
+        setTrackingSections(updatedSections);
+        setModalSeguimientoVisible(false);
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+  };
+  
   // Función para volver al proyecto
   const backToProject = () => {
     navigation.navigate("HomeProject");
