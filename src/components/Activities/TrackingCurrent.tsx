@@ -154,42 +154,15 @@ const TrackingCurrent: React.FC = () => {
 
     axios.request(config)
       .then((response: any) => {
-        // console.log(JSON.stringify(response.data));
+        console.log(JSON.stringify(response.data));
         const trackings = response.data;
         const updatedSections = updateTrackingSections(trackings);
+       
         setTrackingSections(updatedSections);
       })
       .catch((error: Error) => {
         console.log(error);
       });
-  };
-
-  
-
-  // Función para actualizar las secciones de seguimiento con nuevos seguimientos
-  const updateTrackingSections = (newTrackings: Tracking[]) => {
-    const sections: TrackingSection[] = [];
-    // Agrupamiento por fecha de inicio
-    newTrackings.forEach((tracking) => {
-      // Convert date format from "YYYY-MM-DD" to Date object (Convertir la fecha de inicio a objeto Date en formato "YYYY-MM-DD")
-      const trackingDate = new Date(tracking.date_start || new Date());
-      const weekStartDate = new Date(trackingDate);
-      weekStartDate.setDate(trackingDate.getDate() - trackingDate.getDay() + 1); // Get Monday
-      const sectionId = weekStartDate.toISOString().split('T')[0];
-    
-      const existingSection = sections.find((section) => section.id === sectionId);
-      if (existingSection) {
-        existingSection.trackings.push(tracking);
-      } else {
-        sections.push({
-          id: sectionId,
-          trackings: [tracking]
-        });
-      }
-    });
-    // Sort sections by date
-    sections.sort((a, b) => new Date(a.id).getTime() - new Date(b.id).getTime());
-    return sections;
   };
 
   // Función para manejar la creación de un nuevo seguimiento
@@ -216,7 +189,32 @@ const TrackingCurrent: React.FC = () => {
         console.error(error);
       });
   };
-  
+
+  // Función para actualizar las secciones de seguimiento con nuevos seguimientos
+  const updateTrackingSections = (newTrackings: Tracking[]) => {
+    const sections: TrackingSection[] = [];
+    // Agrupamiento por fecha de inicio
+    newTrackings.forEach((tracking) => {
+      // Convert date format from "YYYY-MM-DD" to Date object (Convertir la fecha de inicio a objeto Date en formato "YYYY-MM-DD")
+      const trackingDate = new Date(tracking.date_start || new Date());
+      const weekStartDate = new Date(trackingDate);
+      weekStartDate.setDate(trackingDate.getDate() - trackingDate.getDay() + 1); // Get Monday
+      const sectionId = weekStartDate.toISOString().split('T')[0];
+    
+      const existingSection = sections.find((section) => section.id === sectionId);
+      if (existingSection) {
+        existingSection.trackings.push(tracking);
+      } else {
+        sections.push({
+          id: sectionId,
+          trackings: [tracking]
+        });
+      }
+    });
+    // Sort sections by date
+    sections.sort((a, b) => new Date(a.id).getTime() - new Date(b.id).getTime());
+    return sections;
+  };
   // Función para volver al proyecto
   const backToProject = () => {
     navigation.navigate("HomeProject");
