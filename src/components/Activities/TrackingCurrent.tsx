@@ -38,8 +38,10 @@ const TrackingCurrent: React.FC = () => {
   // useEffect para cargar el proyecto y las fechas al montar el componente
   useEffect(() => {
     fetchProjectAndDates();
-    obtenerSeguimientos();
   }, []);
+  useEffect(() => {
+    obtenerSeguimientos();
+  }, [project]);
 
   useEffect(() => {
     if (!project?.start_date) return; // Verificar si el proyecto tiene fechas de inicio
@@ -188,6 +190,7 @@ const TrackingCurrent: React.FC = () => {
       .catch((error) => {
         console.error(error);
       });
+      
   };
 
   // Función para actualizar las secciones de seguimiento con nuevos seguimientos
@@ -288,7 +291,7 @@ const TrackingCurrent: React.FC = () => {
         {["Lu", "Ma", "Mi", "Ju", "Vi", "Sa", "Do"].map(renderDayColumn)}
       </View>
 
-      // In the FlatList component
+   
       <FlatList
         style={styles.flatList}
         data={trackingSections.filter((section) => {
