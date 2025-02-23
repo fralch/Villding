@@ -158,7 +158,6 @@ const TrackingCurrent: React.FC = () => {
         const trackings = response.data;
         const updatedSections = updateTrackingSections(trackings);
         setTrackingSections(updatedSections);
-        console.log(updatedSections);
       })
       .catch((error: Error) => {
         console.log(error);
