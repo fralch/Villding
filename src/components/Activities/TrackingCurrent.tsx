@@ -35,39 +35,36 @@ const TrackingCurrent: React.FC = () => {
   const [showModal, setShowModal] = useState(false);
   const [msjeModal, setMsjeModal] = useState("El usuario se ha registrado correctamente.");
 
-
-
   // useEffect para cargar el proyecto y las fechas al montar el componente
   useEffect(() => {
     fetchProjectAndDates();
+    obtenerSeguimientos();
   }, []);
 
   useEffect(() => {
     if (!project?.start_date) return; // Verificar si el proyecto tiene fechas de inicio
-   
+
     const startDate = new Date(project.start_date.replace(/\//g, "-")); // Convertir la fecha de inicio a objeto Date
 
     const today = new Date(); // Obtener la fecha actual
-  
+
     if (isNaN(startDate.getTime())) { // Verificar si la fecha de inicio es válida
       console.error("Fecha de inicio del proyecto no válida");
       return;
     }
-  
+
     // Calcular la diferencia en días
     const timeDiff = today.getTime() - startDate.getTime(); // Obtener la diferencia en tiempo
     const dayDiff = timeDiff / (24 * 60 * 60 * 1000); // Dividir la diferencia en días
-  
+
     // Dividir la diferencia en días por 7 para obtener la diferencia en semanas
     const weekIndex = Math.floor(dayDiff / 7); // Obtener la semana actual
-  
+
     console.log("Inicio del proyecto:", startDate);
     console.log("Semana actual:", weekIndex);
-    console.log(project)
+    // console.log(project)
     setCurrentWeekIndex(weekIndex);
   }, [project]);
-  
-
 
   // Función para obtener el proyecto y las fechas de la semana actual
   const fetchProjectAndDates = async () => {
@@ -75,7 +72,7 @@ const TrackingCurrent: React.FC = () => {
     if (storedProject && typeof storedProject === 'string') {
       const proyecto = JSON.parse(storedProject);
       setProject(proyecto);
-    }else if (storedProject) {
+    } else if (storedProject) {
       setProject(storedProject);
     }
     const today = new Date();
@@ -93,19 +90,18 @@ const TrackingCurrent: React.FC = () => {
 
   // Función para cambiar la semana actual
   const handleWeekChange = (direccion: string) => {
-    if (project?.week){
+    if (project?.week) {
       let semanas = project?.week ? parseInt(project.week.toString()) : 0;
-      console.log(direccion)
+      // console.log(direccion)
       console.log(currentWeekIndex > semanas)
       if (direccion === "left" && currentWeekIndex === 0) return;
-      if (direccion === "right" && currentWeekIndex === semanas -1  ) return;
-      if (datesToWeekCurrent.length === 0) return;  
+      if (direccion === "right" && currentWeekIndex === semanas - 1) return;
+      if (datesToWeekCurrent.length === 0) return;
       const [day, month] = datesToWeekCurrent[0].split("/").map(Number);
       const currentMonday = new Date(new Date().getFullYear(), month - 1, day);
-    
+
       if (direccion === "right") {
         // Avanzar 1 semana
-        
         currentMonday.setDate(currentMonday.getDate() + 7);
         setCurrentWeekIndex(currentWeekIndex + 1);
       } else if (direccion === "left") {
@@ -113,19 +109,16 @@ const TrackingCurrent: React.FC = () => {
         currentMonday.setDate(currentMonday.getDate() - 7);
         setCurrentWeekIndex(currentWeekIndex - 1);
       }
-    
+
       const newWeekDates = Array.from({ length: 7 }, (_, index) => {
         const date = new Date(currentMonday);
         date.setDate(currentMonday.getDate() + index);
         return date.toLocaleDateString("es-PE", { day: "2-digit", month: "2-digit" });
       });
-    
+
       setDatesToWeekCurrent(newWeekDates);
     }
-    
   };
-    
-
 
   // Función para obtener el lunes de semana de una fecha dada
   const getMonday = (date: Date) => {
@@ -135,8 +128,8 @@ const TrackingCurrent: React.FC = () => {
     return monday;
   };
 
-   // Función para renderizar una columna de día
-   const renderDayColumn = (day: string, index: number) => {
+  // Función para renderizar una columna de día
+  const renderDayColumn = (day: string, index: number) => {
     const currentDate = datesToWeekCurrent[index];
     const today = new Date();
     const isToday = today.toLocaleDateString("es-PE", { day: "2-digit", month: "2-digit" }) === currentDate;
@@ -148,12 +141,30 @@ const TrackingCurrent: React.FC = () => {
       </View>
     );
   };
- 
 
   const obtenerSeguimientos = async () => {
-  // Obtener los seguimientos del usuario con get 
-    
-  }
+    // Obtener los seguimientos del usuario con get
+    console.log("project id")
+    console.log(project?.id)
+    let config = {
+      method: 'get',
+      maxBodyLength: Infinity,
+      url: 'https://centroesteticoedith.com/endpoint/trackings_project/' + project?.id,
+    };
+
+    axios.request(config)
+      .then((response: any) => {
+        console.log(JSON.stringify(response.data));
+        const trackings = response.data;
+        const updatedSections = updateTrackingSections(trackings);
+       
+        setTrackingSections(updatedSections);
+      })
+      .catch((error: Error) => {
+        console.log(error);
+      });
+  };
+
   // Función para manejar la creación de un nuevo seguimiento
   const handleNewTracking = () => {
     const data = {
@@ -181,30 +192,33 @@ const TrackingCurrent: React.FC = () => {
 
   // Función para actualizar las secciones de seguimiento con nuevos seguimientos
   const updateTrackingSections = (newTrackings: Tracking[]) => {
-    return trackingSections.map((section) => {
-      const weekTrackings = newTrackings.filter((tracking) => {
-        const trackingDate = new Date(tracking.date_start || "");
-        const sectionStartDate = new Date(section.id);
-        return (
-          trackingDate >= sectionStartDate &&
-          trackingDate < new Date(sectionStartDate.getTime() + 7 * 24 * 60 * 60 * 1000)
-        );
-      });
-      if (weekTrackings.length > 0) {
-        return {
-          ...section,
-          trackings: [...section.trackings, ...weekTrackings],
-        };
+    const sections: TrackingSection[] = [];
+    // Agrupamiento por fecha de inicio
+    newTrackings.forEach((tracking) => {
+      // Convert date format from "YYYY-MM-DD" to Date object (Convertir la fecha de inicio a objeto Date en formato "YYYY-MM-DD")
+      const trackingDate = new Date(tracking.date_start || new Date());
+      const weekStartDate = new Date(trackingDate);
+      weekStartDate.setDate(trackingDate.getDate() - trackingDate.getDay() + 1); // Get Monday
+      const sectionId = weekStartDate.toISOString().split('T')[0];
+    
+      const existingSection = sections.find((section) => section.id === sectionId);
+      if (existingSection) {
+        existingSection.trackings.push(tracking);
+      } else {
+        sections.push({
+          id: sectionId,
+          trackings: [tracking]
+        });
       }
-      return section;
     });
+    // Sort sections by date
+    sections.sort((a, b) => new Date(a.id).getTime() - new Date(b.id).getTime());
+    return sections;
   };
-
   // Función para volver al proyecto
   const backToProject = () => {
     navigation.navigate("HomeProject");
   };
-
 
   // Función para renderizar una sección de seguimiento
   const renderTrackingSection = ({ item }: { item: TrackingSection }) => (
@@ -254,12 +268,12 @@ const TrackingCurrent: React.FC = () => {
         }}
       />
       <View style={styles.weekSelector}>
-        <TouchableOpacity onPress={() => handleWeekChange( 'left' )} disabled={currentWeekIndex === 0}>
+        <TouchableOpacity onPress={() => handleWeekChange('left')} disabled={currentWeekIndex === 0}>
           <Ionicons name="chevron-back" size={30} color={currentWeekIndex === 0 ? "#07374a" : "white"} />
         </TouchableOpacity>
         <Text style={styles.weekTitle}>Semana {currentWeekIndex + 1}</Text>
         <TouchableOpacity
-          onPress={() => handleWeekChange( 'right' )}
+          onPress={() => handleWeekChange('right')}
           disabled={currentWeekIndex === Math.ceil((new Date(project?.end_date || "").getTime() - new Date(project?.start_date || "").getTime()) / (7 * 24 * 60 * 60 * 1000)) - 1}
         >
           <Ionicons
@@ -274,19 +288,28 @@ const TrackingCurrent: React.FC = () => {
         {["Lu", "Ma", "Mi", "Ju", "Vi", "Sa", "Do"].map(renderDayColumn)}
       </View>
 
+      // In the FlatList component
       <FlatList
         style={styles.flatList}
         data={trackingSections.filter((section) => {
+          if (!project?.start_date) return false;
+          
           const sectionStartDate = new Date(section.id);
-          const currentWeekStartDate = new Date(project?.start_date || "");
-          currentWeekStartDate.setDate(currentWeekStartDate.getDate() + currentWeekIndex * 7);
-          return (
-            sectionStartDate >= currentWeekStartDate &&
-            sectionStartDate < new Date(currentWeekStartDate.getTime() + 7 * 24 * 60 * 60 * 1000)
-          );
+          const projectStartDate = new Date(project.start_date.replace(/\//g, "-"));
+          const weekStartDate = new Date(projectStartDate);
+          weekStartDate.setDate(projectStartDate.getDate() + (currentWeekIndex * 7));
+          const weekEndDate = new Date(weekStartDate);
+          weekEndDate.setDate(weekStartDate.getDate() + 7);
+          
+          return sectionStartDate >= weekStartDate && sectionStartDate < weekEndDate;
         })}
         keyExtractor={(item) => item.id}
         renderItem={renderTrackingSection}
+        ListEmptyComponent={() => (
+          <View style={{ flex: 1, alignItems: 'center', marginTop: 20 }}>
+            <Text style={{ color: '#777' }}>No hay seguimientos para esta semana</Text>
+          </View>
+        )}
       />
 
       <TouchableOpacity style={styles.addButton} onPress={() => setModalSeguimientoVisible(true)}>
@@ -353,6 +376,5 @@ const TrackingCurrent: React.FC = () => {
     </View>
   );
 };
-
 
 export default TrackingCurrent;
