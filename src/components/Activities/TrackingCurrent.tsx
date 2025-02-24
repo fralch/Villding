@@ -190,10 +190,12 @@ const TrackingCurrent: React.FC = () => {
       .post("https://centroesteticoedith.com/endpoint/trackings/create", data, { headers })
       .then((response) => {
         console.log("Respuesta de la API:", response.data);
-       // Ajustar para manejar un objeto individual en lugar de un array
+        // Ajustar para manejar un objeto individual en lugar de un array
         const newTracking = response.data.trackings;
-        const updatedSections = updateTrackingSections([newTracking]);
-
+  
+        // Combinar los seguimientos existentes con el nuevo seguimiento
+        const updatedSections = updateTrackingSections([...trackingSections.flatMap(section => section.trackings), newTracking]);
+  
         setTrackingSections(updatedSections);
         setModalSeguimientoVisible(false);
       })
@@ -201,6 +203,7 @@ const TrackingCurrent: React.FC = () => {
         console.error("Error en la solicitud POST:", error.response ? error.response.data : error.message);
       });
   };
+  
   
 
   // Función para actualizar las secciones de seguimiento con nuevos seguimientos
@@ -213,7 +216,7 @@ const TrackingCurrent: React.FC = () => {
       const weekStartDate = new Date(trackingDate);
       weekStartDate.setDate(trackingDate.getDate() - trackingDate.getDay() + 1); // Get Monday
       const sectionId = weekStartDate.toISOString().split('T')[0];
-    
+  
       const existingSection = sections.find((section) => section.id === sectionId);
       if (existingSection) {
         existingSection.trackings.push(tracking);
@@ -228,6 +231,10 @@ const TrackingCurrent: React.FC = () => {
     sections.sort((a, b) => new Date(a.id).getTime() - new Date(b.id).getTime());
     return sections;
   };
+  
+
+
+
   // Función para volver al proyecto
   const backToProject = () => {
     navigation.navigate("HomeProject");
