@@ -169,29 +169,39 @@ const TrackingCurrent: React.FC = () => {
 
   // Función para manejar la creación de un nuevo seguimiento
   const handleNewTracking = () => {
+    const today = new Date();
     const data = {
       project_id: project?.id,
       title: titleTracking.trim(), // remover espacios al principio y final
       description: "Descripcion",
-      date_start: project?.start_date,
-      duration_days: parseInt(project?.week?.toString() || '0')
+      date_start: today.toISOString().split('T')[0], // Formatear la fecha como "YYYY-MM-DD"
+      duration_days: '7',
     };
-
+  
+    const headers = {
+      'Content-Type': 'application/json',
+      // Incluye aquí cualquier otra cabecera necesaria, como 'Cookie' si es requerida
+    };
+  
+    console.log("Datos a enviar:", JSON.stringify(data, null, 2)); // Imprime los datos
+    console.log("Cabeceras:", headers); // Imprime las cabeceras
+  
     axios
-      .post("https://centroesteticoedith.com/endpoint/trackings/create", data, {
-        headers: { "Content-Type": "application/json" },
-      })
+      .post("https://centroesteticoedith.com/endpoint/trackings/create", data, { headers })
       .then((response) => {
-        const newTrackings: Tracking[] = response.data.trackings;
-        const updatedSections = updateTrackingSections(newTrackings);
+        console.log("Respuesta de la API:", response.data);
+       // Ajustar para manejar un objeto individual en lugar de un array
+        const newTracking = response.data.trackings;
+        const updatedSections = updateTrackingSections([newTracking]);
+
         setTrackingSections(updatedSections);
         setModalSeguimientoVisible(false);
       })
       .catch((error) => {
-        console.error(error);
+        console.error("Error en la solicitud POST:", error.response ? error.response.data : error.message);
       });
-      
   };
+  
 
   // Función para actualizar las secciones de seguimiento con nuevos seguimientos
   const updateTrackingSections = (newTrackings: Tracking[]) => {
