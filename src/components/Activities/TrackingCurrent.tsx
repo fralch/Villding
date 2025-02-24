@@ -193,8 +193,22 @@ const TrackingCurrent: React.FC = () => {
         // Ajustar para manejar un objeto individual en lugar de un array
         const newTracking = response.data.trackings;
   
-        // Combinar los seguimientos existentes con el nuevo seguimiento
-        const updatedSections = updateTrackingSections([...trackingSections.flatMap(section => section.trackings), newTracking]);
+        // Combinar los seguimientos existentes con el nuevo seguimiento 
+        // version pro
+        // const updatedSections = updateTrackingSections([...trackingSections.flatMap(section => section.trackings), newTracking]);
+        // version simple 
+          // Paso 1: Extraer todos los trackings existentes en una lista plana
+          const allExistingTrackings = [];
+          trackingSections.forEach(section => {
+            allExistingTrackings.push(...section.trackings);
+          });
+
+          // Paso 2: Agregar el nuevo tracking a la lista de trackings existentes
+          allExistingTrackings.push(newTracking);
+
+          // Paso 3: Actualizar las secciones de tracking con la nueva lista de trackings
+          const updatedSections = updateTrackingSections(allExistingTrackings);
+
   
         setTrackingSections(updatedSections);
         setModalSeguimientoVisible(false);
