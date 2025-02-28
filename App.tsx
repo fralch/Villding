@@ -12,7 +12,7 @@ import EditUser from './src/views/Login/EditUser';
 import HomeProject from './src/views/Projects/HomeProject';
 import NewProject from './src/views/Projects/NewProject';
 import Project from './src/views/Projects/Project';
-import Task from './src/components/Activities/Activity';
+import Activity from './src/components/Activities/Activity';
 import VistaMiembros from './src/views/Accesos/VistaMiembros';
 
 SplashScreen.preventAutoHideAsync(); // Evita que el splash screen desaparezca automáticamente
@@ -34,7 +34,7 @@ export default function RootNavigator() {
     { name: 'HomeProject', component: HomeProject },
     { name: 'NewProject', component: NewProject },
     { name: 'Project', component: Project },
-    { name: 'Task', component: Task },
+    { name: 'Activity', component: Activity },
     { name: 'EditUser', component: EditUser },
     { name: 'VistaMiembros', component: VistaMiembros },
   ];

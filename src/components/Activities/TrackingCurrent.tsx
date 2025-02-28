@@ -189,7 +189,10 @@ const TrackingCurrent: React.FC = () => {
           key={tracking.id}
           style={styles.taskRow}
           onLongPress={() => setModalSinAccesoVisible(true)}
-          onPress={() => navigation.navigate("Task", { tracking })}
+          onPress={() => {
+            const trackingWithWeekIndex = { ...tracking, currentWeekIndex: currentWeekIndex + 1, days: datesToWeekCurrent };
+            navigation.navigate("Activity", { tracking: trackingWithWeekIndex });
+          }}
         >
           <Text style={styles.taskTitle}>{tracking.title}</Text>
           <View style={styles.iconRow}>

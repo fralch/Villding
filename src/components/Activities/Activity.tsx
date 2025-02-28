@@ -15,6 +15,7 @@ import {
 import { StatusBar as ExpoStatusBar } from 'expo-status-bar';
 import { useFocusEffect } from '@react-navigation/native';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
+import axios from "axios";
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import Feather from '@expo/vector-icons/Feather';
@@ -42,7 +43,7 @@ interface DayTasksProps {
 
 const { height } = Dimensions.get('window');
 
-export default function ActivityScreen( prop : any) {
+export default function Activity( prop : any) {
   const navigation = useNavigation<NavigationProp<any>>();
   console.log(prop.route.params.tracking);
   const screenWidth = Dimensions.get('window').width;
@@ -54,7 +55,37 @@ export default function ActivityScreen( prop : any) {
   const slideAnim = useRef(new Animated.Value(height)).current;
   const [tasksData, setTasksData] = useState<{ [key: string]: Task[] }>({});
   const [titleTracking, setTitleTracking] = useState(prop.route.params.tracking.title);
+  const [tracking, setTracking] = useState(prop.route.params.tracking);
 
+
+  useEffect(() => {
+    const obtenerSeguimientos = async () => {
+      if (!tracking?.id) return;
+
+
+      let config = {
+        method: 'get',
+        maxBodyLength: Infinity,
+        url: 'https://centroesteticoedith.com/endpoint/activities/tracking/'+tracking.id,
+        headers: { 
+          'Cookie': 'XSRF-TOKEN=eyJpdiI6Ii9hRFhLR2xFRjBTU3NxaEQ3SU8rWUE9PSIsInZhbHVlIjoiMUxnVldxYTUvYXNyMXkvdGRVaUxZYVJsSkhMY2s1NUROR3Y1dmdsMlBtRTNnZTh3VGtLM2NpdWx3aC92V3BEUWlBSHdlVWozbTRQVk9qRkJiUjE0ejNVTHhZU0h0L1hHZ2R2UWhQamsxSTFUMFZndUEvakZDQ3hGVmZDaldrSTAiLCJtYWMiOiIwZGUzM2U3YWQ5MGEwNjkyY2IyZjk5ZjcwYzBkOWE2MjJlNDVkYmZkMGVmZWZhNjBjODJjNmYwYjUwODY3OTcyIiwidGFnIjoiIn0%3D; laravel_session=eyJpdiI6IlVxVXlWUEUydllIdUN0WmE5YzgweVE9PSIsInZhbHVlIjoiNVVSN2pGcW9GYnFCOEk4cnpNS3VsbzRLb2dlL1o4WEN2YUJ1UzM3WkdMM3R1akR0c3IxeDdVanMvT0hrTkcrWXlrU3FNT3RtaDZXNTBNOHl0T1pHWDhCOE5KV2pONjFDNDdIdkJaNnJEeUJsUitHY3JyUjNEaVRPc3Y1R09peC8iLCJtYWMiOiI2M2VhZWYyNTA0Mzk5YTM3OTk0OGQ0MDZmOTk2ZTZmZmQ5YWUzOThkMTY3NjY2ZjRkMGNjMmM2ZTZmMDc5YTJiIiwidGFnIjoiIn0%3D'
+        }
+      };
+      
+      axios.request(config)
+      .then((response) => {
+        // console.log(JSON.stringify(response.data));
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+      
+      
+    };
+
+    obtenerSeguimientos();
+    
+  }, []);
 
   const goBack = () => {
     navigation.goBack();
@@ -102,7 +133,353 @@ export default function ActivityScreen( prop : any) {
 
   useEffect(() => {
     // Simulamos la llamada a la API
-    const apiData = [{"id":8,"day_id":8,"project_id":1,"user_id":1,"name":"Reuni\u00f3n de equipo","description":"Reuni\u00f3n semanal para discutir el progreso del proyecto.","location":"Sala de conferencias","hour_start":"09:00:00","hour_end":"10:00:00","status":"pendiente","icon":"calendar","image":null,"comments":"Traer el informe de avance.","created_at":"2025-02-09T18:22:20.000000Z","updated_at":"2025-02-09T18:22:20.000000Z"},{"id":50,"day_id":8,"project_id":1,"user_id":1,"name":"Reuni\u00f3n de Planificaci\u00f3n","description":"Reuni\u00f3n para planificar las actividades del pr\u00f3ximo mes.","location":"Sala de Conferencias A","hour_start":"09:00:00","hour_end":"10:00:00","status":"programada","icon":"calendar-icon.png","image":null,"comments":"Traer informes del mes pasado.","created_at":"2025-02-11T02:02:41.000000Z","updated_at":"2025-02-11T02:02:41.000000Z"},{"id":92,"day_id":8,"project_id":1,"user_id":1,"name":"Reuni\u00f3n de TERCERA","description":"Reuni\u00f3n para planificar las actividades del pr\u00f3ximo mes.","location":"Sala de Conferencias A","hour_start":"09:00:00","hour_end":"10:00:00","status":"programada","icon":"calendar-icon.png","image":null,"comments":"Traer informes del mes pasado.","created_at":"2025-02-11T03:21:49.000000Z","updated_at":"2025-02-11T03:21:49.000000Z"},{"id":9,"day_id":9,"project_id":1,"user_id":1,"name":"Reuni\u00f3n de equipo","description":"Reuni\u00f3n semanal para discutir el progreso del proyecto.","location":"Sala de conferencias","hour_start":"09:00:00","hour_end":"10:00:00","status":"pendiente","icon":"calendar","image":null,"comments":"Traer el informe de avance.","created_at":"2025-02-09T18:22:20.000000Z","updated_at":"2025-02-09T18:22:20.000000Z"},{"id":51,"day_id":9,"project_id":1,"user_id":1,"name":"Reuni\u00f3n de Planificaci\u00f3n","description":"Reuni\u00f3n para planificar las actividades del pr\u00f3ximo mes.","location":"Sala de Conferencias A","hour_start":"09:00:00","hour_end":"10:00:00","status":"programada","icon":"calendar-icon.png","image":null,"comments":"Traer informes del mes pasado.","created_at":"2025-02-11T02:02:41.000000Z","updated_at":"2025-02-11T02:02:41.000000Z"},{"id":93,"day_id":9,"project_id":1,"user_id":1,"name":"Reuni\u00f3n de TERCERA","description":"Reuni\u00f3n para planificar las actividades del pr\u00f3ximo mes.","location":"Sala de Conferencias A","hour_start":"09:00:00","hour_end":"10:00:00","status":"programada","icon":"calendar-icon.png","image":null,"comments":"Traer informes del mes pasado.","created_at":"2025-02-11T03:21:49.000000Z","updated_at":"2025-02-11T03:21:49.000000Z"},{"id":10,"day_id":10,"project_id":1,"user_id":1,"name":"Reuni\u00f3n de equipo","description":"Reuni\u00f3n semanal para discutir el progreso del proyecto.","location":"Sala de conferencias","hour_start":"09:00:00","hour_end":"10:00:00","status":"pendiente","icon":"calendar","image":null,"comments":"Traer el informe de avance.","created_at":"2025-02-09T18:22:20.000000Z","updated_at":"2025-02-09T18:22:20.000000Z"},{"id":52,"day_id":10,"project_id":1,"user_id":1,"name":"Reuni\u00f3n de Planificaci\u00f3n","description":"Reuni\u00f3n para planificar las actividades del pr\u00f3ximo mes.","location":"Sala de Conferencias A","hour_start":"09:00:00","hour_end":"10:00:00","status":"programada","icon":"calendar-icon.png","image":null,"comments":"Traer informes del mes pasado.","created_at":"2025-02-11T02:02:41.000000Z","updated_at":"2025-02-11T02:02:41.000000Z"},{"id":94,"day_id":10,"project_id":1,"user_id":1,"name":"Reuni\u00f3n de TERCERA","description":"Reuni\u00f3n para planificar las actividades del pr\u00f3ximo mes.","location":"Sala de Conferencias A","hour_start":"09:00:00","hour_end":"10:00:00","status":"programada","icon":"calendar-icon.png","image":null,"comments":"Traer informes del mes pasado.","created_at":"2025-02-11T03:21:49.000000Z","updated_at":"2025-02-11T03:21:49.000000Z"},{"id":11,"day_id":11,"project_id":1,"user_id":1,"name":"Reuni\u00f3n de equipo","description":"Reuni\u00f3n semanal para discutir el progreso del proyecto.","location":"Sala de conferencias","hour_start":"09:00:00","hour_end":"10:00:00","status":"pendiente","icon":"calendar","image":null,"comments":"Traer el informe de avance.","created_at":"2025-02-09T18:22:20.000000Z","updated_at":"2025-02-09T18:22:20.000000Z"},{"id":53,"day_id":11,"project_id":1,"user_id":1,"name":"Reuni\u00f3n de Planificaci\u00f3n","description":"Reuni\u00f3n para planificar las actividades del pr\u00f3ximo mes.","location":"Sala de Conferencias A","hour_start":"09:00:00","hour_end":"10:00:00","status":"programada","icon":"calendar-icon.png","image":null,"comments":"Traer informes del mes pasado.","created_at":"2025-02-11T02:02:41.000000Z","updated_at":"2025-02-11T02:02:41.000000Z"},{"id":95,"day_id":11,"project_id":1,"user_id":1,"name":"Reuni\u00f3n de TERCERA","description":"Reuni\u00f3n para planificar las actividades del pr\u00f3ximo mes.","location":"Sala de Conferencias A","hour_start":"09:00:00","hour_end":"10:00:00","status":"programada","icon":"calendar-icon.png","image":null,"comments":"Traer informes del mes pasado.","created_at":"2025-02-11T03:21:49.000000Z","updated_at":"2025-02-11T03:21:49.000000Z"},{"id":12,"day_id":12,"project_id":1,"user_id":1,"name":"Reuni\u00f3n de equipo","description":"Reuni\u00f3n semanal para discutir el progreso del proyecto.","location":"Sala de conferencias","hour_start":"09:00:00","hour_end":"10:00:00","status":"pendiente","icon":"calendar","image":null,"comments":"Traer el informe de avance.","created_at":"2025-02-09T18:22:20.000000Z","updated_at":"2025-02-09T18:22:20.000000Z"},{"id":54,"day_id":12,"project_id":1,"user_id":1,"name":"Reuni\u00f3n de Planificaci\u00f3n","description":"Reuni\u00f3n para planificar las actividades del pr\u00f3ximo mes.","location":"Sala de Conferencias A","hour_start":"09:00:00","hour_end":"10:00:00","status":"programada","icon":"calendar-icon.png","image":null,"comments":"Traer informes del mes pasado.","created_at":"2025-02-11T02:02:41.000000Z","updated_at":"2025-02-11T02:02:41.000000Z"},{"id":96,"day_id":12,"project_id":1,"user_id":1,"name":"Reuni\u00f3n de TERCERA","description":"Reuni\u00f3n para planificar las actividades del pr\u00f3ximo mes.","location":"Sala de Conferencias A","hour_start":"09:00:00","hour_end":"10:00:00","status":"programada","icon":"calendar-icon.png","image":null,"comments":"Traer informes del mes pasado.","created_at":"2025-02-11T03:21:49.000000Z","updated_at":"2025-02-11T03:21:49.000000Z"},{"id":13,"day_id":13,"project_id":1,"user_id":1,"name":"Reuni\u00f3n de equipo","description":"Reuni\u00f3n semanal para discutir el progreso del proyecto.","location":"Sala de conferencias","hour_start":"09:00:00","hour_end":"10:00:00","status":"pendiente","icon":"calendar","image":null,"comments":"Traer el informe de avance.","created_at":"2025-02-09T18:22:20.000000Z","updated_at":"2025-02-09T18:22:20.000000Z"},{"id":55,"day_id":13,"project_id":1,"user_id":1,"name":"Reuni\u00f3n de Planificaci\u00f3n","description":"Reuni\u00f3n para planificar las actividades del pr\u00f3ximo mes.","location":"Sala de Conferencias A","hour_start":"09:00:00","hour_end":"10:00:00","status":"programada","icon":"calendar-icon.png","image":null,"comments":"Traer informes del mes pasado.","created_at":"2025-02-11T02:02:41.000000Z","updated_at":"2025-02-11T02:02:41.000000Z"},{"id":97,"day_id":13,"project_id":1,"user_id":1,"name":"Reuni\u00f3n de TERCERA","description":"Reuni\u00f3n para planificar las actividades del pr\u00f3ximo mes.","location":"Sala de Conferencias A","hour_start":"09:00:00","hour_end":"10:00:00","status":"programada","icon":"calendar-icon.png","image":null,"comments":"Traer informes del mes pasado.","created_at":"2025-02-11T03:21:49.000000Z","updated_at":"2025-02-11T03:21:49.000000Z"},{"id":14,"day_id":14,"project_id":1,"user_id":1,"name":"Reuni\u00f3n de equipo","description":"Reuni\u00f3n semanal para discutir el progreso del proyecto.","location":"Sala de conferencias","hour_start":"09:00:00","hour_end":"10:00:00","status":"pendiente","icon":"calendar","image":null,"comments":"Traer el informe de avance.","created_at":"2025-02-09T18:22:20.000000Z","updated_at":"2025-02-09T18:22:20.000000Z"},{"id":56,"day_id":14,"project_id":1,"user_id":1,"name":"Reuni\u00f3n de Planificaci\u00f3n","description":"Reuni\u00f3n para planificar las actividades del pr\u00f3ximo mes.","location":"Sala de Conferencias A","hour_start":"09:00:00","hour_end":"10:00:00","status":"programada","icon":"calendar-icon.png","image":null,"comments":"Traer informes del mes pasado.","created_at":"2025-02-11T02:02:41.000000Z","updated_at":"2025-02-11T02:02:41.000000Z"},{"id":98,"day_id":14,"project_id":1,"user_id":1,"name":"Reuni\u00f3n de TERCERA","description":"Reuni\u00f3n para planificar las actividades del pr\u00f3ximo mes.","location":"Sala de Conferencias A","hour_start":"09:00:00","hour_end":"10:00:00","status":"programada","icon":"calendar-icon.png","image":null,"comments":"Traer informes del mes pasado.","created_at":"2025-02-11T03:21:49.000000Z","updated_at":"2025-02-11T03:21:49.000000Z"}]
+    let days = tracking.days;
+    /*  
+      "days": ["24/2", "25/2", "26/2", "27/2", "28/2", "1/3", "2/3"]
+    */
+    const apiData = [
+  
+      {
+        "id": 50,
+        "day_id": 8,
+        "project_id": 1,
+        "user_id": 1,
+        "name": "Reuni\u00f3n de Planificaci\u00f3n",
+        "description": "Reuni\u00f3n para planificar las actividades del pr\u00f3ximo mes.",
+        "location": "Sala de Conferencias A",
+        "hour_start": "09:00:00",
+        "hour_end": "10:00:00",
+        "status": "programada",
+        "icon": "calendar-icon.png",
+        "image": null,
+        "comments": "Traer informes del mes pasado.",
+        "created_at": "2025-02-11T02:02:41.000000Z",
+        "updated_at": "2025-02-11T02:02:41.000000Z"
+      },
+      {
+        "id": 92,
+        "day_id": 8,
+        "project_id": 1,
+        "user_id": 1,
+        "name": "Reuni\u00f3n de TERCERA",
+        "description": "Reuni\u00f3n para planificar las actividades del pr\u00f3ximo mes.",
+        "location": "Sala de Conferencias A",
+        "hour_start": "09:00:00",
+        "hour_end": "10:00:00",
+        "status": "programada",
+        "icon": "calendar-icon.png",
+        "image": null,
+        "comments": "Traer informes del mes pasado.",
+        "created_at": "2025-02-11T03:21:49.000000Z",
+        "updated_at": "2025-02-11T03:21:49.000000Z"
+      },
+      {
+        "id": 9,
+        "day_id": 9,
+        "project_id": 1,
+        "user_id": 1,
+        "name": "Reuni\u00f3n de equipo",
+        "description": "Reuni\u00f3n semanal para discutir el progreso del proyecto.",
+        "location": "Sala de conferencias",
+        "hour_start": "09:00:00",
+        "hour_end": "10:00:00",
+        "status": "pendiente",
+        "icon": "calendar",
+        "image": null,
+        "comments": "Traer el informe de avance.",
+        "created_at": "2025-02-09T18:22:20.000000Z",
+        "updated_at": "2025-02-09T18:22:20.000000Z"
+      },
+      {
+        "id": 51,
+        "day_id": 9,
+        "project_id": 1,
+        "user_id": 1,
+        "name": "Reuni\u00f3n de Planificaci\u00f3n",
+        "description": "Reuni\u00f3n para planificar las actividades del pr\u00f3ximo mes.",
+        "location": "Sala de Conferencias A",
+        "hour_start": "09:00:00",
+        "hour_end": "10:00:00",
+        "status": "programada",
+        "icon": "calendar-icon.png",
+        "image": null,
+        "comments": "Traer informes del mes pasado.",
+        "created_at": "2025-02-11T02:02:41.000000Z",
+        "updated_at": "2025-02-11T02:02:41.000000Z"
+      },
+      {
+        "id": 93,
+        "day_id": 9,
+        "project_id": 1,
+        "user_id": 1,
+        "name": "Reuni\u00f3n de TERCERA",
+        "description": "Reuni\u00f3n para planificar las actividades del pr\u00f3ximo mes.",
+        "location": "Sala de Conferencias A",
+        "hour_start": "09:00:00",
+        "hour_end": "10:00:00",
+        "status": "programada",
+        "icon": "calendar-icon.png",
+        "image": null,
+        "comments": "Traer informes del mes pasado.",
+        "created_at": "2025-02-11T03:21:49.000000Z",
+        "updated_at": "2025-02-11T03:21:49.000000Z"
+      },
+      {
+        "id": 10,
+        "day_id": 10,
+        "project_id": 1,
+        "user_id": 1,
+        "name": "Reuni\u00f3n de equipo",
+        "description": "Reuni\u00f3n semanal para discutir el progreso del proyecto.",
+        "location": "Sala de conferencias",
+        "hour_start": "09:00:00",
+        "hour_end": "10:00:00",
+        "status": "pendiente",
+        "icon": "calendar",
+        "image": null,
+        "comments": "Traer el informe de avance.",
+        "created_at": "2025-02-09T18:22:20.000000Z",
+        "updated_at": "2025-02-09T18:22:20.000000Z"
+      },
+      {
+        "id": 52,
+        "day_id": 10,
+        "project_id": 1,
+        "user_id": 1,
+        "name": "Reuni\u00f3n de Planificaci\u00f3n",
+        "description": "Reuni\u00f3n para planificar las actividades del pr\u00f3ximo mes.",
+        "location": "Sala de Conferencias A",
+        "hour_start": "09:00:00",
+        "hour_end": "10:00:00",
+        "status": "programada",
+        "icon": "calendar-icon.png",
+        "image": null,
+        "comments": "Traer informes del mes pasado.",
+        "created_at": "2025-02-11T02:02:41.000000Z",
+        "updated_at": "2025-02-11T02:02:41.000000Z"
+      },
+      {
+        "id": 94,
+        "day_id": 10,
+        "project_id": 1,
+        "user_id": 1,
+        "name": "Reuni\u00f3n de TERCERA",
+        "description": "Reuni\u00f3n para planificar las actividades del pr\u00f3ximo mes.",
+        "location": "Sala de Conferencias A",
+        "hour_start": "09:00:00",
+        "hour_end": "10:00:00",
+        "status": "programada",
+        "icon": "calendar-icon.png",
+        "image": null,
+        "comments": "Traer informes del mes pasado.",
+        "created_at": "2025-02-11T03:21:49.000000Z",
+        "updated_at": "2025-02-11T03:21:49.000000Z"
+      },
+      {
+        "id": 11,
+        "day_id": 11,
+        "project_id": 1,
+        "user_id": 1,
+        "name": "Reuni\u00f3n de equipo",
+        "description": "Reuni\u00f3n semanal para discutir el progreso del proyecto.",
+        "location": "Sala de conferencias",
+        "hour_start": "09:00:00",
+        "hour_end": "10:00:00",
+        "status": "pendiente",
+        "icon": "calendar",
+        "image": null,
+        "comments": "Traer el informe de avance.",
+        "created_at": "2025-02-09T18:22:20.000000Z",
+        "updated_at": "2025-02-09T18:22:20.000000Z"
+      },
+      {
+        "id": 53,
+        "day_id": 11,
+        "project_id": 1,
+        "user_id": 1,
+        "name": "Reuni\u00f3n de Planificaci\u00f3n",
+        "description": "Reuni\u00f3n para planificar las actividades del pr\u00f3ximo mes.",
+        "location": "Sala de Conferencias A",
+        "hour_start": "09:00:00",
+        "hour_end": "10:00:00",
+        "status": "programada",
+        "icon": "calendar-icon.png",
+        "image": null,
+        "comments": "Traer informes del mes pasado.",
+        "created_at": "2025-02-11T02:02:41.000000Z",
+        "updated_at": "2025-02-11T02:02:41.000000Z"
+      },
+      {
+        "id": 95,
+        "day_id": 11,
+        "project_id": 1,
+        "user_id": 1,
+        "name": "Reuni\u00f3n de TERCERA",
+        "description": "Reuni\u00f3n para planificar las actividades del pr\u00f3ximo mes.",
+        "location": "Sala de Conferencias A",
+        "hour_start": "09:00:00",
+        "hour_end": "10:00:00",
+        "status": "programada",
+        "icon": "calendar-icon.png",
+        "image": null,
+        "comments": "Traer informes del mes pasado.",
+        "created_at": "2025-02-11T03:21:49.000000Z",
+        "updated_at": "2025-02-11T03:21:49.000000Z"
+      },
+      {
+        "id": 12,
+        "day_id": 12,
+        "project_id": 1,
+        "user_id": 1,
+        "name": "Reuni\u00f3n de equipo",
+        "description": "Reuni\u00f3n semanal para discutir el progreso del proyecto.",
+        "location": "Sala de conferencias",
+        "hour_start": "09:00:00",
+        "hour_end": "10:00:00",
+        "status": "pendiente",
+        "icon": "calendar",
+        "image": null,
+        "comments": "Traer el informe de avance.",
+        "created_at": "2025-02-09T18:22:20.000000Z",
+        "updated_at": "2025-02-09T18:22:20.000000Z"
+      },
+      {
+        "id": 54,
+        "day_id": 12,
+        "project_id": 1,
+        "user_id": 1,
+        "name": "Reuni\u00f3n de Planificaci\u00f3n",
+        "description": "Reuni\u00f3n para planificar las actividades del pr\u00f3ximo mes.",
+        "location": "Sala de Conferencias A",
+        "hour_start": "09:00:00",
+        "hour_end": "10:00:00",
+        "status": "programada",
+        "icon": "calendar-icon.png",
+        "image": null,
+        "comments": "Traer informes del mes pasado.",
+        "created_at": "2025-02-11T02:02:41.000000Z",
+        "updated_at": "2025-02-11T02:02:41.000000Z"
+      },
+      {
+        "id": 96,
+        "day_id": 12,
+        "project_id": 1,
+        "user_id": 1,
+        "name": "Reuni\u00f3n de TERCERA",
+        "description": "Reuni\u00f3n para planificar las actividades del pr\u00f3ximo mes.",
+        "location": "Sala de Conferencias A",
+        "hour_start": "09:00:00",
+        "hour_end": "10:00:00",
+        "status": "programada",
+        "icon": "calendar-icon.png",
+        "image": null,
+        "comments": "Traer informes del mes pasado.",
+        "created_at": "2025-02-11T03:21:49.000000Z",
+        "updated_at": "2025-02-11T03:21:49.000000Z"
+      },
+      {
+        "id": 13,
+        "day_id": 13,
+        "project_id": 1,
+        "user_id": 1,
+        "name": "Reuni\u00f3n de equipo",
+        "description": "Reuni\u00f3n semanal para discutir el progreso del proyecto.",
+        "location": "Sala de conferencias",
+        "hour_start": "09:00:00",
+        "hour_end": "10:00:00",
+        "status": "pendiente",
+        "icon": "calendar",
+        "image": null,
+        "comments": "Traer el informe de avance.",
+        "created_at": "2025-02-09T18:22:20.000000Z",
+        "updated_at": "2025-02-09T18:22:20.000000Z"
+      },
+      {
+        "id": 55,
+        "day_id": 13,
+        "project_id": 1,
+        "user_id": 1,
+        "name": "Reuni\u00f3n de Planificaci\u00f3n",
+        "description": "Reuni\u00f3n para planificar las actividades del pr\u00f3ximo mes.",
+        "location": "Sala de Conferencias A",
+        "hour_start": "09:00:00",
+        "hour_end": "10:00:00",
+        "status": "programada",
+        "icon": "calendar-icon.png",
+        "image": null,
+        "comments": "Traer informes del mes pasado.",
+        "created_at": "2025-02-11T02:02:41.000000Z",
+        "updated_at": "2025-02-11T02:02:41.000000Z"
+      },
+      {
+        "id": 97,
+        "day_id": 13,
+        "project_id": 1,
+        "user_id": 1,
+        "name": "Reuni\u00f3n de TERCERA",
+        "description": "Reuni\u00f3n para planificar las actividades del pr\u00f3ximo mes.",
+        "location": "Sala de Conferencias A",
+        "hour_start": "09:00:00",
+        "hour_end": "10:00:00",
+        "status": "programada",
+        "icon": "calendar-icon.png",
+        "image": null,
+        "comments": "Traer informes del mes pasado.",
+        "created_at": "2025-02-11T03:21:49.000000Z",
+        "updated_at": "2025-02-11T03:21:49.000000Z"
+      },
+      {
+        "id": 14,
+        "day_id": 14,
+        "project_id": 1,
+        "user_id": 1,
+        "name": "Reuni\u00f3n de equipo",
+        "description": "Reuni\u00f3n semanal para discutir el progreso del proyecto.",
+        "location": "Sala de conferencias",
+        "hour_start": "09:00:00",
+        "hour_end": "10:00:00",
+        "status": "pendiente",
+        "icon": "calendar",
+        "image": null,
+        "comments": "Traer el informe de avance.",
+        "created_at": "2025-02-09T18:22:20.000000Z",
+        "updated_at": "2025-02-09T18:22:20.000000Z"
+      },
+      {
+        "id": 56,
+        "day_id": 14,
+        "project_id": 1,
+        "user_id": 1,
+        "name": "Reuni\u00f3n de Planificaci\u00f3n",
+        "description": "Reuni\u00f3n para planificar las actividades del pr\u00f3ximo mes.",
+        "location": "Sala de Conferencias A",
+        "hour_start": "09:00:00",
+        "hour_end": "10:00:00",
+        "status": "programada",
+        "icon": "calendar-icon.png",
+        "image": null,
+        "comments": "Traer informes del mes pasado.",
+        "created_at": "2025-02-11T02:02:41.000000Z",
+        "updated_at": "2025-02-11T02:02:41.000000Z"
+      },
+      {
+        "id": 98,
+        "day_id": 14,
+        "project_id": 1,
+        "user_id": 1,
+        "name": "Reuni\u00f3n de TERCERA",
+        "description": "Reuni\u00f3n para planificar las actividades del pr\u00f3ximo mes.",
+        "location": "Sala de Conferencias A",
+        "hour_start": "09:00:00",
+        "hour_end": "10:00:00",
+        "status": "programada",
+        "icon": "calendar-icon.png",
+        "image": null,
+        "comments": "Traer informes del mes pasado.",
+        "created_at": "2025-02-11T03:21:49.000000Z",
+        "updated_at": "2025-02-11T03:21:49.000000Z"
+      }
+    ]
 
     // Transformar los datos de la API
     const transformedData: { [key: string]: Task[] } = {};
@@ -139,7 +516,7 @@ export default function ActivityScreen( prop : any) {
             <Text style={{ fontSize: 40, color: 'white', width: '80%', fontWeight: 'bold', alignSelf: 'flex-start' }}>
               {titleTracking}
             </Text>
-            <Text style={styles.weekText}>Semana 03</Text>
+            <Text style={styles.weekText}>Semana {tracking.currentWeekIndex}</Text>
             <Text style={styles.pendingText}>3 pendientes</Text>
           </View>
         </View>
