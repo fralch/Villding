@@ -18,7 +18,7 @@ interface Project {
  * Almacena un proyecto en AsyncStorage.
  * @param project - El proyecto a almacenar.
  */
-const storeProject = async (project: Project): Promise<void> => {
+const storeProject = async (project: Project | string): Promise<void> => {
   try {
     await AsyncStorage.setItem('@current_Project', JSON.stringify(project));
   } catch (e) {
