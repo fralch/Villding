@@ -21,27 +21,32 @@ import { styles } from "./styles/TrackingCurrentStyles";
 const TrackingCurrent: React.FC = () => {
   const navigation = useNavigation<NavigationProp<any>>();
 
+  // Estados para manejar la lógica del componente
   const [datesToWeekCurrent, setDatesToWeekCurrent] = useState<string[]>([]);
   const [modalSeguimientoVisible, setModalSeguimientoVisible] = useState(false);
   const [modalSinAccesoVisible, setModalSinAccesoVisible] = useState(false);
   const [currentWeekIndex, setCurrentWeekIndex] = useState(0);
   const [trackingSections, setTrackingSections] = useState<TrackingSection[]>([]);
+  const [filteredTrackings, setFilteredTrackings] = useState<TrackingSection[]>([]);
   const [project, setProject] = useState<Project | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [titleTracking, setTitleTracking] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [msjeModal, setMsjeModal] = useState("El usuario se ha registrado correctamente.");
 
+  // useEffect para cargar el proyecto y las fechas al montar el componente
   useEffect(() => {
     fetchProjectAndDates();
   }, []);
 
+  // useEffect para obtener los seguimientos cuando el proyecto cambia
   useEffect(() => {
     if (project) {
       obtenerSeguimientos();
     }
   }, [project]);
 
+  // useEffect para calcular la semana actual basada en la fecha de inicio del proyecto
   useEffect(() => {
     if (!project?.start_date) return;
 
@@ -60,6 +65,34 @@ const TrackingCurrent: React.FC = () => {
     setCurrentWeekIndex(weekIndex);
   }, [project]);
 
+  // useEffect para filtrar los seguimientos basados en la semana actual 
+  useEffect(() => {
+    if (trackingSections.length === 0 || datesToWeekCurrent.length === 0) return;
+
+    const [startDay, startMonth] = datesToWeekCurrent[0].split("/").map(Number);
+    const [endDay, endMonth] = datesToWeekCurrent[6].split("/").map(Number);
+
+    const currentYear = new Date().getFullYear();
+    const weekStartDate = new Date(currentYear, startMonth - 1, startDay);
+    const weekEndDate = new Date(currentYear, endMonth - 1, endDay, 23, 59, 59);
+
+    const filtered: TrackingSection[] = trackingSections.map(section => {
+      const filteredTrackings = section.trackings.filter(tracking => {
+        if (!tracking.date_start) return false;
+        const trackingStartDate = new Date(tracking.date_start);
+        return trackingStartDate <= weekEndDate;
+      });
+
+      return {
+        ...section,
+        trackings: filteredTrackings
+      };
+    }).filter(section => section.trackings.length > 0);
+
+    setFilteredTrackings(filtered);
+  }, [trackingSections, datesToWeekCurrent, currentWeekIndex]);
+
+  // Función para obtener el proyecto y las fechas de la semana actual
   const fetchProjectAndDates = async () => {
     const storedProject = await getProject();
     if (storedProject) {
@@ -77,6 +110,7 @@ const TrackingCurrent: React.FC = () => {
     setDatesToWeekCurrent(dates);
   };
 
+  // Función para cambiar la semana actual
   const handleWeekChange = (direccion: string) => {
     if (!project?.week) return;
 
@@ -105,6 +139,7 @@ const TrackingCurrent: React.FC = () => {
     setDatesToWeekCurrent(newWeekDates);
   };
 
+  // Función para obtener el lunes de una fecha dada
   const getMonday = (date: Date) => {
     const dayOfWeek = date.getDay();
     const monday = new Date(date);
@@ -112,6 +147,7 @@ const TrackingCurrent: React.FC = () => {
     return monday;
   };
 
+  // Función para renderizar una columna de día
   const renderDayColumn = (day: string, index: number) => {
     const currentDate = datesToWeekCurrent[index];
     const today = new Date();
@@ -125,11 +161,11 @@ const TrackingCurrent: React.FC = () => {
     );
   };
 
+  // Función para obtener los seguimientos del proyecto
   const obtenerSeguimientos = async () => {
     if (!project?.id) return;
 
     try {
-      console.log(`https://centroesteticoedith.com/endpoint/trackings_project/${project.id}`); 
       const response = await axios.get(`https://centroesteticoedith.com/endpoint/trackings_project/${project.id}`);
       const trackings = response.data;
       const updatedSections = updateTrackingSections(trackings);
@@ -139,6 +175,7 @@ const TrackingCurrent: React.FC = () => {
     }
   };
 
+  // Función para crear un nuevo seguimiento
   const handleNewTracking = async () => {
     if (!project) return;
 
@@ -147,16 +184,14 @@ const TrackingCurrent: React.FC = () => {
       ? new Date(project.start_date.replace(/\//g, "-")).toISOString().split('T')[0]
       : today.toISOString().split('T')[0];
 
-
     const data = {
       project_id: project.id,
       title: titleTracking.trim(),
       description: "Descripcion",
-      date_start: trackingStartDate,
+      date_start: today.toISOString().split('T')[0],
       duration_days: '7',
     };
 
-    console.log(data)
     try {
       await axios.post('https://centroesteticoedith.com/endpoint/trackings/create', data);
       obtenerSeguimientos();
@@ -165,23 +200,35 @@ const TrackingCurrent: React.FC = () => {
     }
   };
 
+  // Función para actualizar las secciones de seguimiento con nuevos seguimientos
   const updateTrackingSections = (newTrackings: Tracking[]) => {
-    const sections: TrackingSection[] = [{
-      id: 'all-trackings',
-      trackings: newTrackings
-    }];
+    const sections: TrackingSection[] = [];
+    newTrackings.forEach((tracking) => {
+      const trackingDate = new Date(tracking.date_start || new Date());
+      const weekStartDate = new Date(trackingDate);
+      weekStartDate.setDate(trackingDate.getDate() - trackingDate.getDay() + 1);
+      const sectionId = weekStartDate.toISOString().split('T')[0];
 
-    sections[0].trackings.sort((a, b) => {
-      return new Date(a.date_start || "").getTime() - new Date(b.date_start || "").getTime();
+      const existingSection = sections.find((section) => section.id === sectionId);
+      if (existingSection) {
+        existingSection.trackings.push(tracking);
+      } else {
+        sections.push({
+          id: sectionId,
+          trackings: [tracking]
+        });
+      }
     });
-
+    sections.sort((a, b) => new Date(a.id).getTime() - new Date(b.id).getTime());
     return sections;
   };
 
+  // Función para volver al proyecto
   const backToProject = () => {
     navigation.navigate("HomeProject");
   };
 
+  // Función para renderizar una sección de seguimiento
   const renderTrackingSection = ({ item }: { item: TrackingSection }) => (
     <ScrollView style={styles.trackingSection}>
       {item.trackings.map((tracking) => (
@@ -254,12 +301,12 @@ const TrackingCurrent: React.FC = () => {
 
       <FlatList
         style={styles.flatList}
-        data={trackingSections}
+        data={filteredTrackings}
         keyExtractor={(item) => item.id}
         renderItem={renderTrackingSection}
         ListEmptyComponent={() => (
           <View style={{ flex: 1, alignItems: 'center', marginTop: 20 }}>
-            <Text style={{ color: '#777' }}>No hay seguimientos para este proyecto</Text>
+            <Text style={{ color: '#777' }}>No hay seguimientos para esta semana</Text>
           </View>
         )}
       />
