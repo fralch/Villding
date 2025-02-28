@@ -67,47 +67,47 @@ const TrackingCurrent: React.FC = () => {
 
   // useEffect para filtrar los seguimientos basados en la semana actual 
   useEffect(() => {
-    if (trackingSections.length === 0 || datesToWeekCurrent.length === 0) return;
+    if (trackingSections.length === 0 || datesToWeekCurrent.length === 0) return; // Si alguna de estas listas está vacía, no se realiza ninguna acción
 
-    const [startDay, startMonth] = datesToWeekCurrent[0].split("/").map(Number);
-    const [endDay, endMonth] = datesToWeekCurrent[6].split("/").map(Number);
+    const [startDay, startMonth] = datesToWeekCurrent[0].split("/").map(Number);   // Extraer el día y el mes de inicio de la semana actual desde el primer día de la semana actual
+    const [endDay, endMonth] = datesToWeekCurrent[6].split("/").map(Number); // Extraer el  día y el mes de fin de la semana actual desde el último día de la semana actual
 
-    const currentYear = new Date().getFullYear();
-    const weekStartDate = new Date(currentYear, startMonth - 1, startDay);
-    const weekEndDate = new Date(currentYear, endMonth - 1, endDay, 23, 59, 59);
+    const currentYear = new Date().getFullYear(); // Obtener el año actual
+    const weekStartDate = new Date(currentYear, startMonth - 1, startDay); // Crear una fecha de inicio de la semana actual utilizando el año actual, el mes y el día de inicio
+    const weekEndDate = new Date(currentYear, endMonth - 1, endDay, 23, 59, 59); // Crear una fecha de fin de la semana actual, estableciendo la hora al final del día (23:59:59)
 
-    const filtered: TrackingSection[] = trackingSections.map(section => {
-      const filteredTrackings = section.trackings.filter(tracking => {
-        if (!tracking.date_start) return false;
-        const trackingStartDate = new Date(tracking.date_start);
-        return trackingStartDate <= weekEndDate;
+    const filtered: TrackingSection[] = trackingSections.map(section => { // Filtrar las secciones de seguimiento para incluir solo aquellas con seguimientos dentro de la semana actual
+      const filteredTrackings = section.trackings.filter(tracking => { // Filtrar los seguimientos dentro de cada sección
+        if (!tracking.date_start) return false; // Si el seguimiento no tiene fecha de inicio, se excluye del filtrado
+        const trackingStartDate = new Date(tracking.date_start); // Convertir la fecha de inicio del seguimiento a un objeto Date
+        return trackingStartDate <= weekEndDate; // Incluir solo los seguimientos que comienzan antes o durante la semana actual
       });
 
-      return {
-        ...section,
-        trackings: filteredTrackings
+      return { // Devolver la sección con los seguimientos filtrados 
+        ...section, 
+        trackings: filteredTrackings // Se mantiene la estructura original de la sección pero con los seguimientos actualizados
       };
-    }).filter(section => section.trackings.length > 0);
+    }).filter(section => section.trackings.length > 0); // Filtrar las secciones para excluir aquellas que no tienen seguimientos después del filtrado
 
-    setFilteredTrackings(filtered);
+    setFilteredTrackings(filtered); // Actualizar el estado con las secciones de seguimiento filtradas
   }, [trackingSections, datesToWeekCurrent, currentWeekIndex]);
 
   // Función para obtener el proyecto y las fechas de la semana actual
   const fetchProjectAndDates = async () => {
-    const storedProject = await getProject();
-    if (storedProject) {
-      setProject(typeof storedProject === 'string' ? JSON.parse(storedProject) : storedProject);
+    const storedProject = await getProject(); // Obtener el proyecto almacenado en la base de datos
+    if (storedProject) { // Si el proyecto se ha almacenado en la base de datos
+      setProject(typeof storedProject === 'string' ? JSON.parse(storedProject) : storedProject); // Actualizar el estado con el proyecto almacenado
     }
-    const today = new Date();
-    const monday = getMonday(today);
+    const today = new Date(); // Obtener la fecha actual
+    const monday = getMonday(today); // Obtener el lunes de la fecha actual
 
-    let dates = Array.from({ length: 7 }, (_, index) => {
-      const currentDate = new Date(monday);
-      currentDate.setDate(monday.getDate() + index);
-      return currentDate.toLocaleDateString("es-PE", { day: "2-digit", month: "2-digit" });
+    let dates = Array.from({ length: 7 }, (_, index) => { // Crear una lista de fechas de la semana actual
+      const currentDate = new Date(monday); // Crear una fecha con la fecha actual y el índice del día
+      currentDate.setDate(monday.getDate() + index); // Agregar el índice del día a la fecha actual
+      return currentDate.toLocaleDateString("es-PE", { day: "2-digit", month: "2-digit" }); // Devolver la fecha en formato local (DD/MM)
     });
 
-    setDatesToWeekCurrent(dates);
+    setDatesToWeekCurrent(dates); // Actualizar el estado con las fechas de la semana actual
   };
 
   // Función para cambiar la semana actual
@@ -201,26 +201,26 @@ const TrackingCurrent: React.FC = () => {
   };
 
   // Función para actualizar las secciones de seguimiento con nuevos seguimientos
-  const updateTrackingSections = (newTrackings: Tracking[]) => {
-    const sections: TrackingSection[] = [];
-    newTrackings.forEach((tracking) => {
-      const trackingDate = new Date(tracking.date_start || new Date());
-      const weekStartDate = new Date(trackingDate);
-      weekStartDate.setDate(trackingDate.getDate() - trackingDate.getDay() + 1);
-      const sectionId = weekStartDate.toISOString().split('T')[0];
+  const updateTrackingSections = (newTrackings: Tracking[]) => {  
+    const sections: TrackingSection[] = []; // Crear una lista de secciones de seguimiento vacía
+    newTrackings.forEach((tracking) => { // Iterar sobre los nuevos seguimientos
+      const trackingDate = new Date(tracking.date_start || new Date());  // Obtener la fecha de inicio del seguimiento o la fecha actual
+      const weekStartDate = new Date(trackingDate); // Crear una fecha con la fecha de inicio del seguimiento
+      weekStartDate.setDate(trackingDate.getDate() - trackingDate.getDay() + 1); // Agregar el índice del día del lunes al día de inicio del seguimiento
+      const sectionId = weekStartDate.toISOString().split('T')[0]; // Obtener la fecha en formato ISO (YYYY-MM-DD) de la sección
 
-      const existingSection = sections.find((section) => section.id === sectionId);
-      if (existingSection) {
-        existingSection.trackings.push(tracking);
+      const existingSection = sections.find((section) => section.id === sectionId); // Buscar la sección existente con la fecha de inicio del seguimiento
+      if (existingSection) { // Si la sección existe
+        existingSection.trackings.push(tracking); // Agregar el seguimiento a la sección existente
       } else {
-        sections.push({
-          id: sectionId,
-          trackings: [tracking]
+        sections.push({ // Si la sección no existe, crearla
+          id: sectionId, // Obtener la fecha en formato ISO (YYYY-MM-DD) de la sección
+          trackings: [tracking] // Agregar el seguimiento a la sección
         });
       }
     });
-    sections.sort((a, b) => new Date(a.id).getTime() - new Date(b.id).getTime());
-    return sections;
+    sections.sort((a, b) => new Date(a.id).getTime() - new Date(b.id).getTime()); // Ordenar las secciones de seguimiento por fecha
+    return sections;// Devolver las secciones de seguimiento ordenadas
   };
 
   // Función para volver al proyecto
