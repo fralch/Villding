@@ -14,7 +14,7 @@ import { StatusBar as ExpoStatusBar } from 'expo-status-bar';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 import axios from "axios";
 import { MaterialIcons, MaterialCommunityIcons, Feather, Ionicons } from '@expo/vector-icons';
-import ActivityItemCreate from './ActivityItemCreate';
+import ActivityItemCreate, { ActivityItemCreateRef } from './ActivityItemCreate';
 import { styles } from "./styles/ActivityStyles";
 
 interface Activity {
@@ -57,6 +57,9 @@ export default function Activity(props: any) {
   const navigation = useNavigation<NavigationProp<any>>();
   const screenWidth = Dimensions.get('window').width;
   const { height } = Dimensions.get('window');
+  
+  // Add a ref for the ActivityItemCreate component
+  const activityItemCreateRef = useRef<ActivityItemCreateRef>(null);
   
   const [modalOptionsVisible, setModalOptionsVisible] = useState(false);
   const [activityItemCreateType, setActivityItemCreateType] = useState('Pendiente');
@@ -143,6 +146,17 @@ export default function Activity(props: any) {
       duration: 300,
       useNativeDriver: true,
     }).start(() => setIsVisible(false));
+  };
+
+  // New method to handle saving the activity
+  const handleSaveActivity = async () => {
+    if (activityItemCreateRef.current) {
+      const success = await activityItemCreateRef.current.handleCreateActivity();
+      if (success) {
+        // Optional: Refresh activities or perform any other actions
+        hideModal();
+      }
+    }
   };
 
   const panResponder = useRef(
@@ -258,12 +272,14 @@ export default function Activity(props: any) {
                 <Text style={{ color: 'white' }}>Cancelar</Text>
               </TouchableOpacity>
               <TouchableOpacity 
+                onPress={handleSaveActivity}
                 style={{ width: '50%', paddingVertical: 10, paddingRight: 10, alignItems: 'flex-end' }}
               >
                 <Text style={{ color: 'white' }}>Guardar</Text>
               </TouchableOpacity>
             </View>
             <ActivityItemCreate 
+              ref={activityItemCreateRef}
               project_id={tracking.project_id}
               tracking_id={tracking.id}
               tipo={activityItemCreateType} 

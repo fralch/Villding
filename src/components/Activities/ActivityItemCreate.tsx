@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, forwardRef, useImperativeHandle } from "react";
 import {
   View,
   Text,
@@ -26,80 +26,140 @@ interface ActivityItemCreateProps {
   tracking_id: number;
 }
 
-const ActivityItemCreate: React.FC<ActivityItemCreateProps> = ({
+export interface ActivityItemCreateRef {
+  handleCreateActivity: () => Promise<boolean>;
+}
+
+const ICON_OPTIONS: Array<keyof typeof MaterialIcons.glyphMap> = [
+  "local-shipping",
+  "directions-car",
+  "ac-unit",
+  "adb",
+  "agriculture",
+];
+
+const RECENT_ICONS: Array<keyof typeof MaterialIcons.glyphMap> = [
+  "local-shipping",
+  "directions-car",
+];
+
+const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateProps>(({
   tipo,
-  date,
   project_id,
   tracking_id,
-  
-}) => {
-  const recentIcons: Array<keyof typeof MaterialIcons.glyphMap> = [
-    "local-shipping",
-    "directions-car",
-  ];
+  date,
+}, ref) => {
+  const [state, setState] = useState({
+    tipoTask: tipo,
+    titulo: "",
+    description: "",
+    location: "",
+    horas: "",
+    comments: "",
+    selectedIcon: "local-shipping" as keyof typeof MaterialIcons.glyphMap,
+  });
 
-  const [tipoTask, setTipoTask] = useState(tipo);
-  const [titulo, setTitulo] = useState("");
-  const [description, setDescription] = useState("");
-  const [location, setLocation] = useState("");
-  const [horas, setHoras] = useState("");
-  const [comments, setComments] = useState("");
-  const [selectedIcon, setSelectedIcon] = useState<keyof typeof MaterialIcons.glyphMap>("local-shipping");
+  const updateState = (updates: Partial<typeof state>) => {
+    setState(prevState => ({ ...prevState, ...updates }));
+  };
 
-  const allIcons: Array<keyof typeof MaterialIcons.glyphMap> = [
-    "local-shipping",
-    "directions-car",
-    "ac-unit",
-    "adb",
-    "agriculture",
-    // Add more icons as needed
-  ];
-
-  const handleCreateActivity = async () => {
-    if (!titulo.trim()) {
-      Alert.alert("Error", "El título es obligatorio");
-      return;
-    }
-
-    const data = {
+  const prepareActivityData = () => {
+    return {
       project_id,
       tracking_id,
-      name: titulo,
-      description,
-      location,
-      horas,
-      status: tipoTask.toLowerCase(),
-      icon: `fa-${selectedIcon}`,
-      comments,
+      name: state.titulo,
+      description: state.description,
+      location: state.location,
+      horas: state.horas,
+      status: state.tipoTask.toLowerCase(),
+      icon: `fa-${state.selectedIcon}`,
+      comments: state.comments,
+      date, // Include the selected date
     };
+  };
 
-    const headers = {
-      "Content-Type": "application/json",
-    };
+  const handleCreateActivity = async (): Promise<boolean> => {
+    // Validation
+    if (!state.titulo.trim()) {
+      Alert.alert("Error", "El título es obligatorio");
+      return false;
+    }
+
+    const activityData = prepareActivityData();
 
     try {
       const response = await axios.post(
         'https://centroesteticoedith.com/endpoint/activities/create',
-        data,
-        { headers }
+        activityData,
+        { 
+          headers: { 
+            "Content-Type": "application/json",
+            'Cookie': 'XSRF-TOKEN=...' // Use the same token as in the parent component
+          } 
+        }
       );
 
       Alert.alert("Éxito", "Actividad creada correctamente");
       console.log(response.data);
       resetForm();
+      return true;
     } catch (error) {
       console.error('Error creating activity:', error);
       Alert.alert("Error", "No se pudo crear la actividad. Intente nuevamente.");
+      return false;
     }
   };
 
+  // Expose handleCreateActivity to parent component via ref
+  useImperativeHandle(ref, () => ({
+    handleCreateActivity,
+  }));
+
   const resetForm = () => {
-    setTitulo("");
-    setDescription("");
-    setLocation("");
-    setHoras("");
-    setComments("");
-    setSelectedIcon("local-shipping");
+    setState({
+      tipoTask: tipo,
+      titulo: "",
+      description: "",
+      location: "",
+      horas: "",
+      comments: "",
+      selectedIcon: "local-shipping",
+    });
+  };
+
+  const finishTask = () => {
+    updateState({ tipoTask: 'Completado' });
+    handleCreateActivity();
+  };
+
+  const getStatusColor = () => {
+    switch (state.tipoTask) {
+      case "Programado": return "#0a3649";
+      case "Pendiente": return "#d1a44c";
+      case "Completado": return "#4ec291";
+      default: return "#0a3649";
+    }
+  };
+
+  const renderStatusIcon = () => {
+    switch (state.tipoTask) {
+      case "Programado":
+        return <MaterialCommunityIcons name="progress-clock" size={20} color="#d1a44c" />;
+      case "Pendiente":
+        return (
+          <View style={{ flexDirection: "row", gap: 5 }}>
+            <MaterialIcons name="agriculture" size={24} color="#eee" />
+            <AntDesign name="clockcircle" size={24} color="#d1a44c" />
+          </View>
+        );
+      case "Completado":
+        return (
+          <View style={{ flexDirection: "row", gap: 5 }}>
+            <MaterialIcons name="agriculture" size={24} color="#eee" />
+            <MaterialCommunityIcons name="clock-check" size={24} color="#4ec291" />
+          </View>
+        );
+    }
   };
 
   return (
@@ -113,49 +173,30 @@ const ActivityItemCreate: React.FC<ActivityItemCreateProps> = ({
               style={{ width: 30, height: 30 }}
             />
             <View style={styles.iconStatus}>
-              {tipoTask === "Programado" ? (
-                <MaterialCommunityIcons
-                  name="progress-clock"
-                  size={20}
-                  color="#d1a44c"
-                />
-              ) : tipoTask === "Pendiente" ? (
-                <View style={{ flexDirection: "row", gap: 5 }}>
-                  <MaterialIcons name="agriculture" size={24} color="#eee" />
-                  <AntDesign name="clockcircle" size={24} color="#d1a44c" />
-                </View>
-              ) : (
-                <View style={{ flexDirection: "row", gap: 5 }}>
-                  <MaterialIcons name="agriculture" size={24} color="#eee" />
-                  <MaterialCommunityIcons name="clock-check" size={24} color="#4ec291" />
-                </View>
-              )}
+              {renderStatusIcon()}
             </View>
           </Pressable>
+          
           <View
             style={[
               styles.statusProgramado,
               {
-                backgroundColor:
-                  tipoTask === "Programado"
-                    ? "#0a3649"
-                    : tipoTask === "Pendiente"
-                    ? "#d1a44c"
-                    : "#4ec291",
-                borderTopColor: tipoTask === "Completado" ? "#0a3649" : "#d1a44c",
-                borderBottomColor: tipoTask === "Completado" ? "#0a3649" : "#d1a44c",
+                backgroundColor: getStatusColor(),
+                borderTopColor: state.tipoTask === "Completado" ? "#0a3649" : "#d1a44c",
+                borderBottomColor: state.tipoTask === "Completado" ? "#0a3649" : "#d1a44c",
               },
             ]}
           >
             <Text
               style={{
                 fontSize: 14,
-                color: tipoTask === "Programado" ? "#d1a44c" : "#0a3649",
+                color: state.tipoTask === "Programado" ? "#d1a44c" : "#0a3649",
               }}
             >
-              {tipoTask}
+              {state.tipoTask}
             </Text>
           </View>
+          
           <View style={{ backgroundColor: "#0a3649", padding: 20 }}>
             <TextInput
               style={{
@@ -165,8 +206,8 @@ const ActivityItemCreate: React.FC<ActivityItemCreateProps> = ({
                 marginBottom: 10,
                 textAlignVertical: "top",
               }}
-              value={titulo}
-              onChangeText={setTitulo}
+              value={state.titulo}
+              onChangeText={(text) => updateState({ titulo: text })}
               placeholder="Ingrese el título"
               placeholderTextColor="#888"
               multiline={true}
@@ -181,66 +222,54 @@ const ActivityItemCreate: React.FC<ActivityItemCreateProps> = ({
                 backgroundColor: "#dedede",
                 borderRadius: 5,
               }}
-              onPress={()=>{
-                setTipoTask('Completado');
-                handleCreateActivity();
-              }}
+              onPress={finishTask}
             >
               <Text style={{ fontSize: 14, color: "#0a455e", padding: 15 }}>
                 Finalizar
               </Text>
             </TouchableOpacity>
           </View>
+          
           <View>
-            <View style={styles.inputContainer}>
-              <Entypo name="text" size={24} color="white" />
-              <TextInput
-                style={styles.input}
-                placeholder="Descripción"
-                placeholderTextColor="#888"
-                value={description}
-                onChangeText={setDescription}
-              />
-            </View>
-            <View style={styles.inputContainer}>
-              <MaterialIcons name="location-on" size={24} color="white" />
-              <TextInput
-                style={styles.input}
-                placeholder="Ubicación"
-                placeholderTextColor="#888"
-                value={location}
-                onChangeText={setLocation}
-              />
-            </View>
-            <View style={styles.inputContainer}>
-              <MaterialCommunityIcons
-                name="clock-outline"
-                size={24}
-                color="white"
-              />
-              <TextInput
-                style={styles.input}
-                placeholder="Horario"
-                placeholderTextColor="#888"
-                value={horas}
-                onChangeText={setHoras}
-              />
-            </View>
-            <View style={styles.inputContainer}>
-              <MaterialCommunityIcons
-                name="comment-processing"
-                size={24}
-                color="white"
-              />
-              <TextInput
-                style={styles.input}
-                placeholder="Comentarios (opcional)"
-                placeholderTextColor="#888"
-                value={comments}
-                onChangeText={setComments}
-              />
-            </View>
+            {[
+              { 
+                icon: <Entypo name="text" size={24} color="white" />,
+                placeholder: "Descripción",
+                value: state.description,
+                onChangeText: (text: string) => updateState({ description: text })
+              },
+              { 
+                icon: <MaterialIcons name="location-on" size={24} color="white" />,
+                placeholder: "Ubicación",
+                value: state.location,
+                onChangeText: (text: string) => updateState({ location: text })
+              },
+              { 
+                icon: <MaterialCommunityIcons name="clock-outline" size={24} color="white" />,
+                placeholder: "Horario",
+                value: state.horas,
+                onChangeText: (text: string) => updateState({ horas: text })
+              },
+              { 
+                icon: <MaterialCommunityIcons name="comment-processing" size={24} color="white" />,
+                placeholder: "Comentarios (opcional)",
+                value: state.comments,
+                onChangeText: (text: string) => updateState({ comments: text })
+              }
+            ].map((inputConfig, index) => (
+              <View key={index} style={styles.inputContainer}>
+                {inputConfig.icon}
+                <TextInput
+                  style={styles.input}
+                  placeholder={inputConfig.placeholder}
+                  placeholderTextColor="#888"
+                  value={inputConfig.value}
+                  onChangeText={inputConfig.onChangeText}
+                />
+              </View>
+            ))}
           </View>
+          
           <View
             style={{
               flexDirection: "row",
@@ -259,43 +288,46 @@ const ActivityItemCreate: React.FC<ActivityItemCreateProps> = ({
               style={{ marginTop: 5 }}
             />
           </View>
+          
           <View style={{ backgroundColor: "#0a3649" }}>
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>Recientes</Text>
               <View style={styles.iconRow}>
-                {recentIcons.map((icon, index) => (
+                {RECENT_ICONS.map((icon, index) => (
                   <TouchableOpacity
                     key={index}
-                    onPress={() => setSelectedIcon(icon)}
+                    onPress={() => updateState({ selectedIcon: icon })}
                   >
                     <MaterialIcons
                       name={icon}
                       size={40}
-                      color={selectedIcon === icon ? "white" : "grey"}
+                      color={state.selectedIcon === icon ? "white" : "grey"}
                       style={styles.icon}
                     />
                   </TouchableOpacity>
                 ))}
               </View>
             </View>
+            
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>Todos los íconos</Text>
               <View style={styles.iconRow}>
-                {allIcons.map((icon, index) => (
+                {ICON_OPTIONS.map((icon, index) => (
                   <TouchableOpacity
                     key={index}
-                    onPress={() => setSelectedIcon(icon)}
+                    onPress={() => updateState({ selectedIcon: icon })}
                   >
                     <MaterialIcons
                       name={icon}
                       size={40}
-                      color={selectedIcon === icon ? "white" : "grey"}
+                      color={state.selectedIcon === icon ? "white" : "grey"}
                       style={styles.icon}
                     />
                   </TouchableOpacity>
                 ))}
               </View>
             </View>
+            
             <View style={styles.footer}>
               <Text style={styles.footerText}>
                 Ult edición: Gerardo el 14/05/2024
@@ -306,6 +338,6 @@ const ActivityItemCreate: React.FC<ActivityItemCreateProps> = ({
       </ScrollView>
     </View>
   );
-};
+});
 
 export default ActivityItemCreate;
