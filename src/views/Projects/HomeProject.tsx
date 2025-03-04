@@ -281,7 +281,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 16,
     paddingTop: StatusBar.currentHeight || 20,
-    height: 80,
+    height: 100,
     borderBottomWidth: 1,
     borderBottomColor: "#0D465E",
     marginTop: 20,
@@ -294,6 +294,7 @@ const styles = StyleSheet.create({
   headerIcons: {
     flexDirection: "row",
     alignItems: "center",
+    marginBottom: 10,
   },
   icon: {
     width: 24,
