@@ -24,9 +24,10 @@ import {
 
 interface ActivityItemCreateProps {
   tipo: string;
+  date: string; // Add this line to include the date property
 }
 
-const ActivityItemCreate: React.FC<ActivityItemCreateProps> = ({ tipo }) => {
+const ActivityItemCreate: React.FC<ActivityItemCreateProps> = ({ tipo, date }) => {
   const recentIcons: Array<keyof typeof MaterialIcons.glyphMap> = [
     "local-shipping",
     "directions-car",
