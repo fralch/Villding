@@ -327,12 +327,7 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
                 ))}
               </View>
             </View>
-            
-            <View style={styles.footer}>
-              <Text style={styles.footerText}>
-                Ult edición: Gerardo el 14/05/2024
-              </Text>
-            </View>
+          
           </View>
         </View>
       </ScrollView>
