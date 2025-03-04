@@ -59,7 +59,7 @@ export default function Activity(props: any) {
   const { height } = Dimensions.get('window');
   
   const [modalOptionsVisible, setModalOptionsVisible] = useState(false);
-  const [activityItemCreateType, setActivityItemCreateType] = useState('Programado');
+  const [activityItemCreateType, setActivityItemCreateType] = useState('Pendiente');
   const [selectedDate, setSelectedDate] = useState('');
   const [isVisible, setIsVisible] = useState(false);
   const slideAnim = useRef(new Animated.Value(height)).current;
@@ -264,6 +264,8 @@ export default function Activity(props: any) {
               </TouchableOpacity>
             </View>
             <ActivityItemCreate 
+              project_id={tracking.project_id}
+              tracking_id={tracking.id}
               tipo={activityItemCreateType} 
               date={selectedDate} 
             />
