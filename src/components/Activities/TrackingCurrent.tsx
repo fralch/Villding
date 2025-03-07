@@ -179,19 +179,20 @@ const TrackingCurrent: React.FC = () => {
   const handleNewTracking = async () => {
     if (!project) return;
 
-    const today = new Date();
-    const trackingStartDate = project.start_date
-      ? new Date(project.start_date.replace(/\//g, "-")).toISOString().split('T')[0]
-      : today.toISOString().split('T')[0];
+    const year = new Date().getFullYear();
+    const firstDayOfWeek = datesToWeekCurrent[3];
+    const [day, month] = firstDayOfWeek.split("/").map(Number);
+    const start = new Date(year, month - 1, day); // Meses en JavaScript son 0-indexados
+
 
     const data = {
       project_id: project.id,
       title: titleTracking.trim(),
       description: "Descripcion",
-      date_start: today.toISOString().split('T')[0],
+      date_start:  start.toISOString().split('T')[0],
       duration_days: '7',
     };
-
+    console.log(data);
     try {
       await axios.post('https://centroesteticoedith.com/endpoint/trackings/create', data);
       obtenerSeguimientos();
