@@ -230,6 +230,10 @@ const NewProject: React.FC = () => {
       return;
     }
 
+    let monday = new Date(formatDate(startDate));
+    let day = monday.getDay();  // Obtiene el día de la semana (0 = Domingo, 1 = Lunes, ...)
+    let diff = (day === 0 ? -6 : 1) - day;  // Calcula la diferencia para ajustar al lunes
+    monday.setDate(monday.getDate() + diff); // 
 
     // Guarda el proyecto y espera a que se complete antes de navegar
     const formdata = new FormData();
@@ -239,6 +243,7 @@ const NewProject: React.FC = () => {
     formdata.append("start_date", formatDate(startDate));
     formdata.append("end_date", formatDate(calculateEndDate()));
     formdata.append("project_type_id", tipoProyecto);
+    formdata.append("nearest_monday", monday.toISOString().split('T')[0]);
     if (subtipoProyecto !== "0") {
       formdata.append("project_subtype_id", subtipoProyecto);
     }
@@ -294,6 +299,8 @@ const NewProject: React.FC = () => {
         subtitle: location,
         company,
         week: durationOnWeeks,
+        start_date: startDate,
+        nearest_monday: monday.toISOString().split('T')[0],
       };
 
       setShowModalLoading(false);
