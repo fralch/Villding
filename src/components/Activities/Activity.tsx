@@ -79,12 +79,7 @@ export default function Activity(props: any) {
     return days[date.getDay()];
   };
 
-  const isDatePastToday = (dateString: string) => {
-    const [day, month] = dateString.split('/').map(Number);
-    const currentDate = new Date();
-    const compareDate = new Date(currentDate.getFullYear(), month - 1, day);
-    return compareDate < new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate());
-  };
+
 
   useEffect(() => {
     const fetchActivities = async () => {
@@ -217,14 +212,12 @@ export default function Activity(props: any) {
                 setActivityItemCreateType={setActivityItemCreateType}
               />
             ))}
-            {!isDatePastToday(day.dayLabel) && (
-              <TouchableOpacity 
+          <TouchableOpacity 
                 style={styles.addNewTaskButton} 
                 onPress={() => showModal(day.dayLabel)}
               >
                 <Text style={styles.addNewTaskText}>+ Nuevo</Text>
               </TouchableOpacity>
-            )}
           </View>
         ))}
       </ScrollView>
