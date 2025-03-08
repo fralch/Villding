@@ -1,4 +1,4 @@
-import React, { useState, forwardRef, useImperativeHandle } from "react";
+import React, { useState, forwardRef, useImperativeHandle, useEffect } from "react";
 import {
   View,
   Text,
@@ -57,7 +57,16 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
     horas: "",
     comments: "",
     selectedIcon: "local-shipping" as keyof typeof MaterialIcons.glyphMap,
+    created_at: "",
   });
+
+  useEffect(() => {
+    // quiero que el date "y/m" se convierta en "yyyy-mm-dd"
+     let  newDate = date.split("/").reverse().join("-");
+     newDate = new Date().getFullYear() + "-" + newDate;
+     newDate = new Date(newDate).toISOString().split('T')[0];         
+     setState(prevState => ({ ...prevState, created_at: newDate }));
+  }, []);
 
   const updateState = (updates: Partial<typeof state>) => {
     setState(prevState => ({ ...prevState, ...updates }));
@@ -74,7 +83,7 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
       status: state.tipoTask.toLowerCase(),
       icon: `fa-${state.selectedIcon}`,
       comments: state.comments,
-      date, // Include the selected date
+      created_at: state.created_at, // Include the selected date
     };
   };
 
@@ -124,6 +133,7 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
       horas: "",
       comments: "",
       selectedIcon: "local-shipping",
+      created_at:  state.created_at,
     });
   };
 
