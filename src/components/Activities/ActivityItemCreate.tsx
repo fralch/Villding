@@ -57,7 +57,7 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
     horas: "",
     comments: "",
     selectedIcon: "local-shipping" as keyof typeof MaterialIcons.glyphMap,
-    created_at: "",
+    fecha_creacion: "",
   });
 
   useEffect(() => {
@@ -65,7 +65,7 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
      let  newDate = date.split("/").reverse().join("-");
      newDate = new Date().getFullYear() + "-" + newDate;
      newDate = new Date(newDate).toISOString().split('T')[0];         
-     setState(prevState => ({ ...prevState, created_at: newDate }));
+     setState(prevState => ({ ...prevState, fecha_creacion: newDate }));
   }, []);
 
   const updateState = (updates: Partial<typeof state>) => {
@@ -83,7 +83,7 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
       status: state.tipoTask.toLowerCase(),
       icon: `fa-${state.selectedIcon}`,
       comments: state.comments,
-      created_at: state.created_at, // Include the selected date
+      fecha_creacion: state.fecha_creacion, // Include the selected date
     };
   };
 
@@ -133,7 +133,7 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
       horas: "",
       comments: "",
       selectedIcon: "local-shipping",
-      created_at:  state.created_at,
+      fecha_creacion:  state.fecha_creacion,
     });
   };
 

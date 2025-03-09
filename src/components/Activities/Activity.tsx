@@ -29,6 +29,7 @@ interface Activity {
   icon: string;
   image: string | null;
   comments: string;
+  fecha_creacion: string;
   created_at: string;
   updated_at: string;
   date?: string;
@@ -44,6 +45,7 @@ interface Tracking {
   currentWeekIndex: number;
   status: number;
   days: string[];
+  fecha_creacion: string;
   created_at: string;
   updated_at: string;
 }
@@ -79,7 +81,28 @@ export default function Activity(props: any) {
     return days[date.getDay()];
   };
 
-
+  // Función para formatear fecha_creacion de formato "YYYY-MM-DD" a "DD/MM"
+  const formatDateFromString = (dateString: string): string => {
+    try {
+      // Si el formato es YYYY-MM-DD como '2025-03-03'
+      if (dateString.match(/^\d{4}-\d{2}-\d{2}$/)) {
+        const [year, month, day] = dateString.split('-');
+        return `${parseInt(day, 10)}/${parseInt(month, 10)}`;
+      }
+      
+      // Intenta con Date si el formato es otro
+      const date = new Date(dateString);
+      if (!isNaN(date.getTime())) {
+        return `${date.getDate()}/${date.getMonth() + 1}`;
+      }
+      
+      console.error('Formato de fecha no reconocido:', dateString);
+      return '';
+    } catch (error) {
+      console.error('Error al formatear fecha:', error);
+      return '';
+    }
+  };
 
   useEffect(() => {
     const fetchActivities = async () => {
@@ -97,10 +120,14 @@ export default function Activity(props: any) {
         const response = await axios.request(config);
         const apiActivities: Activity[] = response.data;
 
+        // Log para depuración
+        console.log('Actividades recibidas:', apiActivities);
+        
         const weekDaysWithActivities: WeekDay[] = tracking.days.map(dayLabel => {
           const dayActivities = apiActivities.filter(activity => {
-            const activityDate = new Date(activity.created_at);
-            const formattedActivityDate = `${activityDate.getDate()}/${activityDate.getMonth() + 1}`;
+            // Usar la función específica para formatear YYYY-MM-DD a DD/MM
+            const formattedActivityDate = formatDateFromString(activity.fecha_creacion);
+            console.log(`Comparando fecha: ${activity.fecha_creacion} -> ${formattedActivityDate} con ${dayLabel}`);
             return formattedActivityDate === dayLabel;
           });
 
@@ -125,6 +152,46 @@ export default function Activity(props: any) {
     fetchActivities();
   }, [tracking.id]);
 
+  // Función para refrescar actividades después de crear una nueva
+  const refreshActivities = async () => {
+    if (!tracking?.id) return;
+
+    try {
+      const config = {
+        method: 'get',
+        url: `https://centroesteticoedith.com/endpoint/activities/tracking/${tracking.id}`,
+        headers: {
+          'Cookie': 'XSRF-TOKEN=...' // Your existing token
+        }
+      };
+
+      const response = await axios.request(config);
+      const apiActivities: Activity[] = response.data;
+      
+      const weekDaysWithActivities: WeekDay[] = tracking.days.map(dayLabel => {
+        const dayActivities = apiActivities.filter(activity => {
+          const formattedActivityDate = formatDateFromString(activity.fecha_creacion);
+          return formattedActivityDate === dayLabel;
+        });
+
+        return {
+          dayLabel,
+          activities: dayActivities
+        };
+      });
+
+      setWeekDays(weekDaysWithActivities);
+
+      const pendingActivities = apiActivities.filter(activity => 
+        activity.status.toLowerCase() === 'pendiente'
+      );
+      setPendingActivitiesCount(pendingActivities.length);
+
+    } catch (error) {
+      console.error('Error refreshing activities:', error);
+    }
+  };
+
   const showModal = (date: string) => {
     setSelectedDate(date);
     setIsVisible(true);
@@ -143,12 +210,13 @@ export default function Activity(props: any) {
     }).start(() => setIsVisible(false));
   };
 
-  // New method to handle saving the activity
+  // Actualizado para refrescar actividades después de guardar
   const handleSaveActivity = async () => {
     if (activityItemCreateRef.current) {
       const success = await activityItemCreateRef.current.handleCreateActivity();
       if (success) {
-        // Optional: Refresh activities or perform any other actions
+        // Refrescar las actividades
+        await refreshActivities();
         hideModal();
       }
     }
@@ -204,20 +272,24 @@ export default function Activity(props: any) {
             <Text style={[styles.dayTitle, { width: '100%', textAlign: 'right' }]}>
               {getDayName(day.dayLabel)} - {day.dayLabel}
             </Text>
-            {day.activities.map((activity) => (
-              <ActivityCard
-                key={activity.id}
-                activity={activity}
-                showModal={() => showModal(day.dayLabel)}
-                setActivityItemCreateType={setActivityItemCreateType}
-              />
-            ))}
-          <TouchableOpacity 
-                style={styles.addNewTaskButton} 
-                onPress={() => showModal(day.dayLabel)}
-              >
-                <Text style={styles.addNewTaskText}>+ Nuevo</Text>
-              </TouchableOpacity>
+            {day.activities.length > 0 ? (
+              day.activities.map((activity) => (
+                <ActivityCard
+                  key={activity.id}
+                  activity={activity}
+                  showModal={() => showModal(day.dayLabel)}
+                  setActivityItemCreateType={setActivityItemCreateType}
+                />
+              ))
+            ) : (
+              <Text style={styles.noActivitiesText}>No hay actividades para este día</Text>
+            )}
+            <TouchableOpacity 
+              style={styles.addNewTaskButton} 
+              onPress={() => showModal(day.dayLabel)}
+            >
+              <Text style={styles.addNewTaskText}>+ Nuevo</Text>
+            </TouchableOpacity>
           </View>
         ))}
       </ScrollView>
@@ -319,7 +391,7 @@ const ActivityCard: React.FC<{
         }]}>
           {statusLabel}
         </Text>
-        <Feather name="truck" size={24} color="white" />
+        <Feather name={activity.icon === 'fa-local-shipping' ? 'truck' : 'calendar'} size={24} color="white" />
       </View>
       <Text style={styles.taskTitle}>{activity.name}</Text>
       <Text style={styles.taskTime}>{activity.horas} horas</Text>
