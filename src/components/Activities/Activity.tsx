@@ -282,7 +282,7 @@ export default function Activity(props: any) {
                 />
               ))
             ) : (
-              <Text style={styles.noActivitiesText}>No hay actividades para este día</Text>
+              <Text style={{ color: '#aaa', textAlign: 'center', marginVertical: 10 }}>No hay actividades para este día</Text> 
             )}
             <TouchableOpacity 
               style={styles.addNewTaskButton} 
