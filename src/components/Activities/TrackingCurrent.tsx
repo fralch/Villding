@@ -46,23 +46,12 @@ const TrackingCurrent: React.FC = () => {
     }
   }, [project]);
 
-  // useEffect para calcular la semana actual basada en la fecha de inicio del proyecto
+  // useEffect para establecer el currentWeekIndex basado en week_current del proyecto
   useEffect(() => {
-    if (!project?.start_date) return;
-
-    const startDate = new Date(project.start_date.replace(/\//g, "-"));
-    const today = new Date();
-
-    if (isNaN(startDate.getTime())) {
-      console.error("Fecha de inicio del proyecto no válida");
-      return;
+    if (project?.week_current) {
+      // Use the week_current value from the project data (subtract 1 for zero-based index)
+      setCurrentWeekIndex(parseInt(project.week_current.toString(), 10) - 1);
     }
-
-    const timeDiff = today.getTime() - startDate.getTime();
-    const dayDiff = timeDiff / (24 * 60 * 60 * 1000);
-    const weekIndex = Math.floor(dayDiff / 7);
-
-    setCurrentWeekIndex(weekIndex);
   }, [project]);
 
   // useEffect para filtrar los seguimientos basados en la semana actual 
@@ -92,51 +81,74 @@ const TrackingCurrent: React.FC = () => {
     setFilteredTrackings(filtered); // Actualizar el estado con las secciones de seguimiento filtradas
   }, [trackingSections, datesToWeekCurrent, currentWeekIndex]);
 
-  // Función para obtener el proyecto y las fechas de la semana actual
+  // Función para obtener el proyecto y las fechas de la semana correspondiente al week_current
   const fetchProjectAndDates = async () => {
     const storedProject = await getProject(); // Obtener el proyecto almacenado en la base de datos
     if (storedProject) { // Si el proyecto se ha almacenado en la base de datos
-      setProject(typeof storedProject === 'string' ? JSON.parse(storedProject) : storedProject); // Actualizar el estado con el proyecto almacenado
+      const parsedProject = typeof storedProject === 'string' ? JSON.parse(storedProject) : storedProject;
+      setProject(parsedProject); // Actualizar el estado con el proyecto almacenado
+      
+      // Calcular fechas basadas en la fecha de inicio del proyecto y week_current
+      if (parsedProject.start_date) {
+        const startDate = new Date(parsedProject.start_date.replace(/\//g, "-"));
+        
+        // Calculamos el lunes de la semana en que se inició el proyecto
+        const projectStartMonday = getMonday(startDate);
+        
+        // Calculamos el desplazamiento necesario para llegar a la semana actual del proyecto
+        // week_current comienza en 1, así que restamos 1 para obtener el desplazamiento correcto
+        const currentWeekNum = parseInt(parsedProject.week_current?.toString() || "1", 10);
+        const weekOffset = (currentWeekNum - 1) * 7; // Días para agregar a la fecha de inicio
+        
+        // Aplicamos el desplazamiento
+        projectStartMonday.setDate(projectStartMonday.getDate() + weekOffset);
+        
+        // Generamos las fechas para la semana
+        let dates = Array.from({ length: 7 }, (_, index) => {
+          const currentDate = new Date(projectStartMonday);
+          currentDate.setDate(projectStartMonday.getDate() + index);
+          return currentDate.toLocaleDateString("es-PE", { day: "2-digit", month: "2-digit" });
+        });
+        
+        setDatesToWeekCurrent(dates);
+      }
     }
-    const today = new Date(); // Obtener la fecha actual
-    const monday = getMonday(today); // Obtener el lunes de la fecha actual
-
-    let dates = Array.from({ length: 7 }, (_, index) => { // Crear una lista de fechas de la semana actual
-      const currentDate = new Date(monday); // Crear una fecha con la fecha actual y el índice del día
-      currentDate.setDate(monday.getDate() + index); // Agregar el índice del día a la fecha actual
-      return currentDate.toLocaleDateString("es-PE", { day: "2-digit", month: "2-digit" }); // Devolver la fecha en formato local (DD/MM)
-    });
-
-    setDatesToWeekCurrent(dates); // Actualizar el estado con las fechas de la semana actual
   };
 
   // Función para cambiar la semana actual
   const handleWeekChange = (direccion: string) => {
-    if (!project?.week) return;
+    if (!project?.week || !project?.start_date) return;
 
-    const semanas = parseInt(project.week.toString(), 10);
+    const totalWeeks = parseInt(project.week.toString(), 10);
     if ((direccion === "left" && currentWeekIndex === 0) ||
-        (direccion === "right" && currentWeekIndex === semanas - 1) ||
+        (direccion === "right" && currentWeekIndex === totalWeeks - 1) ||
         datesToWeekCurrent.length === 0) return;
 
-    const [day, month] = datesToWeekCurrent[0].split("/").map(Number);
-    const currentMonday = new Date(new Date().getFullYear(), month - 1, day);
-
+    // Obtener la fecha de inicio del proyecto
+    const startDate = new Date(project.start_date.replace(/\//g, "-"));
+    const projectStartMonday = getMonday(startDate);
+    
+    // Calcular el índice de la semana objetivo
+    let targetWeekIndex = currentWeekIndex;
     if (direccion === "right") {
-      currentMonday.setDate(currentMonday.getDate() + 7);
-      setCurrentWeekIndex(currentWeekIndex + 1);
+      targetWeekIndex = currentWeekIndex + 1;
     } else if (direccion === "left") {
-      currentMonday.setDate(currentMonday.getDate() - 7);
-      setCurrentWeekIndex(currentWeekIndex - 1);
+      targetWeekIndex = currentWeekIndex - 1;
     }
-
+    
+    // Calcular la fecha del lunes de la semana objetivo
+    const targetMonday = new Date(projectStartMonday);
+    targetMonday.setDate(projectStartMonday.getDate() + (targetWeekIndex * 7));
+    
+    // Generar fechas para la semana objetivo
     const newWeekDates = Array.from({ length: 7 }, (_, index) => {
-      const date = new Date(currentMonday);
-      date.setDate(currentMonday.getDate() + index);
+      const date = new Date(targetMonday);
+      date.setDate(targetMonday.getDate() + index);
       return date.toLocaleDateString("es-PE", { day: "2-digit", month: "2-digit" });
     });
 
     setDatesToWeekCurrent(newWeekDates);
+    setCurrentWeekIndex(targetWeekIndex);
   };
 
   // Función para obtener el lunes de una fecha dada
@@ -286,12 +298,12 @@ const TrackingCurrent: React.FC = () => {
         <Text style={styles.weekTitle}>Semana {currentWeekIndex + 1}</Text>
         <TouchableOpacity
           onPress={() => handleWeekChange('right')}
-          disabled={currentWeekIndex === Math.ceil((new Date(project?.end_date || "").getTime() - new Date(project?.start_date || "").getTime()) / (7 * 24 * 60 * 60 * 1000)) - 1}
+          disabled={currentWeekIndex === (project ? parseInt(project.week.toString(), 10) : 0) - 1}
         >
           <Ionicons
             name="chevron-forward"
             size={30}
-            color={currentWeekIndex === Math.ceil((new Date(project?.end_date || "").getTime() - new Date(project?.start_date || "").getTime()) / (7 * 24 * 60 * 60 * 1000)) - 1 ? "#07374a" : "white"}
+            color={currentWeekIndex === (project ? parseInt(project.week.toString(), 10) : 0) - 1 ? "#07374a" : "white"}
           />
         </TouchableOpacity>
       </View>
