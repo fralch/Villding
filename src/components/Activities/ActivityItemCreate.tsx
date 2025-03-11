@@ -28,6 +28,7 @@ interface ActivityItemCreateProps {
 
 export interface ActivityItemCreateRef {
   handleCreateActivity: () => Promise<boolean>;
+  finishTask: () => Promise<boolean>; // Añadir finishTask al ref
 }
 
 const ICON_OPTIONS: Array<keyof typeof MaterialIcons.glyphMap> = [
@@ -59,12 +60,13 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
     selectedIcon: "local-shipping" as keyof typeof MaterialIcons.glyphMap,
     fecha_creacion: "",
   });
+  const [tipoActual, setTipoActual] = useState(tipo);
 
   useEffect(() => {
     // quiero que el date "y/m" se convierta en "yyyy-mm-dd"
      let  newDate = date.split("/").reverse().join("-");
      newDate = new Date().getFullYear() + "-" + newDate;
-     newDate = new Date(newDate).toISOString().split('T')[0];         
+     newDate = new Date(newDate).toISOString().split('T')[0];
      setState(prevState => ({ ...prevState, fecha_creacion: newDate }));
   }, []);
 
@@ -80,7 +82,7 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
       description: state.description,
       location: state.location,
       horas: state.horas,
-      status: state.tipoTask.toLowerCase(),
+      status: tipoActual.toLowerCase(),
       icon: `fa-${state.selectedIcon}`,
       comments: state.comments,
       fecha_creacion: state.fecha_creacion, // Include the selected date
@@ -96,15 +98,17 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
 
     const activityData = prepareActivityData();
 
+    console.log(tipoActual);
+
     try {
       const response = await axios.post(
         'https://centroesteticoedith.com/endpoint/activities/create',
         activityData,
-        { 
-          headers: { 
+        {
+          headers: {
             "Content-Type": "application/json",
             'Cookie': 'XSRF-TOKEN=...' // Use the same token as in the parent component
-          } 
+          }
         }
       );
 
@@ -119,14 +123,47 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
     }
   };
 
-  // Expose handleCreateActivity to parent component via ref
+  const finishTask = async (): Promise<boolean> => {
+    // Crear una copia de los datos actuales
+    const activityData = {
+      ...prepareActivityData(),
+      status: "completado" // Forzar explícitamente el status a "completado"
+    };
+
+    console.log("Datos a enviar:", activityData); // Verificar los datos antes de enviar
+
+    try {
+      const response = await axios.post(
+        'https://centroesteticoedith.com/endpoint/activities/create',
+        activityData,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            'Cookie': 'XSRF-TOKEN=...'
+          }
+        }
+      );
+
+      Alert.alert("Éxito", "Actividad completada correctamente");
+      console.log(response.data);
+      resetForm();
+      return true;
+    } catch (error) {
+      console.error('Error al finalizar la actividad:', error);
+      Alert.alert("Error", "No se pudo finalizar la actividad. Intente nuevamente.");
+      return false;
+    }
+  };
+
+  // Expose handleCreateActivity and finishTask to parent component via ref
   useImperativeHandle(ref, () => ({
     handleCreateActivity,
+    finishTask,
   }));
 
   const resetForm = () => {
     setState({
-      tipoTask: tipo,
+      tipoTask: tipoActual,
       titulo: "",
       description: "",
       location: "",
@@ -135,11 +172,6 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
       selectedIcon: "local-shipping",
       fecha_creacion:  state.fecha_creacion,
     });
-  };
-
-  const finishTask = () => {
-    updateState({ tipoTask: 'Completado' });
-    handleCreateActivity();
   };
 
   const getStatusColor = () => {
@@ -186,7 +218,7 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
               {renderStatusIcon()}
             </View>
           </Pressable>
-          
+
           <View
             style={[
               styles.statusProgramado,
@@ -206,7 +238,7 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
               {state.tipoTask}
             </Text>
           </View>
-          
+
           <View style={{ backgroundColor: "#0a3649", padding: 20 }}>
             <TextInput
               style={{
@@ -239,28 +271,28 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
               </Text>
             </TouchableOpacity>
           </View>
-          
+
           <View>
             {[
-              { 
+              {
                 icon: <Entypo name="text" size={24} color="white" />,
                 placeholder: "Descripción",
                 value: state.description,
                 onChangeText: (text: string) => updateState({ description: text })
               },
-              { 
+              {
                 icon: <MaterialIcons name="location-on" size={24} color="white" />,
                 placeholder: "Ubicación",
                 value: state.location,
                 onChangeText: (text: string) => updateState({ location: text })
               },
-              { 
+              {
                 icon: <MaterialCommunityIcons name="clock-outline" size={24} color="white" />,
                 placeholder: "Horario",
                 value: state.horas,
                 onChangeText: (text: string) => updateState({ horas: text })
               },
-              { 
+              {
                 icon: <MaterialCommunityIcons name="comment-processing" size={24} color="white" />,
                 placeholder: "Comentarios (opcional)",
                 value: state.comments,
@@ -279,7 +311,7 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
               </View>
             ))}
           </View>
-          
+
           <View
             style={{
               flexDirection: "row",
@@ -298,7 +330,7 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
               style={{ marginTop: 5 }}
             />
           </View>
-          
+
           <View style={{ backgroundColor: "#0a3649" }}>
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>Recientes</Text>
@@ -318,7 +350,7 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
                 ))}
               </View>
             </View>
-            
+
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>Todos los íconos</Text>
               <View style={styles.iconRow}>
@@ -337,7 +369,7 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
                 ))}
               </View>
             </View>
-          
+
           </View>
         </View>
       </ScrollView>
