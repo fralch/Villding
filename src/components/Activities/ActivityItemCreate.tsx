@@ -75,6 +75,10 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
   };
 
   const prepareActivityData = () => {
+    // Comparar la fecha de creación con la fecha actual
+    const today = new Date().toISOString().split('T')[0];
+    const status = state.fecha_creacion > today ? "programado" : tipoActual.toLowerCase();
+
     return {
       project_id,
       tracking_id,
@@ -82,10 +86,10 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
       description: state.description,
       location: state.location,
       horas: state.horas,
-      status: tipoActual.toLowerCase(),
+      status: status,
       icon: `fa-${state.selectedIcon}`,
       comments: state.comments,
-      fecha_creacion: state.fecha_creacion, // Include the selected date
+      fecha_creacion: state.fecha_creacion,
     };
   };
 
