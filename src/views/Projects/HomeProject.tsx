@@ -149,6 +149,7 @@ export default function HomeProject() {
                 : `https://centroesteticoedith.com/endpoint/images/projects/${project.uri}`,
             start_date: formatDate(project.start_date),
             end_date: formatDate(project.end_date),
+            nearest_monday: formatDate(project.nearest_monday),
             week: calculateWeekDifference(project.start_date, project.end_date),
             week_current: calculateWeekCurrent(project.start_date, project.end_date),
         }));

@@ -8,8 +8,10 @@ interface Project {
   company: string;
   start_date: string;
   end_date: string;
+  nearest_monday?: string;
   week: number;
   week_current: number;
+
 }
 
 const PROJECTS_KEY = 'projects';
