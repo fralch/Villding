@@ -58,7 +58,7 @@ const TrackingCurrent = () => {
         ? JSON.parse(storedProject) 
         : storedProject;
       
-      console.log(parsedProject);
+      // console.log(parsedProject);
       setProject(parsedProject);
       
       // Configurar la semana actual
@@ -180,25 +180,41 @@ const TrackingCurrent = () => {
   };
 
   // Cambiar a la semana anterior o siguiente
-  const handleWeekChange = (direction: string) => {
-    if (!project?.week) return;
-    
-    const totalWeeks = parseInt(project.week.toString(), 10);
-    
-    // Validar límites de navegación
-    if ((direction === "left" && currentWeekIndex === 0) ||
-        (direction === "right" && currentWeekIndex === totalWeeks - 1)) {
+const handleWeekChange = (direction: string) => {
+  if (!project?.start_date || !project?.end_date) return;
+  
+  // Calcular el número de semanas entre la fecha de inicio y fin del proyecto
+  const startDate = new Date(project.start_date.replace(/\//g, "-"));
+  const endDate = new Date(project.end_date.replace(/\//g, "-"));
+  
+
+  // Calcular nuevo índice de semana
+  const newWeekIndex = direction === "right" 
+    ? currentWeekIndex + 1 
+    : currentWeekIndex - 1;
+  
+  // Calcular la fecha del lunes de la semana a la que queremos navegar
+  const mondayOfStartWeek = getMonday(startDate);
+  const targetMonday = new Date(mondayOfStartWeek);
+  targetMonday.setDate(mondayOfStartWeek.getDate() + (newWeekIndex * 7));
+  
+  // Validar límites de navegación
+  if (direction === "left" && newWeekIndex < 0) {
+    return;
+  }
+  
+  if (direction === "right") {
+    // Verificar que el lunes de la nueva semana no exceda la fecha de fin del proyecto
+    console.log(targetMonday);
+    console.log(endDate);
+    if (targetMonday > endDate) {
       return;
     }
-    
-    // Calcular nuevo índice de semana
-    const newWeekIndex = direction === "right" 
-      ? currentWeekIndex + 1 
-      : currentWeekIndex - 1;
-    
-    setCurrentWeekIndex(newWeekIndex);
-    calculateWeekDates(project.start_date, newWeekIndex);
-  };
+  }
+  
+  setCurrentWeekIndex(newWeekIndex);
+  calculateWeekDates(project.start_date, newWeekIndex);
+};
 
   // Crear un nuevo seguimiento
   const createNewTracking = async () => {
@@ -259,7 +275,6 @@ const TrackingCurrent = () => {
       {/* Selector de semana */}
       <WeekSelector
         currentWeekIndex={currentWeekIndex}
-        totalWeeks={project ? parseInt(project.week.toString(), 10) : 0}
         onWeekChange={handleWeekChange}
       />
 
