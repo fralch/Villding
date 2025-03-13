@@ -107,7 +107,7 @@ export default function Activity(props: any) {
   useEffect(() => {
     const fetchActivities = async () => {
       if (!tracking?.id) return;
-
+  
       try {
         const config = {
           method: 'get',
@@ -116,10 +116,10 @@ export default function Activity(props: any) {
             'Cookie': 'XSRF-TOKEN=...' // Your existing token
           }
         };
-
+  
         const response = await axios.request(config);
         const apiActivities: Activity[] = response.data;
-
+  
         // Log para depuración
         console.log('Actividades recibidas:', apiActivities);
         
@@ -130,32 +130,33 @@ export default function Activity(props: any) {
             console.log(`Comparando fecha: ${activity.fecha_creacion} -> ${formattedActivityDate} con ${dayLabel}`);
             return formattedActivityDate === dayLabel;
           });
-
+  
           return {
             dayLabel,
             activities: dayActivities
           };
         });
-
+  
         setWeekDays(weekDaysWithActivities);
-
-        const pendingActivities = apiActivities.filter(activity => 
-          activity.status.toLowerCase() === 'pendiente'
+  
+        // Calcular el número de actividades pendientes solo para los días mostrados
+        const pendingActivities = weekDaysWithActivities.flatMap(day => 
+          day.activities.filter(activity => activity.status.toLowerCase() === 'pendiente')
         );
         setPendingActivitiesCount(pendingActivities.length);
-
+  
       } catch (error) {
         console.error('Error fetching activities:', error);
       }
     };
-
+  
     fetchActivities();
   }, [tracking.id]);
 
   // Función para refrescar actividades después de crear una nueva
   const refreshActivities = async () => {
     if (!tracking?.id) return;
-
+  
     try {
       const config = {
         method: 'get',
@@ -164,7 +165,7 @@ export default function Activity(props: any) {
           'Cookie': 'XSRF-TOKEN=...' // Your existing token
         }
       };
-
+  
       const response = await axios.request(config);
       const apiActivities: Activity[] = response.data;
       
@@ -173,25 +174,26 @@ export default function Activity(props: any) {
           const formattedActivityDate = formatDateFromString(activity.fecha_creacion);
           return formattedActivityDate === dayLabel;
         });
-
+  
         return {
           dayLabel,
           activities: dayActivities
         };
       });
-
+  
       setWeekDays(weekDaysWithActivities);
-
-      const pendingActivities = apiActivities.filter(activity => 
-        activity.status.toLowerCase() === 'pendiente'
+  
+      // Calcular el número de actividades pendientes solo para los días mostrados
+      const pendingActivities = weekDaysWithActivities.flatMap(day => 
+        day.activities.filter(activity => activity.status.toLowerCase() === 'pendiente')
       );
       setPendingActivitiesCount(pendingActivities.length);
-
+  
     } catch (error) {
       console.error('Error refreshing activities:', error);
     }
   };
-
+  
   const showModal = (date: string) => {
     setSelectedDate(date);
     setIsVisible(true);
