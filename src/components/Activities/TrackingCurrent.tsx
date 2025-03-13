@@ -1,22 +1,17 @@
-import React, { useState, useEffect } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  FlatList,
-  TouchableOpacity,
-  ScrollView,
-  TextInput,
-  Modal,
-  Pressable,
-} from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { useNavigation, NavigationProp } from "@react-navigation/native";
-import { getProject } from "../../hooks/localStorageCurrentProject";
-import ConfirmModal from "../Alerta/ConfirmationModal";
-import axios from "axios";
-import { Tracking, TrackingSection, Project, User } from "../../types/interfaces";
-import { styles } from "./styles/TrackingCurrentStyles";
+import React, { useState, useEffect } from 'react';
+import { View, FlatList, TouchableOpacity, Text } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { useNavigation, NavigationProp } from '@react-navigation/native';
+import { getProject } from '../../hooks/localStorageCurrentProject';
+import ConfirmModal from '../Alerta/ConfirmationModal';
+import axios from 'axios';
+import { Tracking, TrackingSection, Project, User } from '../../types/interfaces';
+import { styles } from './styles/TrackingCurrentStyles';
+import WeekSelector from './trackingAsset/WeekSelector';
+import DayColumn from './trackingAsset/DayColumn';
+import TrackingSectionComponent from './trackingAsset/TrackingSection';
+import AddTrackingModal from './trackingAsset/AddTrackingModal';
+import { Modal, Pressable } from 'react-native';
 
 const TrackingCurrent: React.FC = () => {
   const navigation = useNavigation<NavigationProp<any>>();
@@ -159,20 +154,6 @@ const TrackingCurrent: React.FC = () => {
     return monday;
   };
 
-  // Función para renderizar una columna de día
-  const renderDayColumn = (day: string, index: number) => {
-    const currentDate = datesToWeekCurrent[index];
-    const today = new Date();
-    const isToday = today.toLocaleDateString("es-PE", { day: "2-digit", month: "2-digit" }) === currentDate;
-
-    return (
-      <View key={index} style={[styles.dayColumn, isToday && { backgroundColor: "#0A3649", borderRadius: 8 }]}>
-        <Text style={[styles.dayText, isToday && { color: "#4ABA8D" }]}>{day}</Text>
-        <Text style={[styles.dateText, isToday && { color: "#4ABA8D" }]}>{currentDate}</Text>
-      </View>
-    );
-  };
-
   // Función para obtener los seguimientos del proyecto
   const obtenerSeguimientos = async () => {
     if (!project?.id) return;
@@ -241,46 +222,6 @@ const TrackingCurrent: React.FC = () => {
     navigation.navigate("HomeProject");
   };
 
-  // Función para renderizar una sección de seguimiento
-  const renderTrackingSection = ({ item }: { item: TrackingSection }) => (
-    <ScrollView style={styles.trackingSection}>
-      {item.trackings.map((tracking) => (
-        <TouchableOpacity
-          key={tracking.id}
-          style={styles.taskRow}
-          onLongPress={() => setModalSinAccesoVisible(true)}
-          onPress={() => {
-            const trackingWithWeekIndex = { ...tracking, currentWeekIndex: currentWeekIndex + 1, days: datesToWeekCurrent };
-            navigation.navigate("Activity", { tracking: trackingWithWeekIndex });
-          }}
-        >
-          <Text style={styles.taskTitle}>{tracking.title}</Text>
-          <View style={styles.iconRow}>
-            {tracking.checked &&
-              tracking.checked.map((isChecked, i) => (
-                <View
-                  key={i}
-                  style={[
-                    styles.iconContainer,
-                    {
-                      backgroundColor: isChecked === -1 ? "#004e66" : "#0A3649",
-                    },
-                  ]}
-                >
-                  <Ionicons
-                    name={isChecked == 1 ? "checkmark" : isChecked == -1 ? "ellipse-outline" : "ellipse-sharp"}
-                    size={isChecked === 1 ? 24 : 12}
-                    color={isChecked === 1 ? "#4ABA8D" : "#D1A44C"}
-                    style={styles.icon}
-                  />
-                </View>
-              ))}
-          </View>
-        </TouchableOpacity>
-      ))}
-    </ScrollView>
-  );
-
   return (
     <View style={styles.container}>
       <ConfirmModal
@@ -291,32 +232,38 @@ const TrackingCurrent: React.FC = () => {
           backToProject();
         }}
       />
-      <View style={styles.weekSelector}>
-        <TouchableOpacity onPress={() => handleWeekChange('left')} disabled={currentWeekIndex === 0}>
-          <Ionicons name="chevron-back" size={30} color={currentWeekIndex === 0 ? "#07374a" : "white"} />
-        </TouchableOpacity>
-        <Text style={styles.weekTitle}>Semana {currentWeekIndex + 1}</Text>
-        <TouchableOpacity
-          onPress={() => handleWeekChange('right')}
-          disabled={currentWeekIndex === (project ? parseInt(project.week.toString(), 10) : 0) - 1}
-        >
-          <Ionicons
-            name="chevron-forward"
-            size={30}
-            color={currentWeekIndex === (project ? parseInt(project.week.toString(), 10) : 0) - 1 ? "#07374a" : "white"}
-          />
-        </TouchableOpacity>
-      </View>
+
+      <WeekSelector
+        currentWeekIndex={currentWeekIndex}
+        totalWeeks={project ? parseInt(project.week.toString(), 10) : 0}
+        onWeekChange={handleWeekChange}
+      />
 
       <View style={styles.daysRow}>
-        {["Lu", "Ma", "Mi", "Ju", "Vi", "Sa", "Do"].map(renderDayColumn)}
+        {['Lu', 'Ma', 'Mi', 'Ju', 'Vi', 'Sa', 'Do'].map((day, index) => (
+          <DayColumn
+            key={index}
+            day={day}
+            date={datesToWeekCurrent[index]}
+            isToday={new Date().toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit' }) === datesToWeekCurrent[index]}
+          />
+        ))}
       </View>
 
       <FlatList
         style={styles.flatList}
         data={filteredTrackings}
         keyExtractor={(item) => item.id}
-        renderItem={renderTrackingSection}
+        renderItem={({ item }) => (
+          <TrackingSectionComponent
+            section={item}
+            onPress={(tracking) => {
+              const trackingWithWeekIndex = { ...tracking, currentWeekIndex: currentWeekIndex + 1, days: datesToWeekCurrent };
+              navigation.navigate('Activity', { tracking: trackingWithWeekIndex });
+            }}
+            onLongPress={() => setModalSinAccesoVisible(true)}
+          />
+        )}
         ListEmptyComponent={() => (
           <View style={{ flex: 1, alignItems: 'center', marginTop: 20 }}>
             <Text style={{ color: '#777' }}>No hay seguimientos para esta semana</Text>
@@ -329,46 +276,15 @@ const TrackingCurrent: React.FC = () => {
         <Text style={styles.addButtonText}>Añadir seguimiento</Text>
       </TouchableOpacity>
 
-      <Modal
+      <AddTrackingModal
         visible={modalSeguimientoVisible}
-        animationType="slide"
-        transparent={true}
-        onRequestClose={() => setModalSeguimientoVisible(false)}
-      >
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            <View style={styles.titleContainer}>
-              <Text style={styles.modalTitle}>Añadir seguimiento</Text>
-              <Pressable onPress={() => setModalSeguimientoVisible(false)}>
-                <Ionicons name="close-outline" size={30} color="white" />
-              </Pressable>
-            </View>
-            <TextInput
-              style={styles.modalInput}
-              placeholder="Nombre del seguimiento"
-              placeholderTextColor="#777"
-              onChangeText={(text: string) => setTitleTracking(text)}
-            />
-            <View style={{ flexDirection: "row", justifyContent: "space-between", gap: 8, marginTop: 16 }}>
-              <TouchableOpacity
-                style={[styles.modalButton, { backgroundColor: "#004e66", borderColor: "white", borderWidth: 1 }]}
-                onPress={() => setModalSeguimientoVisible(false)}
-              >
-                <Text style={[styles.modalButtonText, { color: "white", paddingHorizontal: 10 }]}>Cerrar</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.modalButton}
-                onPress={() => {
-                  setModalSeguimientoVisible(false);
-                  handleNewTracking();
-                }}
-              >
-                <Text style={[styles.modalButtonText, { paddingHorizontal: 10 }]}>Guardar</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
+        onClose={() => setModalSeguimientoVisible(false)}
+        onSave={() => {
+          setModalSeguimientoVisible(false);
+          handleNewTracking();
+        }}
+        onChangeText={(text) => setTitleTracking(text)}
+      />
 
       <Modal
         visible={modalSinAccesoVisible}
@@ -381,7 +297,7 @@ const TrackingCurrent: React.FC = () => {
             <View style={styles.titleContainer}>
               <Text style={[styles.modalTitle, { color: "#07374a", marginBottom: 0 }]}>No tienes acceso</Text>
             </View>
-            <Text style={{ color: "#07374a", fontSize: 16 }}>Pídele al administrador que te comparta esta actividad</Text>
+            <Text style={{ color: "#07374a", fontSize: 16 }}>Pídele al administrador que te comparte esta actividad</Text>
           </View>
         </Pressable>
       </Modal>
