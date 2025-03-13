@@ -16,84 +16,83 @@ const API_BASE_URL = 'https://centroesteticoedith.com/endpoint';
 
 const TrackingCurrent = () => {
   const navigation = useNavigation<NavigationProp<any>>();
-  
-  // Estados principales
-  const [project, setProject] = useState<Project | null>(null);
-  const [trackingSections, setTrackingSections] = useState<TrackingSection[]>([]);
-  const [filteredTrackings, setFilteredTrackings] = useState<TrackingSection[]>([]);
-  const [weekDates, setWeekDates] = useState<string[]>([]);
-  const [currentWeekIndex, setCurrentWeekIndex] = useState(0);
-  const [titleTracking, setTitleTracking] = useState("");
-  
-  // Estados de modales
-  const [addTrackingModalVisible, setAddTrackingModalVisible] = useState(false);
-  const [accessDeniedModalVisible, setAccessDeniedModalVisible] = useState(false);
-  const [confirmModalVisible, setConfirmModalVisible] = useState(false);
-  const [confirmModalMessage, setConfirmModalMessage] = useState("");
 
-  // Cargar proyecto al iniciar
+  // Estados principales para manejar el proyecto, seguimientos y fechas
+  const [project, setProject] = useState<Project | null>(null); // Almacena el proyecto actual
+  const [trackingSections, setTrackingSections] = useState<TrackingSection[]>([]); // Lista de secciones de seguimiento, la secciones de seguimiento son las semanas del proyecto
+  const [filteredTrackings, setFilteredTrackings] = useState<TrackingSection[]>([]); // Seguimientos filtrados para la semana actual, son los seguimientos de la semana actual
+  const [weekDates, setWeekDates] = useState<string[]>([]); // Fechas de la semana actual son los 7 días de la semana actual
+  const [currentWeekIndex, setCurrentWeekIndex] = useState(0); // Índice de la semana actual 0 es la primera semana
+  const [titleTracking, setTitleTracking] = useState(""); // Título del nuevo seguimiento 
+
+  // Estados para controlar la visibilidad de los modales
+  const [addTrackingModalVisible, setAddTrackingModalVisible] = useState(false); // Modal para añadir seguimiento 
+  const [accessDeniedModalVisible, setAccessDeniedModalVisible] = useState(false); // Modal de acceso denegado
+  const [confirmModalVisible, setConfirmModalVisible] = useState(false); // Modal de confirmación 
+  const [confirmModalMessage, setConfirmModalMessage] = useState(""); // Mensaje del modal de confirmación
+
+  // Cargar el proyecto al iniciar el componente
   useEffect(() => {
-    loadProject();
-  }, []);
+    loadProject(); // Carga el proyecto al iniciar el componente
+  }, []); // Se ejecuta una vez al montar el componente
 
-  // Cargar seguimientos cuando el proyecto cambia
+  // Cargar los seguimientos cuando el proyecto cambia
   useEffect(() => {
     if (project?.id) {
       fetchTrackings();
     }
-  }, [project]);
-  
-  // Filtrar seguimientos cuando cambian las fechas o los seguimientos
+  }, [project]); // Se ejecuta cuando el proyecto cambia
+
+  // Filtrar los seguimientos cuando cambian las fechas o los seguimientos
   useEffect(() => {
     filterTrackingsByWeek();
-  }, [trackingSections, weekDates]);
+  }, [trackingSections, weekDates]); // Se ejecuta cuando cambian las secciones de seguimiento o las fechas de la semana
 
-  // Función para cargar el proyecto desde almacenamiento local
+  // Función para cargar el proyecto desde el almacenamiento local
   const loadProject = async () => {
     try {
-      const storedProject = await getProject();
+      const storedProject = await getProject(); // Obtener el proyecto del almacenamiento local
       if (!storedProject) return;
-      
-      const parsedProject = typeof storedProject === 'string' 
-        ? JSON.parse(storedProject) 
+
+      const parsedProject = typeof storedProject === 'string'
+        ? JSON.parse(storedProject)
         : storedProject;
-      
-      // console.log(parsedProject);
-      setProject(parsedProject);
-      
+
+      setProject(parsedProject); // Establecer el proyecto en el estado
+
       // Configurar la semana actual
       const weekNum = parseInt(parsedProject.week_current?.toString() || "1", 10);
-      setCurrentWeekIndex(weekNum - 1);
-      
-      // Calcular fechas de la semana
-      calculateWeekDates(parsedProject.start_date, weekNum - 1);
+      setCurrentWeekIndex(weekNum - 1); // Establecer el índice de la semana actual
+
+      // Calcular las fechas de la semana
+      calculateWeekDates(parsedProject.start_date, weekNum - 1); // Calcular las fechas de la semana actual 
     } catch (error) {
       console.error("Error loading project:", error);
     }
   };
 
-  // Calcular las fechas de una semana específica
+  // Calcular las fechas de una semana inicial o de las semanas siguientes
   const calculateWeekDates = (startDateStr: string, weekOffset: number) => {
     if (!startDateStr) return;
-    
-    // Convertir fecha de inicio a objeto Date
+
+    // Convertir la fecha de inicio a objeto Date
     const startDate = new Date(startDateStr.replace(/\//g, "-"));
-    
+
     // Obtener el lunes de la semana de inicio
-    const mondayOfStartWeek = getMonday(startDate);
-    
+    const mondayOfStartWeek = getMonday(startDate); // 
+
     // Calcular el lunes de la semana solicitada
-    const targetMonday = new Date(mondayOfStartWeek);
-    targetMonday.setDate(mondayOfStartWeek.getDate() + (weekOffset * 7));
-    
-    // Generar array de fechas para los 7 días de la semana
+    const targetMonday = new Date(mondayOfStartWeek); 
+    targetMonday.setDate(mondayOfStartWeek.getDate() + (weekOffset * 7)); // Calcular el lunes de la semana solicitada
+
+    // Generar un array de fechas para los 7 días de la semana
     const dates = Array.from({ length: 7 }, (_, index) => {
       const date = new Date(targetMonday);
       date.setDate(targetMonday.getDate() + index);
       return date.toLocaleDateString("es-PE", { day: "2-digit", month: "2-digit" });
     });
-    
-    setWeekDates(dates);
+
+    setWeekDates(dates); // Establecer las fechas de la semana en el estado
   };
 
   // Obtener el lunes de una semana dada una fecha
@@ -103,37 +102,37 @@ const TrackingCurrent = () => {
     return new Date(date.setDate(diff));
   };
 
-  // Obtener seguimientos del servidor
+  // Obtener los seguimientos del servidor
   const fetchTrackings = async () => {
     if (!project?.id) return;
-    
+
     try {
       const response = await axios.get(`${API_BASE_URL}/trackings_project/${project.id}`);
       const trackings = response.data;
-      
+
       // Organizar los seguimientos por secciones
       const sections = organizeTrackingsBySections(trackings);
-      setTrackingSections(sections);
+      setTrackingSections(sections); // Establecer las secciones de seguimiento en el estado
     } catch (error) {
       console.error("Error fetching trackings:", error);
     }
   };
 
-  // Organizar seguimientos por secciones semanales
+  // Organizar los seguimientos por secciones semanales
   const organizeTrackingsBySections = (trackings: Tracking[]) => {
     const sections: TrackingSection[] = [];
-    
+
     trackings.forEach(tracking => {
       if (!tracking.date_start) return;
-      
+
       // Obtener el lunes de la semana del seguimiento
       const trackingDate = new Date(tracking.date_start);
       const weekStart = getMonday(trackingDate);
       const sectionId = weekStart.toISOString().split('T')[0];
-      
+
       // Buscar o crear la sección correspondiente
       const existingSection = sections.find(section => section.id === sectionId);
-      
+
       if (existingSection) {
         existingSection.trackings.push(tracking);
       } else {
@@ -143,27 +142,27 @@ const TrackingCurrent = () => {
         });
       }
     });
-    
+
     // Ordenar secciones por fecha
     return sections.sort((a, b) => {
       return new Date(a.id).getTime() - new Date(b.id).getTime();
     });
   };
 
-  // Filtrar seguimientos para mostrar solo los de la semana actual
+  // Filtrar los seguimientos para mostrar solo los de la semana actual
   const filterTrackingsByWeek = () => {
     if (trackingSections.length === 0 || weekDates.length === 0) return;
-    
+
     const currentYear = new Date().getFullYear();
-    
+
     // Extraer día y mes del primer y último día de la semana
     const [startDay, startMonth] = weekDates[0].split("/").map(Number);
     const [endDay, endMonth] = weekDates[6].split("/").map(Number);
-    
+
     // Crear fechas de inicio y fin de la semana
     const weekStart = new Date(currentYear, startMonth - 1, startDay);
     const weekEnd = new Date(currentYear, endMonth - 1, endDay, 23, 59, 59);
-    
+
     // Filtrar las secciones y sus seguimientos
     const filtered = trackingSections
       .map(section => ({
@@ -175,59 +174,56 @@ const TrackingCurrent = () => {
         })
       }))
       .filter(section => section.trackings.length > 0);
-    
-    setFilteredTrackings(filtered);
+
+    setFilteredTrackings(filtered); // Establecer los seguimientos filtrados en el estado
   };
 
   // Cambiar a la semana anterior o siguiente
-const handleWeekChange = (direction: string) => {
-  if (!project?.start_date || !project?.end_date) return;
-  
-  // Calcular el número de semanas entre la fecha de inicio y fin del proyecto
-  const startDate = new Date(project.start_date.replace(/\//g, "-"));
-  const endDate = new Date(project.end_date.replace(/\//g, "-"));
-  
+  const handleWeekChange = (direction: string) => {
+    if (!project?.start_date || !project?.end_date) return;
 
-  // Calcular nuevo índice de semana
-  const newWeekIndex = direction === "right" 
-    ? currentWeekIndex + 1 
-    : currentWeekIndex - 1;
-  
-  // Calcular la fecha del lunes de la semana a la que queremos navegar
-  const mondayOfStartWeek = getMonday(startDate);
-  const targetMonday = new Date(mondayOfStartWeek);
-  targetMonday.setDate(mondayOfStartWeek.getDate() + (newWeekIndex * 7));
-  
-  // Validar límites de navegación
-  if (direction === "left" && newWeekIndex < 0) {
-    return;
-  }
-  
-  if (direction === "right") {
-    // Verificar que el lunes de la nueva semana no exceda la fecha de fin del proyecto
-    console.log(targetMonday);
-    console.log(endDate);
-    if (targetMonday > endDate) {
+    // Calcular el número de semanas entre la fecha de inicio y fin del proyecto
+    const startDate = new Date(project.start_date.replace(/\//g, "-"));
+    const endDate = new Date(project.end_date.replace(/\//g, "-"));
+
+    // Calcular nuevo índice de semana
+    const newWeekIndex = direction === "right"
+      ? currentWeekIndex + 1
+      : currentWeekIndex - 1;
+
+    // Calcular la fecha del lunes de la semana a la que queremos navegar
+    const mondayOfStartWeek = getMonday(startDate);
+    const targetMonday = new Date(mondayOfStartWeek);
+    targetMonday.setDate(mondayOfStartWeek.getDate() + (newWeekIndex * 7));
+
+    // Validar límites de navegación
+    if (direction === "left" && newWeekIndex < 0) {
       return;
     }
-  }
-  
-  setCurrentWeekIndex(newWeekIndex);
-  calculateWeekDates(project.start_date, newWeekIndex);
-};
+
+    if (direction === "right") {
+      // Verificar que el lunes de la nueva semana no exceda la fecha de fin del proyecto
+      if (targetMonday > endDate) {
+        return;
+      }
+    }
+
+    setCurrentWeekIndex(newWeekIndex); // Establecer el nuevo índice de semana
+    calculateWeekDates(project.start_date, newWeekIndex); // Calcular las nuevas fechas de la semana
+  };
 
   // Crear un nuevo seguimiento
   const createNewTracking = async () => {
     if (!project?.id || !titleTracking.trim()) return;
-    
+
     try {
       // Usar el día central de la semana como fecha de inicio
       const year = new Date().getFullYear();
       const centralDay = weekDates[3]; // Jueves
       const [day, month] = centralDay.split("/").map(Number);
-      
+
       const startDate = new Date(year, month - 1, day);
-      
+
       const trackingData = {
         project_id: project.id,
         title: titleTracking.trim(),
@@ -235,12 +231,12 @@ const handleWeekChange = (direction: string) => {
         date_start: startDate.toISOString().split('T')[0],
         duration_days: '7',
       };
-      
+
       await axios.post(`${API_BASE_URL}/trackings/create`, trackingData);
-      
+
       // Actualizar la lista de seguimientos
       fetchTrackings();
-      
+
       // Mostrar confirmación
       setConfirmModalMessage("Seguimiento creado correctamente");
       setConfirmModalVisible(true);
@@ -258,15 +254,15 @@ const handleWeekChange = (direction: string) => {
       currentWeekIndex: currentWeekIndex + 1,
       days: weekDates
     };
-    
+
     navigation.navigate('Activity', { tracking: trackingWithContext });
   };
 
   // Verificar si la fecha es hoy
   const isToday = (date: string) => {
-    return new Date().toLocaleDateString('es-PE', { 
-      day: '2-digit', 
-      month: '2-digit' 
+    return new Date().toLocaleDateString('es-PE', {
+      day: '2-digit',
+      month: '2-digit'
     }) === date;
   };
 
@@ -310,8 +306,8 @@ const handleWeekChange = (direction: string) => {
       />
 
       {/* Botón para añadir seguimiento */}
-      <TouchableOpacity 
-        style={styles.addButton} 
+      <TouchableOpacity
+        style={styles.addButton}
         onPress={() => setAddTrackingModalVisible(true)}
       >
         <Ionicons name="add-circle-outline" size={24} color="#7bc4c4" />
@@ -336,8 +332,8 @@ const handleWeekChange = (direction: string) => {
         transparent={true}
         onRequestClose={() => setAccessDeniedModalVisible(false)}
       >
-        <Pressable 
-          style={[styles.modalContainer, { justifyContent: "flex-end" }]} 
+        <Pressable
+          style={[styles.modalContainer, { justifyContent: "flex-end" }]}
           onPress={() => setAccessDeniedModalVisible(false)}
         >
           <View style={[styles.modalContent, { backgroundColor: "#CFA54A" }]}>
