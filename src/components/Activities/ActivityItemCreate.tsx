@@ -18,27 +18,32 @@ import {
 } from "@expo/vector-icons";
 import axios from "axios";
 import { styles } from "./styles/ActivityItemCreateStyles";
+import { Activity } from './Activity';
 
 // Tipos y constantes
 interface ActivityItemCreateProps {
-  tipo: string;
-  date: string;
   project_id: number;
   tracking_id: number;
+  tipo: string;
+  date: string;
+  isEditing?: boolean;
+  itemData?: any;
+  activity?: Activity | null;
 }
 
 // Componente principal
-const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateProps>(({ tipo, project_id, tracking_id, date, }, ref) => {
+const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateProps>(({ tipo, project_id, tracking_id, date, isEditing = false, itemData, activity, }, ref) => {
   // estado del formulario 
+  console.log(activity);
   const [state, setState] = useState({
     tipoTask: tipo,
-    titulo: "",
-    description: "",
-    location: "",
-    horas: "",
-    comments: "",
-    selectedIcon: "local-shipping" as keyof typeof MaterialIcons.glyphMap,
-    fecha_creacion: "",
+    titulo: isEditing ? itemData.name : "",
+    description: isEditing ? itemData.description : "",
+    location: isEditing ? itemData.location : "",
+    horas: isEditing ? itemData.horas : "",
+    comments: isEditing ? itemData.comments : "",
+    selectedIcon: isEditing ? itemData.icon : "local-shipping" as keyof typeof MaterialIcons.glyphMap,
+    fecha_creacion: isEditing ? itemData.fecha_creacion : "",
   });
   const [tipoActual, setTipoActual] = useState(tipo);
 
@@ -50,6 +55,21 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
     newDate = new Date(newDate).toISOString().split('T')[0];
     setState(prevState => ({ ...prevState, fecha_creacion: newDate })); // añadiendo fecha de creación al formulario
   }, []);
+
+  useEffect(() => {
+    if (activity) {
+      setState({
+        tipoTask: activity.status,
+        titulo: activity.name,
+        description: activity.description,
+        location: activity.location,
+        horas: activity.horas,
+        comments: activity.comments,
+        selectedIcon: activity.icon.replace('fa-', '') as keyof typeof MaterialIcons.glyphMap,
+        fecha_creacion: activity.fecha_creacion,
+      });
+    }
+  }, [activity]);
 
   // Función para actualizar el estado (Pendiente,  Programado, Completado) del formulario
   const updateState = (updates: Partial<typeof state>) => { // recibo un objeto con los campos a actualizar en el parametro updates
@@ -113,6 +133,37 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
     }
   };
 
+  const handleUpdateActivity = async (): Promise<boolean> => {
+    // Validación
+    if (!state.titulo.trim()) {
+      Alert.alert("Error", "El título es obligatorio");
+      return false;
+    }
+
+    const activityData = prepareActivityData(); // Preparo los datos de la actividad
+
+    try {
+      const response = await axios.put(
+        `https://centroesteticoedith.com/endpoint/activities/${itemData.id}`,
+        activityData,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            'Cookie': 'XSRF-TOKEN=...' // Usar el mismo token que en el componente padre
+          }
+        }
+      );
+
+      Alert.alert("Éxito", "Actividad actualizada correctamente");
+      resetForm();
+      return true;
+    } catch (error) {
+      console.error('Error al actualizar la actividad:', error);
+      Alert.alert("Error", "No se pudo actualizar la actividad. Intente nuevamente.");
+      return false;
+    }
+  };
+
   // Función crear actividad pero con el estado "completado"
   const finishTask = async (): Promise<boolean> => { 
     // Crear una copia de los datos actuales
@@ -147,6 +198,7 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
   useImperativeHandle(ref, () => ({
     handleCreateActivity, // Método para crear una actividad
     finishTask, // Método para finalizar una actividad
+    handleUpdateActivity, // Método para actualizar una actividad
   }));
 
   const resetForm = () => {
@@ -160,6 +212,14 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
       selectedIcon: "local-shipping",
       fecha_creacion: state.fecha_creacion,
     });
+  };
+
+  const handleSubmit = async () => {
+    if (isEditing) {
+      await handleUpdateActivity();
+    } else {
+      await handleCreateActivity();
+    }
   };
 
   return (
@@ -193,6 +253,20 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
           />
         </View>
       </ScrollView>
+      <TouchableOpacity
+        style={{
+          justifyContent: "center",
+          alignItems: "center",
+          marginTop: 10,
+          backgroundColor: "#dedede",
+          borderRadius: 5,
+        }}
+        onPress={handleSubmit}
+      >
+        <Text style={{ fontSize: 14, color: "#0a455e", padding: 15 }}>
+          {isEditing ? 'Actualizar Actividad' : 'Crear Actividad'}
+        </Text>
+      </TouchableOpacity>
     </View>
   );
 });
@@ -202,6 +276,7 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
 export interface ActivityItemCreateRef {
   handleCreateActivity: () => Promise<boolean>; // Método para crear una actividad
   finishTask: () => Promise<boolean>; // Método para finalizar una tarea
+  handleUpdateActivity: () => Promise<boolean>; // Método para actualizar una actividad
 }
 
 // Opciones de íconos
@@ -222,26 +297,26 @@ const RECENT_ICONS: Array<keyof typeof MaterialIcons.glyphMap> = [
 // Componente indicador de estado e imagen 
 const StatusIndicator = ({ tipoTask }: { tipoTask: string }) => {
   const getStatusColor = () => { // Obtiene el color del estado
-    switch (tipoTask) {
-      case "Programado": return "#0a3649";
-      case "Pendiente": return "#d1a44c";
-      case "Completado": return "#4ec291";
+    switch (tipoTask.toLowerCase()) {
+      case "programado": return "#0a3649";
+      case "pendiente": return "#d1a44c";
+      case "completado": return "#4ec291";
       default: return "#0a3649";
     }
   };
 
   const renderStatusIcon = () => {  // Renderiza el ícono del estado
-    switch (tipoTask) {
-      case "Programado":
+    switch (tipoTask.toLowerCase()) {
+      case "programado":
         return <MaterialCommunityIcons name="progress-clock" size={20} color="#d1a44c" />;
-      case "Pendiente":
+      case "pendiente":
         return (
           <View style={{ flexDirection: "row", gap: 5 }}>
             <MaterialIcons name="agriculture" size={24} color="#eee" />
             <AntDesign name="clockcircle" size={24} color="#d1a44c" />
           </View>
         );
-      case "Completado":
+      case "completado":
         return (
           <View style={{ flexDirection: "row", gap: 5 }}>
             <MaterialIcons name="agriculture" size={24} color="#eee" />
@@ -268,15 +343,15 @@ const StatusIndicator = ({ tipoTask }: { tipoTask: string }) => {
           styles.statusProgramado,
           {
             backgroundColor: getStatusColor(),
-            borderTopColor: tipoTask === "Completado" ? "#0a3649" : "#d1a44c",
-            borderBottomColor: tipoTask === "Completado" ? "#0a3649" : "#d1a44c",
+            borderTopColor: tipoTask.toLowerCase() === "completado" ? "#0a3649" : "#d1a44c",
+            borderBottomColor: tipoTask.toLowerCase() === "completado" ? "#0a3649" : "#d1a44c",
           },
         ]}
       >
         <Text
           style={{
             fontSize: 14,
-            color: tipoTask === "Programado" ? "#d1a44c" : "#0a3649",
+            color: tipoTask.toLowerCase() === "programado" ? "#d1a44c" : "#0a3649",
           }}
         >
           {tipoTask}

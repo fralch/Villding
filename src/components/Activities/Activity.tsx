@@ -17,11 +17,12 @@ import { MaterialIcons, MaterialCommunityIcons, Feather, Ionicons } from '@expo/
 import ActivityItemCreate, { ActivityItemCreateRef } from './ActivityItemCreate';
 import { styles } from "./styles/ActivityStyles";
 
-interface Activity {
+export interface Activity {
   id: number;
   project_id: number;
   tracking_id: number;
   name: string;
+  title: string;
   description: string;
   location: string;
   horas: string;
@@ -73,6 +74,10 @@ export default function Activity(props: any) {
   const [tracking, setTracking] = useState<Tracking>(props.route.params.tracking);
   const [weekDays, setWeekDays] = useState<WeekDay[]>([]);
   const [pendingActivitiesCount, setPendingActivitiesCount] = useState(0);
+  
+  // New state variables for editing
+  const [isEditing, setIsEditing] = useState(false);
+  const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
 
   const getDayName = (dateString: string) => {
     const days = [ 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
@@ -194,8 +199,25 @@ export default function Activity(props: any) {
     }
   };
   
-  const showModal = (date: string) => {
+  // Mostrar modal para crear nueva actividad
+  const showCreateModal = (date: string) => {
     setSelectedDate(date);
+    setIsEditing(false);
+    setSelectedActivity(null);
+    setIsVisible(true);
+    Animated.timing(slideAnim, {
+      toValue: 0,
+      duration: 300,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  // Mostrar modal para editar actividad existente
+  const showModal = (activity: Activity, date: string) => {
+    setSelectedDate(date);
+    setIsEditing(true);
+    setSelectedActivity(activity);
+    setActivityItemCreateType('edit');
     setIsVisible(true);
     Animated.timing(slideAnim, {
       toValue: 0,
@@ -215,12 +237,28 @@ export default function Activity(props: any) {
   // Actualizado para refrescar actividades después de guardar
   const handleSaveActivity = async () => {
     if (activityItemCreateRef.current) {
-      const success = await activityItemCreateRef.current.handleCreateActivity();
+      let success;
+      
+      if (isEditing) {
+        success = await activityItemCreateRef.current.handleUpdateActivity();
+      } else {
+        success = await activityItemCreateRef.current.handleCreateActivity();
+      }
+      
       if (success) {
         // Refrescar las actividades
         await refreshActivities();
         hideModal();
       }
+    }
+  };
+
+  // Obtener la etiqueta del estado
+  const getStatusLabel = (status: string) => {
+    switch (status.toLowerCase()) {
+      case 'completado': return 'Completado';
+      case 'pendiente': return 'Pendiente';
+      default: return 'Programado';
     }
   };
 
@@ -279,7 +317,7 @@ export default function Activity(props: any) {
                 <ActivityCard
                   key={activity.id}
                   activity={activity}
-                  showModal={() => showModal(day.dayLabel)}
+                  showModal={() => showModal(activity, day.dayLabel)}
                   setActivityItemCreateType={setActivityItemCreateType}
                 />
               ))
@@ -288,7 +326,7 @@ export default function Activity(props: any) {
             )}
             <TouchableOpacity 
               style={styles.addNewTaskButton} 
-              onPress={() => showModal(day.dayLabel)}
+              onPress={() => showCreateModal(day.dayLabel)}
             >
               <Text style={styles.addNewTaskText}>+ Nuevo</Text>
             </TouchableOpacity>
@@ -351,6 +389,7 @@ export default function Activity(props: any) {
               tracking_id={tracking.id}
               tipo={activityItemCreateType} 
               date={selectedDate} 
+              activity={selectedActivity}
             />
           </Animated.View>
         </View>
