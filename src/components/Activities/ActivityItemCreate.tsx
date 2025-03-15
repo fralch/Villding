@@ -34,7 +34,8 @@ interface ActivityItemCreateProps {
 // Componente principal
 const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateProps>(({ tipo, project_id, tracking_id, date, isEditing = false, itemData, activity, }, ref) => {
   // estado del formulario 
-  console.log(activity);
+  // console.log(activity);
+  console.log(isEditing);
   const [state, setState] = useState({
     tipoTask: tipo,
     titulo: isEditing ? itemData.name : "",
@@ -88,7 +89,7 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
     // si fecha de creación es mayor a la fecha actual, el estado es "programado", si no, el estado es el valor de tipoActual
     const status = state.fecha_creacion > today ? "programado" : tipoActual.toLowerCase(); 
 
-    return {
+    let data = {
       project_id,
       tracking_id,
       name: state.titulo,
@@ -100,6 +101,13 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
       comments: state.comments,
       fecha_creacion: state.fecha_creacion,
     };
+
+    if (isEditing) {
+      data.id = itemData.id;
+    }
+
+    console.log(data);
+    return data;
   };
 
   const handleCreateActivity = async (): Promise<boolean> => {
@@ -143,6 +151,7 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
     const activityData = prepareActivityData(); // Preparo los datos de la actividad
 
     try {
+      console.log(activityData);
       const response = await axios.put(
         `https://centroesteticoedith.com/endpoint/activities/${itemData.id}`,
         activityData,
@@ -173,6 +182,7 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
     };
 
     try {
+      console.log(activityData);
       const response = await axios.post(
         'https://centroesteticoedith.com/endpoint/activities/create',
         activityData,

@@ -126,13 +126,13 @@ export default function Activity(props: any) {
         const apiActivities: Activity[] = response.data;
   
         // Log para depuración
-        console.log('Actividades recibidas:', apiActivities);
+        // console.log('Actividades recibidas:', apiActivities);
         
         const weekDaysWithActivities: WeekDay[] = tracking.days.map(dayLabel => {
           const dayActivities = apiActivities.filter(activity => {
             // Usar la función específica para formatear YYYY-MM-DD a DD/MM
             const formattedActivityDate = formatDateFromString(activity.fecha_creacion);
-            console.log(`Comparando fecha: ${activity.fecha_creacion} -> ${formattedActivityDate} con ${dayLabel}`);
+            // console.log(`Comparando fecha: ${activity.fecha_creacion} -> ${formattedActivityDate} con ${dayLabel}`);
             return formattedActivityDate === dayLabel;
           });
   
@@ -389,6 +389,8 @@ export default function Activity(props: any) {
               tracking_id={tracking.id}
               tipo={activityItemCreateType} 
               date={selectedDate} 
+              isEditing={isEditing}
+              itemData={selectedActivity}
               activity={selectedActivity}
             />
           </Animated.View>
