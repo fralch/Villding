@@ -86,10 +86,24 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
   const prepareActivityData = () => {
     // Comparar fecha de creación con la fecha actual
     const today = new Date().toISOString().split('T')[0];
-    // si fecha de creación es mayor a la fecha actual, el estado es "programado", si no, el estado es el valor de tipoActual
     const status = state.fecha_creacion > today ? "programado" : tipoActual.toLowerCase(); 
 
-    let data = {
+    // Definimos la interfaz para el objeto data
+    interface ActivityData {
+      project_id: number;
+      tracking_id: number;
+      name: string;
+      description: string;
+      location: string;
+      horas: string;
+      status: string;
+      icon: string;
+      comments: string;
+      fecha_creacion: string;
+      id?: number; // Hacemos el id opcional con '?'
+    }
+
+    let data: ActivityData = {
       project_id,
       tracking_id,
       name: state.titulo,
