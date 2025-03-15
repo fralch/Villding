@@ -113,7 +113,8 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
     }
   };
 
-  const finishTask = async (): Promise<boolean> => {
+  // Función crear actividad pero con el estado "completado"
+  const finishTask = async (): Promise<boolean> => { 
     // Crear una copia de los datos actuales
     const activityData = {
       ...prepareActivityData(),
@@ -142,10 +143,10 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
     }
   };
 
-  // Exponer métodos al componente padre a través de la referencia
+  // Enviar métodos al componente padre a través de la referencia
   useImperativeHandle(ref, () => ({
-    handleCreateActivity,
-    finishTask,
+    handleCreateActivity, // Método para crear una actividad
+    finishTask, // Método para finalizar una actividad
   }));
 
   const resetForm = () => {
@@ -163,10 +164,10 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
 
   return (
     <View style={{ backgroundColor: "#0a3649" }}>
-      <ExpoStatusBar style="dark" />
+      <ExpoStatusBar style="light" />
       <ScrollView>
         <View>
-          {/* Componente Indicador de Estado */}
+          {/* Componente Indicador de Estado e Imagen */}
           <StatusIndicator tipoTask={state.tipoTask} />
 
           {/* Componente Sección de Título */}
