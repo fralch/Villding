@@ -5,10 +5,10 @@ import {
   TextInput,
   TouchableOpacity,
   ScrollView,
-  Alert,
+  Modal,
   Image,
   Pressable,
-
+  StyleSheet,
 } from "react-native";
 import { StatusBar as ExpoStatusBar } from "expo-status-bar";
 import {
@@ -48,6 +48,9 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
     fecha_creacion: isEditing ? itemData.fecha_creacion : "",
   });
   const [tipoActual, setTipoActual] = useState(tipo === "edit" ? "pendiente" : tipo);
+  // estados para el modal de confirmación
+  const [confirmationModalVisible, setConfirmationModalVisible] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
 
   useEffect(() => {
     // date es la fecha pasada como prop para crear la actividad
@@ -128,7 +131,7 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
   const handleCreateActivity = async (): Promise<boolean> => {
     // Validación
     if (!state.titulo.trim()) {
-      Alert.alert("Error", "El título es obligatorio");
+      showConfirmationModal("Error", "El título es obligatorio");
       return false;
     }
 
@@ -146,12 +149,14 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
         }
       );
 
-      alert("Actividad creada correctamente");
-      resetForm();
+      showConfirmationModal("Éxito", "Actividad creada correctamente");
+      setTimeout(() => {
+        resetForm();
+      }, 3000);
       return true;
     } catch (error) {
       console.error('Error al crear la actividad:', error);
-      Alert.alert("Error", "No se pudo crear la actividad. Intente nuevamente.");
+      showConfirmationModal("Error", "No se pudo crear la actividad. Intente nuevamente.");
       return false;
     }
   };
@@ -159,7 +164,7 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
   const handleUpdateActivity = async (): Promise<boolean> => {
     // Validación
     if (!state.titulo.trim()) {
-      Alert.alert("Error", "El título es obligatorio");
+      showConfirmationModal("Error", "El título es obligatorio");
       return false;
     }
 
@@ -178,12 +183,14 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
         }
       );
 
-      alert("Actividad actualizada correctamente");
-      resetForm();
+      showConfirmationModal("Éxito", "Actividad actualizada correctamente");
+      setTimeout(() => {
+        resetForm();
+      }, 3000);
       return true;
     } catch (error) {
       console.error('Error al actualizar la actividad:', error);
-      Alert.alert("Error", "No se pudo actualizar la actividad. Intente nuevamente.");
+      showConfirmationModal("Error", "No se pudo actualizar la actividad. Intente nuevamente.");
       return false;
     }
   };
@@ -200,7 +207,7 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
       console.log(activityData);
       const response = await axios({
         method: isEditing ? 'put' : 'post',
-        url: isEditing 
+        url: isEditing
           ? `https://centroesteticoedith.com/endpoint/activities/${itemData.id}`
           : 'https://centroesteticoedith.com/endpoint/activities/create',
         data: activityData,
@@ -210,15 +217,17 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
         }
       });
 
-      alert(`Actividad ${isEditing ? 'actualizada' : 'completada'} correctamente`);
-      resetForm();
-      if (hideModal) {
-        hideModal(); // Cerrar el modal después de completar la actividad
-      }
+      showConfirmationModal("Éxito", `Actividad ${isEditing ? 'actualizada' : 'completada'} correctamente`);
+      setTimeout(() => {
+        resetForm();
+        if (hideModal) {
+          hideModal(); // Cerrar el modal después de completar la actividad
+        }
+      }, 2000);
       return true;
     } catch (error) {
       console.error('Error al finalizar la actividad:', error);
-      Alert.alert("Error", `No se pudo ${isEditing ? 'actualizar' : 'finalizar'} la actividad. Intente nuevamente.`);
+      showConfirmationModal("Error", `No se pudo ${isEditing ? 'actualizar' : 'finalizar'} la actividad. Intente nuevamente.`);
       return false;
     }
   };
@@ -249,6 +258,15 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
     } else {
       await handleCreateActivity();
     }
+  };
+
+  const showConfirmationModal = (title: string, message: string) => {
+    setModalMessage(message);
+    setConfirmationModalVisible(true);
+  };
+
+  const hideConfirmationModal = () => {
+    setConfirmationModalVisible(false);
   };
 
   return (
@@ -296,6 +314,18 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
           {isEditing ? 'Actualizar Actividad' : 'Crear Actividad'}
         </Text>
       </TouchableOpacity>
+
+      {/* Modal de Confirmación */}
+      <Modal transparent={true} animationType="slide" visible={confirmationModalVisible}>
+        <View style={modalStyles.modalContainer}>
+          <View style={modalStyles.modalContent}>
+            <Text style={modalStyles.modalText}>{modalMessage}</Text>
+            <TouchableOpacity style={modalStyles.button} onPress={hideConfirmationModal}>
+              <Text style={modalStyles.buttonText}>OK</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 });
@@ -561,3 +591,35 @@ const IconSelector = ({ selectedIcon, onIconSelect }: { selectedIcon: keyof type
 };
 
 export default ActivityItemCreate;
+
+const modalStyles = StyleSheet.create({
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalContent: {
+    width: 300,
+    padding: 20,
+    backgroundColor: '#0A3649',
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  modalText: {
+    fontSize: 18,
+    marginBottom: 20,
+    color: 'white',
+    textAlign: 'center',
+  },
+  button: {
+    backgroundColor: '#33baba',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+  },
+  buttonText: {
+    color: 'white',
+    fontSize: 16,
+  },
+});
