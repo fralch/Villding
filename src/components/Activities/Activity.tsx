@@ -226,12 +226,15 @@ export default function Activity(props: any) {
     }).start();
   };
 
-  const hideModal = () => {
+  const hideModal = async () => {
     Animated.timing(slideAnim, {
       toValue: height,
       duration: 300,
       useNativeDriver: true,
-    }).start(() => setIsVisible(false));
+    }).start(async () => {
+      setIsVisible(false);
+      await refreshActivities(); // Refrescar las actividades después de cerrar el modal
+    });
   };
 
   // Actualizado para refrescar actividades después de guardar
@@ -392,6 +395,7 @@ export default function Activity(props: any) {
               isEditing={isEditing}
               itemData={selectedActivity}
               activity={selectedActivity}
+              hideModal={hideModal}
             />
           </Animated.View>
         </View>

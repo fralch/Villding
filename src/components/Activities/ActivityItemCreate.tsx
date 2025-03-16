@@ -30,10 +30,11 @@ interface ActivityItemCreateProps {
   isEditing?: boolean;
   itemData?: any;
   activity?: Activity | null;
+  hideModal?: () => void;
 }
 
 // Componente principal
-const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateProps>(({ tipo, project_id, tracking_id, date, isEditing = false, itemData, activity, }, ref) => {
+const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateProps>(({ tipo, project_id, tracking_id, date, isEditing = false, itemData, activity, hideModal, }, ref) => {
   // estado del formulario
   console.log(isEditing);
   const [state, setState] = useState({
@@ -211,6 +212,9 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
 
       alert(`Actividad ${isEditing ? 'actualizada' : 'completada'} correctamente`);
       resetForm();
+      if (hideModal) {
+        hideModal(); // Cerrar el modal después de completar la actividad
+      }
       return true;
     } catch (error) {
       console.error('Error al finalizar la actividad:', error);
