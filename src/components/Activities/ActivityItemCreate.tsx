@@ -33,8 +33,7 @@ interface ActivityItemCreateProps {
 
 // Componente principal
 const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateProps>(({ tipo, project_id, tracking_id, date, isEditing = false, itemData, activity, }, ref) => {
-  // estado del formulario 
-  // console.log(activity);
+  // estado del formulario
   console.log(isEditing);
   const [state, setState] = useState({
     tipoTask: tipo,
@@ -46,7 +45,7 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
     selectedIcon: isEditing ? itemData.icon : "local-shipping" as keyof typeof MaterialIcons.glyphMap,
     fecha_creacion: isEditing ? itemData.fecha_creacion : "",
   });
-  const [tipoActual, setTipoActual] = useState(tipo);
+  const [tipoActual, setTipoActual] = useState(tipo === "edit" ? "pendiente" : tipo);
 
   useEffect(() => {
     // date es la fecha pasada como prop para crear la actividad
@@ -77,7 +76,7 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
     setState(prevState => ({ ...prevState, ...updates })); // fijo los valores del estado con los valores del objeto updates
   };
 
-  // Función para actualizar el valor de un campo del formulario  
+  // Función para actualizar el valor de un campo del formulario
   const handleFieldChange = (field: string, value: string) => { // recibo el nombre del campo y el valor a actualizar
     updateState({ [field]: value } as Partial<typeof state>); // fijo los valores del estado con los valores del objeto updates
   };
@@ -86,7 +85,7 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
   const prepareActivityData = () => {
     // Comparar fecha de creación con la fecha actual
     const today = new Date().toISOString().split('T')[0];
-    const status = state.fecha_creacion > today ? "programado" : tipoActual.toLowerCase(); 
+    const status = state.fecha_creacion > today ? "programado" : tipoActual.toLowerCase();
 
     // Definimos la interfaz para el objeto data
     interface ActivityData {
@@ -188,7 +187,7 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
   };
 
   // Función crear actividad pero con el estado "completado"
-  const finishTask = async (): Promise<boolean> => { 
+  const finishTask = async (): Promise<boolean> => {
     // Crear una copia de los datos actuales
     const activityData = {
       ...prepareActivityData(),
@@ -295,7 +294,6 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
   );
 });
 
-
 // Referencia al componente
 export interface ActivityItemCreateRef {
   handleCreateActivity: () => Promise<boolean>; // Método para crear una actividad
@@ -318,7 +316,7 @@ const RECENT_ICONS: Array<keyof typeof MaterialIcons.glyphMap> = [
   "directions-car",
 ];
 
-// Componente indicador de estado e imagen 
+// Componente indicador de estado e imagen
 const StatusIndicator = ({ tipoTask }: { tipoTask: string }) => {
   const getStatusColor = () => { // Obtiene el color del estado
     switch (tipoTask.toLowerCase()) {
@@ -555,7 +553,5 @@ const IconSelector = ({ selectedIcon, onIconSelect }: { selectedIcon: keyof type
     </>
   );
 };
-
-
 
 export default ActivityItemCreate;
