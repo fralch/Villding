@@ -8,6 +8,7 @@ import {
   Alert,
   Image,
   Pressable,
+
 } from "react-native";
 import { StatusBar as ExpoStatusBar } from "expo-status-bar";
 import {
@@ -144,7 +145,7 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
         }
       );
 
-      Alert.alert("Éxito", "Actividad creada correctamente");
+      alert("Actividad creada correctamente");
       resetForm();
       return true;
     } catch (error) {
@@ -176,7 +177,7 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
         }
       );
 
-      Alert.alert("Éxito", "Actividad actualizada correctamente");
+      alert("Actividad actualizada correctamente");
       resetForm();
       return true;
     } catch (error) {
@@ -196,23 +197,24 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
 
     try {
       console.log(activityData);
-      const response = await axios.post(
-        'https://centroesteticoedith.com/endpoint/activities/create',
-        activityData,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            'Cookie': 'XSRF-TOKEN=...'
-          }
+      const response = await axios({
+        method: isEditing ? 'put' : 'post',
+        url: isEditing 
+          ? `https://centroesteticoedith.com/endpoint/activities/${itemData.id}`
+          : 'https://centroesteticoedith.com/endpoint/activities/create',
+        data: activityData,
+        headers: {
+          "Content-Type": "application/json",
+          'Cookie': 'XSRF-TOKEN=...'
         }
-      );
+      });
 
-      Alert.alert("Éxito", "Actividad completada correctamente");
+      alert(`Actividad ${isEditing ? 'actualizada' : 'completada'} correctamente`);
       resetForm();
       return true;
     } catch (error) {
       console.error('Error al finalizar la actividad:', error);
-      Alert.alert("Error", "No se pudo finalizar la actividad. Intente nuevamente.");
+      Alert.alert("Error", `No se pudo ${isEditing ? 'actualizar' : 'finalizar'} la actividad. Intente nuevamente.`);
       return false;
     }
   };
