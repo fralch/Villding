@@ -109,7 +109,7 @@ const TrackingCurrent = () => {
     try {
       const response = await axios.get(`${API_BASE_URL}/trackings_project/${project.id}`);
       const trackings = response.data;
-
+      // console.log(trackings);
       // Organizar los seguimientos por secciones
       const sections = organizeTrackingsBySections(trackings);
       setTrackingSections(sections); // Establecer las secciones de seguimiento en el estado
@@ -151,31 +151,27 @@ const TrackingCurrent = () => {
 
   // Filtrar los seguimientos para mostrar solo los de la semana actual
   const filterTrackingsByWeek = () => {
-    if (trackingSections.length === 0 || weekDates.length === 0) return;
+    if (trackingSections.length === 0 || weekDates.length === 0) return;  // Verifica si hay datos disponibles para filtrar
 
-    const currentYear = new Date().getFullYear();
+    const currentYear = new Date().getFullYear();                             // Obtiene el año actual para crear fechas completas
 
-    // Extraer día y mes del primer y último día de la semana
-    const [startDay, startMonth] = weekDates[0].split("/").map(Number);
-    const [endDay, endMonth] = weekDates[6].split("/").map(Number);
+    const [startDay, startMonth] = weekDates[0].split("/").map(Number);      // Extrae día y mes del primer día (Lunes) del formato "DD/MM"
+    const [endDay, endMonth] = weekDates[6].split("/").map(Number);          // Extrae día y mes del último día (Domingo) del formato "DD/MM"
 
-    // Crear fechas de inicio y fin de la semana
-    const weekStart = new Date(currentYear, startMonth - 1, startDay);
-    const weekEnd = new Date(currentYear, endMonth - 1, endDay, 23, 59, 59);
+    const weekStart = new Date(currentYear, startMonth - 1, startDay);        // Crea fecha de inicio de semana (Lunes)
+    const weekEnd = new Date(currentYear, endMonth - 1, endDay, 23, 59, 59); // Crea fecha de fin de semana (Domingo) incluyendo todo el día
 
-    // Filtrar las secciones y sus seguimientos
     const filtered = trackingSections
-      .map(section => ({
-        ...section,
-        trackings: section.trackings.filter(tracking => {
-          if (!tracking.date_start) return false;
-          const trackingDate = new Date(tracking.date_start);
-          return trackingDate <= weekEnd;
+      .map(section => ({                                                      // Mapea cada sección de seguimiento
+        ...section,                                                           // Mantiene los datos originales de la sección
+        trackings: section.trackings.filter(tracking => {                     // Filtra los seguimientos dentro de la sección
+          if (!tracking.date_start) return false;                            // Excluye seguimientos sin fecha de inicio
+          const trackingDate = new Date(tracking.date_start);                // Convierte la fecha del seguimiento a objeto Date
+          return trackingDate <= weekEnd;                                    // Incluye solo seguimientos hasta el fin de semana
         })
       }))
-      .filter(section => section.trackings.length > 0);
-
-    setFilteredTrackings(filtered); // Establecer los seguimientos filtrados en el estado
+      .filter(section => section.trackings.length > 0);                      // Elimina secciones que quedaron sin seguimientos
+    setFilteredTrackings(filtered);                                          // Actualiza el estado con las secciones filtradas
   };
 
   // Cambiar a la semana anterior o siguiente
@@ -295,6 +291,7 @@ const TrackingCurrent = () => {
           <TrackingSectionComponent
             section={item}
             onPress={navigateToTracking}
+            weekDates={weekDates}
             onLongPress={() => setAccessDeniedModalVisible(true)}
           />
         )}
