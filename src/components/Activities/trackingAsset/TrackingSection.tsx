@@ -22,6 +22,12 @@ const TrackingSection: React.FC<TrackingSectionProps> = ({ section, onPress, onL
     return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
   };
   
+  // Función para obtener la fecha actual en formato "DD/M"
+  const getCurrentDateShort = () => {
+    const today = new Date();
+    return `${today.getDate()}/${today.getMonth() + 1}`;
+  };
+  
   const getStatusForDay = (tracking: any, dateIndex: number) => {
     // Obtener la fecha del weekDates en el formato "DD/M"
     const weekDateStr = weekDates[dateIndex]; // "17/3"
@@ -50,8 +56,15 @@ const TrackingSection: React.FC<TrackingSectionProps> = ({ section, onPress, onL
     return null; // No mostrar nada si no hay actividad
   };
   
-  // Función para verificar si una fecha es menor o igual a la fecha actual
-  const isPastOrToday = (dateStr: string) => {
+  // Función para verificar si una fecha es el día actual
+  const isToday = (dateStr: string) => {
+    if (!dateStr) return false;
+    const currentDateShort = getCurrentDateShort();
+    return dateStr === currentDateShort;
+  };
+  
+  // Función para verificar si una fecha es pasada (menor a la fecha actual)
+  const isPast = (dateStr: string) => {
     if (!dateStr) return false;
     
     const [day, month] = dateStr.split('/');
@@ -59,7 +72,18 @@ const TrackingSection: React.FC<TrackingSectionProps> = ({ section, onPress, onL
     const fullDate = `2025-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
     const currentDate = getCurrentDate();
     
-    return fullDate <= currentDate;
+    return fullDate < currentDate;
+  };
+  
+  // Función para obtener el color de fondo según la fecha
+  const getBackgroundColor = (dateStr: string) => {
+    if (isToday(dateStr)) {
+      return "#002a36"; // Color más oscuro para hoy
+    } else if (isPast(dateStr)) {
+      return "#003b4d"; // Color oscuro para días pasados
+    } else {
+      return "#004e66"; // Color original para días futuros
+    }
   };
   
   return (
@@ -75,7 +99,7 @@ const TrackingSection: React.FC<TrackingSectionProps> = ({ section, onPress, onL
           <View style={styles.iconRow}>
             {weekDates.map((dateStr, i) => {
               const status = getStatusForDay(tracking, i);
-              const isPastOrCurrentDay = isPastOrToday(dateStr);
+              const backgroundColor = getBackgroundColor(dateStr);
               
               return (
                 <View
@@ -83,8 +107,7 @@ const TrackingSection: React.FC<TrackingSectionProps> = ({ section, onPress, onL
                   style={[
                     styles.iconContainer,
                     {
-                      // Color de fondo más oscuro para días pasados o actuales, normal para días futuros
-                      backgroundColor: isPastOrCurrentDay ? "#003b4d" : "#004e66",
+                      backgroundColor: backgroundColor,
                     }
                   ]}
                 >
@@ -102,7 +125,7 @@ const TrackingSection: React.FC<TrackingSectionProps> = ({ section, onPress, onL
                         status === 'completed' 
                           ? "#4ABA8D"  // Verde para completados
                           : status === 'scheduled' 
-                            ? "#D1A44C" // Blanco para programados
+                            ? "#FFFFFF" // Blanco para programados
                             : "#D1A44C"  // Amarillo para pendientes
                       }
                       style={styles.icon}
