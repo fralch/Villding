@@ -19,7 +19,7 @@ const TrackingSection: React.FC<TrackingSectionProps> = ({ section, onPress, onL
   const getStatusForDay = (tracking: any, dateIndex: number) => {
     // Obtener la fecha del weekDates en el formato "DD/M"
     const weekDateStr = weekDates[dateIndex]; // "17/3"
-    if (!weekDateStr) return 0; // Si no hay fecha, retornar estado por defecto
+    if (!weekDateStr) return null; // Si no hay fecha, retornar null
     
     // Convertir el formato "DD/M" a "YYYY-MM-DD" para comparar con days_summary
     const [day, month] = weekDateStr.split('/');
@@ -29,18 +29,19 @@ const TrackingSection: React.FC<TrackingSectionProps> = ({ section, onPress, onL
     // Buscar esta fecha en days_summary
     const dayInfo = tracking.days_summary?.find((d: any) => d.date === fullDateStr);
     
-    if (!dayInfo) return 0; // Si no se encuentra información para este día
+    if (!dayInfo) return null; // Si no se encuentra información para este día
     
-    // Determinar el estado según las prioridades
-    if (dayInfo.has_completed) {
-      return 1; // Completado (verde)
-    } else if (dayInfo.has_scheduled) {
-      return -1; // En progreso (blanco)
+    // Determinar el estado según las nuevas reglas
+    if (dayInfo.has_completed && dayInfo.completed_count > 0 && 
+        !dayInfo.has_pending && !dayInfo.has_scheduled) {
+      return 'completed'; // Solo mostrar checkmark si todo está completado y no hay nada más
     } else if (dayInfo.has_pending) {
-      return 0; // Pendiente (amarillo)
+      return 'pending'; // Mostrar círculo amarillo si hay pendientes
+    } else if (dayInfo.has_scheduled) {
+      return 'scheduled'; // Mostrar círculo blanco si hay programados
     }
     
-    return 0; // Estado por defecto
+    return null; // No mostrar nada si no hay actividad
   };
   
   return (
@@ -67,24 +68,26 @@ const TrackingSection: React.FC<TrackingSectionProps> = ({ section, onPress, onL
                     }
                   ]}
                 >
-                  <Ionicons
-                    name={
-                      status === 1 
-                        ? "checkmark" 
-                        : status === -1 
-                          ? "ellipse-outline" 
-                          : "ellipse-sharp"
-                    }
-                    size={status === 1 ? 24 : 12}
-                    color={
-                      status === 1 
-                        ? "#4ABA8D"  // Verde para completados
-                        : status === -1 
-                          ? "#FFFFFF" // Blanco para en progreso (scheduled)
-                          : "#D1A44C"  // Amarillo para pendientes
-                    }
-                    style={styles.icon}
-                  />
+                  {status && (
+                    <Ionicons
+                      name={
+                        status === 'completed' 
+                          ? "checkmark" 
+                          : status === 'scheduled' 
+                            ? "ellipse-outline" 
+                            : "ellipse-sharp"
+                      }
+                      size={status === 'completed' ? 24 : 12}
+                      color={
+                        status === 'completed' 
+                          ? "#4ABA8D"  // Verde para completados
+                          : status === 'scheduled' 
+                            ? "#FFFFFF" // Blanco para programados
+                            : "#D1A44C"  // Amarillo para pendientes
+                      }
+                      style={styles.icon}
+                    />
+                  )}
                 </View>
               );
             })}
