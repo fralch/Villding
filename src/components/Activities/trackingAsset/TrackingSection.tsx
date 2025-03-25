@@ -125,7 +125,7 @@ const TrackingSection: React.FC<TrackingSectionProps> = ({ section, onPress, onL
                         status === 'completed' 
                           ? "#4ABA8D"  // Verde para completados
                           : status === 'scheduled' 
-                            ? "#FFFFFF" // Blanco para programados
+                            ? "#D1A44C" // Blanco para programados
                             : "#D1A44C"  // Amarillo para pendientes
                       }
                       style={styles.icon}
