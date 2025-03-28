@@ -53,6 +53,7 @@ const TrackingCurrent = () => {
     try {
       const storedProject = await getProject(); // Obtener el proyecto del almacenamiento local
       if (!storedProject) return;
+      console.log(storedProject);
 
       const parsedProject = typeof storedProject === 'string'
         ? JSON.parse(storedProject)
@@ -61,11 +62,28 @@ const TrackingCurrent = () => {
       setProject(parsedProject); // Establecer el proyecto en el estado
 
       // Configurar la semana actual
-      const weekNum = parseInt(parsedProject.week_current?.toString() || "1", 10);
-      setCurrentWeekIndex(weekNum - 1); // Establecer el índice de la semana actual
-
+      // Convertir el formato YYYY/MM/DD a un formato compatible con Date
+      const [year, month, day] = parsedProject.start_date.split('/').map(Number);
+      
+      // Crear la fecha inicial (restando 1 al mes porque en Date los meses son 0-indexed)
+      const startDate = new Date(year, month - 1, day);
+      
+      // Obtener la fecha actual
+      const currentDate = new Date();
+      
+      // Calcular la diferencia en milisegundos
+      const differenceInMs = currentDate.getTime() - startDate.getTime();
+      
+      // Convertir milisegundos a días
+      const differenceInDays = Math.floor(differenceInMs / (1000 * 60 * 60 * 24));
+      
+      // Calcular el número de semana
+      const weekNumber = Math.floor(differenceInDays / 7) + 1;
+      
+      setCurrentWeekIndex(weekNumber - 1); // Establecer el índice de la semana actual   
+      // Calcular las fechas de la semana inicial
+      calculateWeekDates(parsedProject.start_date, weekNumber); // Calcular las fechas de la semana inicial
       // Calcular las fechas de la semana
-      calculateWeekDates(parsedProject.start_date, weekNum - 1); // Calcular las fechas de la semana actual 
     } catch (error) {
       console.error("Error loading project:", error);
     }
@@ -74,16 +92,22 @@ const TrackingCurrent = () => {
   // Calcular las fechas de una semana inicial o de las semanas siguientes
   const calculateWeekDates = (startDateStr: string, weekOffset: number) => {
     if (!startDateStr) return;
+    
+    // Only prevent negative weeks
+    if (weekOffset < 1) {
+      weekOffset = 1;
+    }
 
-    // Convertir la fecha de inicio a objeto Date
-    const startDate = new Date(startDateStr.replace(/\//g, "-"));
+    console.log(`weekOffset: ${weekOffset}`);
+      console.log(`startDateStr: ${startDateStr}`);
+    // Convertir la fecha de inicio a objeto Date y asegurar que sea el primer día de la semana del proyecto
+    const [year, month, day] = startDateStr.split('/').map(Number);
+    const projectStartDate = new Date(year, month - 1, day);
+    const firstMonday = getMonday(projectStartDate);
 
-    // Obtener el lunes de la semana de inicio
-    const mondayOfStartWeek = getMonday(startDate); // 
-
-    // Calcular el lunes de la semana solicitada
-    const targetMonday = new Date(mondayOfStartWeek); 
-    targetMonday.setDate(mondayOfStartWeek.getDate() + (weekOffset * 7)); // Calcular el lunes de la semana solicitada
+    // Calcular el lunes de la semana solicitada sumando las semanas de offset
+    const targetMonday = new Date(firstMonday);
+    targetMonday.setDate(firstMonday.getDate() + ((weekOffset - 1) * 7));
 
     // Generar un array de fechas para los 7 días de la semana
     const dates = Array.from({ length: 7 }, (_, index) => {
@@ -91,8 +115,8 @@ const TrackingCurrent = () => {
       date.setDate(targetMonday.getDate() + index);
       return date.toLocaleDateString("es-PE", { day: "2-digit", month: "2-digit" });
     });
-
-    setWeekDates(dates); // Establecer las fechas de la semana en el estado
+    console.log(dates);
+    setWeekDates(dates);
   };
 
   // Obtener el lunes de una semana dada una fecha
