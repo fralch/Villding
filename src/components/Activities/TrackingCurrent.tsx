@@ -11,6 +11,7 @@ import WeekSelector from './trackingAsset/WeekSelector';
 import DayColumn from './trackingAsset/DayColumn';
 import TrackingSectionComponent from './trackingAsset/TrackingSection';
 import AddTrackingModal from './trackingAsset/AddTrackingModal';
+import { useFocusEffect } from '@react-navigation/native';
 
 const API_BASE_URL = 'https://centroesteticoedith.com/endpoint';
 
@@ -37,12 +38,23 @@ const TrackingCurrent = () => {
   }, []); // Se ejecuta una vez al montar el componente
 
   // Cargar los seguimientos cuando el proyecto cambia
-  useEffect(() => {
-    if (project?.id) {
-      fetchTrackings();
-    }
-  }, [project]); // Se ejecuta cuando el proyecto cambia
+  // Replace or add this effect
+  useFocusEffect(
+    React.useCallback(() => {
+      if (project?.id) {
+        fetchTrackings();
+      }
+    }, [project])
+  );
 
+  // Keep your existing useEffect for initial project loading
+  useEffect(() => {
+    loadProject();
+  }, []);
+
+  // You can remove or keep the existing useEffect for project changes
+  // since useFocusEffect will handle the tracking updates
+  
   // Filtrar los seguimientos cuando cambian las fechas o los seguimientos
   useEffect(() => {
     filterTrackingsByWeek();
