@@ -49,73 +49,66 @@ const TrackingCurrent = () => {
   }, [trackingSections, weekDates]); // Se ejecuta cuando cambian las secciones de seguimiento o las fechas de la semana
 
   // Función para cargar el proyecto desde el almacenamiento local
-  const loadProject = async () => {
-    try {
-      const storedProject = await getProject(); // Obtener el proyecto del almacenamiento local
-      if (!storedProject) return;
-      console.log(storedProject);
+  
+const loadProject = async () => {
+  try {
+    const storedProject = await getProject();
+    if (!storedProject) return;
 
-      const parsedProject = typeof storedProject === 'string'
-        ? JSON.parse(storedProject)
-        : storedProject;
+    const parsedProject = typeof storedProject === 'string'
+      ? JSON.parse(storedProject)
+      : storedProject;
 
-      setProject(parsedProject); // Establecer el proyecto en el estado
+    setProject(parsedProject);
 
-      // Configurar la semana actual
-      // Convertir el formato YYYY/MM/DD a un formato compatible con Date
-      const [year, month, day] = parsedProject.start_date.split('/').map(Number);
-      
-      // Crear la fecha inicial (restando 1 al mes porque en Date los meses son 0-indexed)
-      const startDate = new Date(year, month - 1, day);
-      
-      // Obtener la fecha actual
-      const currentDate = new Date();
-      
-      // Calcular la diferencia en milisegundos
-      const differenceInMs = currentDate.getTime() - startDate.getTime();
-      
-      // Convertir milisegundos a días
-      const differenceInDays = Math.floor(differenceInMs / (1000 * 60 * 60 * 24));
-      
-      // Calcular el número de semana
-      const weekNumber = Math.floor(differenceInDays / 7) + 1;
-      
-      setCurrentWeekIndex(weekNumber - 1); // Establecer el índice de la semana actual   
-      // Calcular las fechas de la semana inicial
-      calculateWeekDates(parsedProject.start_date, weekNumber); // Calcular las fechas de la semana inicial
-      // Calcular las fechas de la semana
-    } catch (error) {
-      console.error("Error loading project:", error);
-    }
-  };
+    // Convertir el formato YYYY/MM/DD a un objeto Date
+    const [year, month, day] = parsedProject.start_date.split('/').map(Number);
+    const startDate = new Date(year, month - 1, day);
+    const currentDate = new Date();
+    
+    // Calcular la diferencia en días
+    const differenceInMs = currentDate.getTime() - startDate.getTime();
+    const differenceInDays = Math.floor(differenceInMs / (1000 * 60 * 60 * 24));
+    
+    // Calcular el número de semana inicial
+    const initialWeekIndex = Math.floor(differenceInDays / 7);
+    
+    setCurrentWeekIndex(initialWeekIndex);
+    
+    // Calcular las fechas de la semana inicial
+    calculateWeekDates(parsedProject.start_date, initialWeekIndex + 1);
+  } catch (error) {
+    console.error("Error loading project:", error);
+  }
+};
 
   // Calcular las fechas de una semana inicial o de las semanas siguientes
   const calculateWeekDates = (startDateStr: string, weekOffset: number) => {
     if (!startDateStr) return;
     
-    // Only prevent negative weeks
+    // Asegurar que weekOffset sea al menos 1
     if (weekOffset < 1) {
       weekOffset = 1;
     }
-
-    console.log(`weekOffset: ${weekOffset}`);
-      console.log(`startDateStr: ${startDateStr}`);
-    // Convertir la fecha de inicio a objeto Date y asegurar que sea el primer día de la semana del proyecto
+  
+    console.log(`Calculating dates for week: ${weekOffset}`);
+  
     const [year, month, day] = startDateStr.split('/').map(Number);
     const projectStartDate = new Date(year, month - 1, day);
     const firstMonday = getMonday(projectStartDate);
-
+  
     // Calcular el lunes de la semana solicitada sumando las semanas de offset
     const targetMonday = new Date(firstMonday);
     targetMonday.setDate(firstMonday.getDate() + ((weekOffset - 1) * 7));
-
+  
     // Generar un array de fechas para los 7 días de la semana
     const dates = Array.from({ length: 7 }, (_, index) => {
       const date = new Date(targetMonday);
       date.setDate(targetMonday.getDate() + index);
       return date.toLocaleDateString("es-PE", { day: "2-digit", month: "2-digit" });
     });
-    console.log(dates);
+  
+    console.log('Calculated Dates:', dates);
     setWeekDates(dates);
   };
 
@@ -201,35 +194,36 @@ const TrackingCurrent = () => {
   // Cambiar a la semana anterior o siguiente
   const handleWeekChange = (direction: string) => {
     if (!project?.start_date || !project?.end_date) return;
-
-    // Calcular el número de semanas entre la fecha de inicio y fin del proyecto
+  
     const startDate = new Date(project.start_date.replace(/\//g, "-"));
     const endDate = new Date(project.end_date.replace(/\//g, "-"));
-
+  
     // Calcular nuevo índice de semana
     const newWeekIndex = direction === "right"
       ? currentWeekIndex + 1
       : currentWeekIndex - 1;
-
+  
     // Calcular la fecha del lunes de la semana a la que queremos navegar
     const mondayOfStartWeek = getMonday(startDate);
     const targetMonday = new Date(mondayOfStartWeek);
     targetMonday.setDate(mondayOfStartWeek.getDate() + (newWeekIndex * 7));
-
+  
     // Validar límites de navegación
     if (direction === "left" && newWeekIndex < 0) {
       return;
     }
-
+  
     if (direction === "right") {
       // Verificar que el lunes de la nueva semana no exceda la fecha de fin del proyecto
       if (targetMonday > endDate) {
         return;
       }
     }
-
-    setCurrentWeekIndex(newWeekIndex); // Establecer el nuevo índice de semana
-    calculateWeekDates(project.start_date, newWeekIndex); // Calcular las nuevas fechas de la semana
+  
+    setCurrentWeekIndex(newWeekIndex);
+    
+    // Pasar newWeekIndex + 1 para mantener la consistencia con la numeración de semanas
+    calculateWeekDates(project.start_date, newWeekIndex + 1);
   };
 
   // Crear un nuevo seguimiento
