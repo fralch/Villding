@@ -213,7 +213,7 @@ const pickImages = async () => {
   // Function to remove a specific image by its index
   const removeImage = (indexToRemove: number) => {
     updateState({
-      images: state.images.filter((_, index) => index !== indexToRemove)
+      images: state.images.filter((_: string, index: number) => index !== indexToRemove)
     });
   };
 
@@ -291,7 +291,7 @@ const handleCreateActivity = async (): Promise<boolean> => {
       });
       
       // Add each image to the FormData
-      state.images.forEach((imageUri, index) => {
+      state.images.forEach((imageUri: string, index: number) => {
         const uriParts = imageUri.split('.');
         const fileType = uriParts[uriParts.length - 1];
         
