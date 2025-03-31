@@ -9,6 +9,7 @@ import {
   Image,
   Pressable,
   StyleSheet,
+  Alert,
 } from "react-native";
 import { StatusBar as ExpoStatusBar } from "expo-status-bar";
 import { getSesion, removeSesion , updateSesion } from '../../hooks/localStorageUser';
@@ -19,6 +20,7 @@ import {
   AntDesign,
 } from "@expo/vector-icons";
 import axios from "axios";
+import * as ImagePicker from 'expo-image-picker';
 import { styles } from "./styles/ActivityItemCreateStyles";
 import { Activity } from './Activity';
 
@@ -34,10 +36,14 @@ interface ActivityItemCreateProps {
   hideModal?: () => void;
 }
 interface TitleSectionProps {
-  titulo: string,
-  onTituloChange: (text: string) => void,
-  onFinishTask: () => Promise<boolean>,
-  isAdmin: boolean // Añade esta prop
+  titulo: string;
+  onTituloChange: (text: string) => void;
+  onFinishTask: () => Promise<boolean>;
+  isAdmin: boolean;
+  images: string[]; // Array of image URIs
+  onTakePhoto: () => void;
+  onPickImages: () => void;
+  onRemoveImage: (index: number) => void;
 }
 
 // Componente principal
@@ -53,6 +59,7 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
     comments: isEditing ? itemData.comments : "",
     selectedIcon: isEditing ? itemData.icon : "local-shipping" as keyof typeof MaterialIcons.glyphMap,
     fecha_creacion: isEditing ? itemData.fecha_creacion : "",
+    images: isEditing && itemData.images ? itemData.images : [], // Array to store multiple images
   });
   const [tipoActual, setTipoActual] = useState(tipo === "edit" ? "pendiente" : tipo);
   // estados para el modal de confirmación
@@ -142,6 +149,7 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
         comments: activity.comments,
         selectedIcon: activity.icon.replace('fa-', '') as keyof typeof MaterialIcons.glyphMap,
         fecha_creacion: activity.fecha_creacion,
+        images: itemData.images || [], // Si images es undefined, establece un array vacío
       });
     }
   }, [activity]);
@@ -155,6 +163,60 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
   const handleFieldChange = (field: string, value: string) => { // recibo el nombre del campo y el valor a actualizar
     updateState({ [field]: value } as Partial<typeof state>); // fijo los valores del estado con los valores del objeto updates
   };
+
+  // 2. Updated picker functions for multiple images
+const pickImages = async () => {
+  const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+  if (status !== 'granted') {
+    showConfirmationModal("Error", "Se necesita permiso para acceder a la galería");
+    return;
+  }
+
+  const result = await ImagePicker.launchImageLibraryAsync({
+    mediaTypes: ImagePicker.MediaTypeOptions.Images,
+    allowsMultipleSelection: true, // Enable multiple selection
+    quality: 0.8,
+  });
+
+  if (!result.canceled && result.assets && result.assets.length > 0) {
+    // Get the URIs from the selected assets
+    const newImageUris = result.assets.map(asset => asset.uri);
+    
+    // Update state by adding new images to existing ones
+    updateState({ 
+      images: [...state.images, ...newImageUris] 
+    });
+  }
+};
+  // Function to take a photo
+  const takePhoto = async () => {
+    const { status } = await ImagePicker.requestCameraPermissionsAsync();
+    if (status !== 'granted') {
+      showConfirmationModal("Error", "Se necesita permiso para acceder a la cámara");
+      return;
+    }
+
+    const result = await ImagePicker.launchCameraAsync({
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 0.8,
+    });
+
+    if (!result.canceled && result.assets && result.assets.length > 0) {
+      // Add the new photo to the existing images array
+      updateState({ 
+        images: [...state.images, result.assets[0].uri] 
+      });
+    }
+  };
+
+  // Function to remove a specific image by its index
+  const removeImage = (indexToRemove: number) => {
+    updateState({
+      images: state.images.filter((_, index) => index !== indexToRemove)
+    });
+  };
+
 
   // Función para preparar los datos de la actividad
   const prepareActivityData = () => {
@@ -179,7 +241,8 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
       icon: string;
       comments: string;
       fecha_creacion: string;
-      id?: number; // Hacemos el id opcional con '?'
+      images?: string[]; // Add this line for images array
+      id?: number;
     }
 
     let data: ActivityData = {
@@ -193,6 +256,7 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
       icon: `fa-${state.selectedIcon}`,
       comments: state.comments,
       fecha_creacion: state.fecha_creacion,
+      images: state.images, // Include the images array
     };
 
     if (isEditing) {
@@ -203,38 +267,77 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
     return data;
 };
 
-  const handleCreateActivity = async (): Promise<boolean> => {
-    // Validación
-    if (!state.titulo.trim()) {
-      showConfirmationModal("Error", "El título es obligatorio");
-      return false;
-    }
 
-    const activityData = prepareActivityData(); // Preparo los datos de la actividad
 
-    try {
+const handleCreateActivity = async (): Promise<boolean> => {
+  // Validación
+  if (!state.titulo.trim()) {
+    showConfirmationModal("Error", "El título es obligatorio");
+    return false;
+  }
+
+  const activityData = prepareActivityData();
+
+  try {
+    // If there are images, we need to create a FormData object
+    if (state.images.length > 0) {
+      const formData = new FormData();
+      
+      // Add all the activity data (except images)
+      Object.entries(activityData).forEach(([key, value]) => {
+        if (key !== 'images') {
+          formData.append(key, String(value));
+        }
+      });
+      
+      // Add each image to the FormData
+      state.images.forEach((imageUri, index) => {
+        const uriParts = imageUri.split('.');
+        const fileType = uriParts[uriParts.length - 1];
+        
+        formData.append(`images[${index}]`, {
+          uri: imageUri,
+          name: `photo_${index}.${fileType}`,
+          type: `image/${fileType}`
+        } as any);
+      });
+      
+      // Send the formData to the server
+      const response = await axios.post(
+        'https://centroesteticoedith.com/endpoint/activities/create',
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            'Cookie': 'XSRF-TOKEN=...'
+          }
+        }
+      );
+    } else {
+      // If there are no images, send the JSON data as before
       const response = await axios.post(
         'https://centroesteticoedith.com/endpoint/activities/create',
         activityData,
         {
           headers: {
             "Content-Type": "application/json",
-            'Cookie': 'XSRF-TOKEN=...' // Usar el mismo token que en el componente padre
+            'Cookie': 'XSRF-TOKEN=...'
           }
         }
       );
-
-      showConfirmationModal("Éxito", "Actividad creada correctamente");
-      setTimeout(() => {
-        resetForm();
-      }, 3000);
-      return true;
-    } catch (error) {
-      console.error('Error al crear la actividad:', error);
-      showConfirmationModal("Error", "No se pudo crear la actividad. Intente nuevamente.");
-      return false;
     }
-  };
+
+    showConfirmationModal("Éxito", "Actividad creada correctamente");
+    setTimeout(() => {
+      resetForm();
+    }, 3000);
+    return true;
+  } catch (error) {
+    console.error('Error al crear la actividad:', error);
+    showConfirmationModal("Error", "No se pudo crear la actividad. Intente nuevamente.");
+    return false;
+  }
+};
 
   const handleUpdateActivity = async (): Promise<boolean> => {
     // Validación
@@ -324,6 +427,7 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
       comments: "",
       selectedIcon: "local-shipping",
       fecha_creacion: state.fecha_creacion,
+      images: [], // Reset the images array
     });
   };
 
@@ -358,6 +462,10 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
             onTituloChange={(text) => updateState({ titulo: text })}
             onFinishTask={finishTask}
             isAdmin={isAdmin}
+            images={state.images}
+            onTakePhoto={takePhoto}
+            onPickImages={pickImages}
+            onRemoveImage={removeImage}
           />
 
           {/* Componente Campos del Formulario */}
@@ -490,7 +598,11 @@ const TitleSection = ({
   titulo,
   onTituloChange,
   onFinishTask,
-  isAdmin // Recibe la prop
+  isAdmin,
+  images,
+  onTakePhoto,
+  onPickImages,
+  onRemoveImage,
 }: TitleSectionProps) => {
   return (
     <View style={{ backgroundColor: "#0a3649", padding: 20 }}>
@@ -509,6 +621,40 @@ const TitleSection = ({
         multiline={true}
         numberOfLines={4}
       />
+      
+      {/* Display image gallery if there are images */}
+      {images.length > 0 && (
+        <View style={{ marginVertical: 10 }}>
+          <Text style={{ color: '#dedede', marginBottom: 8, fontSize: 16 }}>
+            Imágenes ({images.length})
+          </Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            {images.map((imageUri, index) => (
+              <View key={index} style={{ marginRight: 10, position: 'relative' }}>
+                <Image 
+                  source={{ uri: imageUri }} 
+                  style={{ width: 100, height: 100, borderRadius: 5 }} 
+                  resizeMode="cover" 
+                />
+                <TouchableOpacity 
+                  style={{ 
+                    position: 'absolute', 
+                    top: 5, 
+                    right: 5, 
+                    backgroundColor: 'rgba(0,0,0,0.5)', 
+                    padding: 3, 
+                    borderRadius: 12 
+                  }}
+                  onPress={() => onRemoveImage(index)}
+                >
+                  <MaterialIcons name="close" size={18} color="white" />
+                </TouchableOpacity>
+              </View>
+            ))}
+          </ScrollView>
+        </View>
+      )}
+      
       <View style={styles.hr} />
       <>
       <View style={{ flexDirection: 'row', gap: 10 }}>
@@ -529,24 +675,37 @@ const TitleSection = ({
           </Text>
         </TouchableOpacity>
 
-        <TouchableOpacity
-          style={{
-            flex: 1,
-            justifyContent: "center",
-            alignItems: "center",
-            marginTop: 10,
-            backgroundColor: "#dedede",
-            borderRadius: 5,
-          }}
-          onPress={() => {/* Add your image upload logic here */}}
-        >
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
-            <MaterialIcons name="photo-camera" size={20} color="#0a455e" />
-            <Text style={{ fontSize: 14, color: "#0a455e", padding: 15 }}>
-              Subir Imagen
-            </Text>
-          </View>
-        </TouchableOpacity>
+        {/* Image options menu */}
+        <View style={{ flex: 1 }}>
+          <TouchableOpacity
+            style={{
+              justifyContent: "center",
+              alignItems: "center",
+              marginTop: 10,
+              backgroundColor: "#dedede",
+              borderRadius: 5,
+            }}
+            onPress={() => {
+              // Show image options - can be implemented as a modal or action sheet
+              Alert.alert(
+                "Subir Imágenes",
+                "Seleccione una opción",
+                [
+                  { text: "Tomar Foto", onPress: onTakePhoto },
+                  { text: "Elegir de Galería", onPress: onPickImages },
+                  { text: "Cancelar", style: "cancel" }
+                ]
+              );
+            }}
+          >
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+              <MaterialIcons name="photo-camera" size={20} color="#0a455e" />
+              <Text style={{ fontSize: 14, color: "#0a455e", padding: 15 }}>
+                Subir Imágenes
+              </Text>
+            </View>
+          </TouchableOpacity>
+        </View>
       </View>
       </>
     </View>
