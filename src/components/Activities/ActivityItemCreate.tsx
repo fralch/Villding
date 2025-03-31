@@ -11,6 +11,7 @@ import {
   StyleSheet,
 } from "react-native";
 import { StatusBar as ExpoStatusBar } from "expo-status-bar";
+import { getSesion, removeSesion , updateSesion } from '../../hooks/localStorageUser';
 import {
   MaterialCommunityIcons,
   Entypo,
@@ -32,6 +33,12 @@ interface ActivityItemCreateProps {
   activity?: Activity | null;
   hideModal?: () => void;
 }
+interface TitleSectionProps {
+  titulo: string,
+  onTituloChange: (text: string) => void,
+  onFinishTask: () => Promise<boolean>,
+  isAdmin: boolean // Añade esta prop
+}
 
 // Componente principal
 const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateProps>(({ tipo, project_id, tracking_id, date, isEditing = false, itemData, activity, hideModal, }, ref) => {
@@ -50,7 +57,29 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
   const [tipoActual, setTipoActual] = useState(tipo === "edit" ? "pendiente" : tipo);
   // estados para el modal de confirmación
   const [confirmationModalVisible, setConfirmationModalVisible] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [modalMessage, setModalMessage] = useState("");
+  const [data, setData] = useState({
+    id: "1",
+    nombres: "Piero",
+    apellidos: "Rodriguez",
+    email: "icemail@gmail.com",
+    email_contact: "emailcontact@gmail.com",
+    telefono: "123456789",
+    uri: '',
+    user_code: "12345",
+  });
+  // Interfaz para la referencia del componente
+
+  React.useEffect(() => {
+    getSesion().then((StoredSesion : any) => {
+      let sesion = JSON.parse(StoredSesion);
+      console.log(sesion);
+      setData(sesion);
+        
+    });
+  }, [ ]);
+
 
   useEffect(() => {
     // date es la fecha pasada como prop para crear la actividad
@@ -60,6 +89,47 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
     newDate = new Date(newDate).toISOString().split('T')[0];
     setState(prevState => ({ ...prevState, fecha_creacion: newDate })); // añadiendo fecha de creación al formulario
   }, []);
+  React.useEffect(() => {
+    const fetchSessionAndCheckAdmin = async () => {
+      try {
+        const storedSession = await getSesion();
+        if (!storedSession) {
+          throw new Error('No session found');
+        }
+        const session = JSON.parse(storedSession);
+        console.log(session);
+        setData(session);
+        
+        // Verifica si el usuario es admin global
+        if (session?.is_admin === 1) {
+          setIsAdmin(true);
+          return; // Si ya sabemos que es admin global, no necesitamos hacer la consulta
+        }
+        
+        // Si no es admin global, verificamos si es admin en el proyecto actual
+        const response = await axios.post(
+          "https://centroesteticoedith.com/endpoint/project/check-attachment",
+          { project_id: project_id },
+          { headers: { "Content-Type": "application/json" } }
+        );
+        
+        const apiResponse = response.data;
+        
+        // Verifica si el usuario es admin en este proyecto específico
+        const userIsAdmin = apiResponse.users.some((user: { id: number; is_admin: number }) =>
+          user.id === session?.id && user.is_admin === 1
+        );
+        
+        setIsAdmin(userIsAdmin);
+        console.log(`isAdmin: ${userIsAdmin}`);
+        
+      } catch (error) {
+        console.error("Error checking admin status:", error);
+      }
+    };
+    
+    fetchSessionAndCheckAdmin();
+  }, [project_id]); 
 
   useEffect(() => {
     if (activity) {
@@ -287,6 +357,7 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
             titulo={state.titulo}
             onTituloChange={(text) => updateState({ titulo: text })}
             onFinishTask={finishTask}
+            isAdmin={isAdmin}
           />
 
           {/* Componente Campos del Formulario */}
@@ -428,12 +499,9 @@ const StatusIndicator = ({ tipoTask }: { tipoTask: string }) => {
 const TitleSection = ({
   titulo,
   onTituloChange,
-  onFinishTask
-}: {
-  titulo: string,
-  onTituloChange: (text: string) => void,
-  onFinishTask: () => Promise<boolean>
-}) => {
+  onFinishTask,
+  isAdmin // Recibe la prop
+}: TitleSectionProps) => {
   return (
     <View style={{ backgroundColor: "#0a3649", padding: 20 }}>
       <TextInput
@@ -457,12 +525,13 @@ const TitleSection = ({
           justifyContent: "center",
           alignItems: "center",
           marginTop: 10,
-          backgroundColor: "#dedede",
+          backgroundColor: isAdmin ? "#0a455e" : "#dedede",
           borderRadius: 5,
         }}
         onPress={onFinishTask}
+        disabled={ !isAdmin }
       >
-        <Text style={{ fontSize: 14, color: "#0a455e", padding: 15 }}>
+        <Text style={{ fontSize: 14,  color: isAdmin ? "#fff" : "#0a455e", padding: 15 }}>
           Finalizar
         </Text>
       </TouchableOpacity>
