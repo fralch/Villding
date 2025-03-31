@@ -88,9 +88,14 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
 
   // Función para preparar los datos de la actividad
   const prepareActivityData = () => {
-    // Comparar fecha de creación con la fecha actual
-    const today = new Date().toISOString().split('T')[0];
-    const status = state.fecha_creacion > today ? "programado" : tipoActual.toLowerCase();
+    // Convertir ambas fechas a objetos Date para comparación adecuada
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Establecer a medianoche para comparación justa
+    const todayString = today.toISOString().split('T')[0];
+    // Suponiendo que state.fecha_creacion es un string en formato 'YYYY-MM-DD'
+    const fechaCreacion = new Date(state.fecha_creacion);
+    fechaCreacion.setHours(0, 0, 0, 0);
+    const status = state.fecha_creacion > todayString ? "programado" : tipoActual.toLowerCase();
 
     // Definimos la interfaz para el objeto data
     interface ActivityData {
@@ -126,7 +131,7 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
 
     console.log(data);
     return data;
-  };
+};
 
   const handleCreateActivity = async (): Promise<boolean> => {
     // Validación
