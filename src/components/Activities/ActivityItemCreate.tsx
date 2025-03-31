@@ -461,17 +461,7 @@ const StatusIndicator = ({ tipoTask }: { tipoTask: string }) => {
   };
 
   return (
-    <>
-      <Pressable style={styles.uploadBox}>
-        <Image
-          source={require("../../assets/images/add_img.png")}
-          style={{ width: 30, height: 30 }}
-        />
-        <View style={styles.iconStatus}>
-          {renderStatusIcon()}
-        </View>
-      </Pressable>
-
+    <>     
       <View
         style={[
           styles.statusProgramado,
@@ -520,21 +510,45 @@ const TitleSection = ({
         numberOfLines={4}
       />
       <View style={styles.hr} />
-      <TouchableOpacity
-        style={{
-          justifyContent: "center",
-          alignItems: "center",
-          marginTop: 10,
-          backgroundColor: isAdmin ? "#0a455e" : "#dedede",
-          borderRadius: 5,
-        }}
-        onPress={onFinishTask}
-        disabled={ !isAdmin }
-      >
-        <Text style={{ fontSize: 14,  color: isAdmin ? "#fff" : "#0a455e", padding: 15 }}>
-          Finalizar
-        </Text>
-      </TouchableOpacity>
+      <>
+      <View style={{ flexDirection: 'row', gap: 10 }}>
+        <TouchableOpacity
+          style={{
+            flex: 1,
+            justifyContent: "center",
+            alignItems: "center",
+            marginTop: 10,
+            backgroundColor: !isAdmin ? "#0a455e" : "#dedede",
+            borderRadius: 5,
+          }}
+          onPress={onFinishTask}
+          disabled={!isAdmin}
+        >
+          <Text style={{ fontSize: 14, color: !isAdmin ? "#fff" : "#0a455e", padding: 15 }}>
+            Finalizar
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={{
+            flex: 1,
+            justifyContent: "center",
+            alignItems: "center",
+            marginTop: 10,
+            backgroundColor: "#dedede",
+            borderRadius: 5,
+          }}
+          onPress={() => {/* Add your image upload logic here */}}
+        >
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+            <MaterialIcons name="photo-camera" size={20} color="#0a455e" />
+            <Text style={{ fontSize: 14, color: "#0a455e", padding: 15 }}>
+              Subir Imagen
+            </Text>
+          </View>
+        </TouchableOpacity>
+      </View>
+      </>
     </View>
   );
 };
