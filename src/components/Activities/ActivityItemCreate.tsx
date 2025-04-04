@@ -44,13 +44,17 @@ interface TitleSectionProps {
   onTakePhoto: () => void;
   onPickImages: () => void;
   onRemoveImage: (index: number) => void;
+  imagesNewlyAdded: boolean; // Add this new prop
 }
 
 // Componente principal
 const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateProps>(({ tipo, project_id, tracking_id, date, isEditing = false, itemData, activity, hideModal, }, ref) => {
+  // Add this new state
+  const [imagesNewlyAdded, setImagesNewlyAdded] = useState(false);
   // estado del formulario
   console.log(isEditing);
-  const [state, setState] = useState({
+   // Other existing state...
+   const [state, setState] = useState({
     tipoTask: tipo,
     titulo: isEditing ? itemData.name : "",
     description: isEditing ? itemData.description : "",
@@ -172,29 +176,35 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
   };
 
   // 2. Updated picker functions for multiple images
-const pickImages = async () => {
-  const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-  if (status !== 'granted') {
-    showConfirmationModal("Error", "Se necesita permiso para acceder a la galería");
-    return;
-  }
+  const pickImages = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      showConfirmationModal("Error", "Se necesita permiso para acceder a la galería");
+      return;
+    }
 
-  const result = await ImagePicker.launchImageLibraryAsync({
-    mediaTypes: ImagePicker.MediaTypeOptions.Images,
-    allowsMultipleSelection: true, // Enable multiple selection
-    quality: 0.8,
-  });
-
-  if (!result.canceled && result.assets && result.assets.length > 0) {
-    // Get the URIs from the selected assets
-    const newImageUris = result.assets.map(asset => asset.uri);
-    
-    // Update state by adding new images to existing ones
-    updateState({ 
-      images: [...state.images, ...newImageUris] 
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsMultipleSelection: true,
+      quality: 0.8,
     });
-  }
-};
+
+    if (!result.canceled && result.assets && result.assets.length > 0) {
+      // Get the URIs from the selected assets
+      const newImageUris = result.assets.map(asset => asset.uri);
+      
+      // Update state by adding new images to existing ones
+      updateState({ 
+        images: [...state.images, ...newImageUris] 
+      });
+      
+      // Set flag to true when images are added
+      setImagesNewlyAdded(true);
+      
+      // Add this console.log to debug
+      console.log('Updated images array:', [...state.images, ...newImageUris]);
+    }
+  };
   // Function to take a photo
   const takePhoto = async () => {
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
@@ -214,6 +224,9 @@ const pickImages = async () => {
       updateState({ 
         images: [...state.images, result.assets[0].uri] 
       });
+      
+      // Set flag to true when image is added
+      setImagesNewlyAdded(true);
     }
   };
 
@@ -475,6 +488,7 @@ const handleCreateActivity = async (): Promise<boolean> => {
             onTakePhoto={takePhoto}
             onPickImages={pickImages}
             onRemoveImage={removeImage}
+            imagesNewlyAdded={imagesNewlyAdded} // Pass the new flag
           />
 
           {/* Componente Campos del Formulario */}
@@ -612,20 +626,23 @@ const TitleSection = ({
   onTakePhoto,
   onPickImages,
   onRemoveImage,
+  imagesNewlyAdded, // Use this prop
 }: TitleSectionProps) => {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
 
   return (
     <View style={{ backgroundColor: "#0a3649", padding: 20 }}>
-      {/* Image Slider */}
+      {/* Image Slider - only show when there are images to display */}
       {images.length > 0 && (
         <View style={{ marginBottom: 20 }}>
           <View style={{ height: 200, width: '100%', marginBottom: 10 }}>
             <Image 
               source={{ 
-                uri: images[activeImageIndex].startsWith('http') 
-                  ? images[activeImageIndex] 
-                  : `https://centroesteticoedith.com/endpoint/images/activities/${images[activeImageIndex]}`
+                uri: images[activeImageIndex].startsWith('file://') || images[activeImageIndex].startsWith('content://')
+                  ? images[activeImageIndex]
+                  : images[activeImageIndex].startsWith('http')
+                    ? images[activeImageIndex]
+                    : `https://centroesteticoedith.com/endpoint/images/activities/${images[activeImageIndex]}`
               }} 
               style={{ 
                 width: '100%', 
@@ -636,7 +653,7 @@ const TitleSection = ({
             />
           </View>
           
-          {/* Thumbnail scroll for other images */}
+          {/* Thumbnail scroll */}
           <ScrollView 
             horizontal 
             showsHorizontalScrollIndicator={false}
@@ -655,9 +672,11 @@ const TitleSection = ({
               >
                 <Image
                   source={{ 
-                    uri: image.startsWith('http') 
-                      ? image 
-                      : `https://centroesteticoedith.com/endpoint/images/activities/${image}`
+                    uri: image.startsWith('file://') || image.startsWith('content://')
+                      ? image
+                      : image.startsWith('http')
+                        ? image
+                        : `https://centroesteticoedith.com/endpoint/images/activities/${image}`
                   }}
                   style={{
                     width: 50,
@@ -689,7 +708,7 @@ const TitleSection = ({
         numberOfLines={4}
       />
       
-      {/* Display image gallery if there are images */}
+      {/* Display image gallery when there are images */}
       {images.length > 0 && (
         <View style={{ marginVertical: 10 }}>
           <Text style={{ color: '#dedede', marginBottom: 8, fontSize: 16 }}>
@@ -700,9 +719,11 @@ const TitleSection = ({
               <View key={index} style={{ marginRight: 10, position: 'relative' }}>
                 <Image 
                   source={{ 
-                    uri: imageUri.startsWith('http') 
-                      ? imageUri 
-                      : `https://centroesteticoedith.com/endpoint/images/activities/${imageUri}`
+                    uri: imageUri.startsWith('file://') || imageUri.startsWith('content://')
+                      ? imageUri
+                      : imageUri.startsWith('http')
+                        ? imageUri 
+                        : `https://centroesteticoedith.com/endpoint/images/activities/${imageUri}`
                   }} 
                   style={{ width: 100, height: 100, borderRadius: 5 }} 
                   resizeMode="cover" 
