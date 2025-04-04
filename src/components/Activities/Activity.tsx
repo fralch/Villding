@@ -439,7 +439,7 @@ const ActivityCard: React.FC<{
         <Text style={[styles.taskStatus, {
           backgroundColor: statusLabel === 'Pendiente' ? '#F4C724'
                           : statusLabel === 'Completado' ? '#4ec291'
-                          : '#056375',
+                          : '#034757',
           color: statusLabel === 'Programado' ? '#F4C724' : '#0D465E',
           borderColor: statusLabel === 'Programado' ? '#F4C724' : 'white',
           borderWidth: statusLabel === 'Programado' ? 1 : 0,
