@@ -78,18 +78,15 @@ export default function Activity(props: any) {
   // New state variables for editing
   const [isEditing, setIsEditing] = useState(false);
   const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
-
-  // Ref para el ScrollView
-  const scrollViewRef = useRef<ScrollView>(null);
   
   // Get today's date in DD/MM format
   const today = new Date();
   const todayFormatted = `${today.getDate()}/${today.getMonth() + 1}`;
 
   const getDayName = (dateString: string) => {
-    const days = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+    const days = [ 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
     const [day, month] = dateString.split('/').map(Number);
-    const date = new Date(2025, month - 1, day); // Usar el año actual 2025
+    const date = new Date(2024, month - 1, day);
     return days[date.getDay()];
   };
 
@@ -160,36 +157,6 @@ export default function Activity(props: any) {
   
     fetchActivities();
   }, [tracking.id]);
-
-  useEffect(() => {
-    if (weekDays.length > 0) {
-      console.log("Día actual:", todayFormatted);
-      console.log("Días disponibles:", weekDays.map(d => d.dayLabel));
-      
-      const todayIndex = weekDays.findIndex(day => {
-        // Considera posibles formatos: 4/4, 04/04, 4/04, 04/4
-        const normalizedDayLabel = day.dayLabel.replace(/^0|\/0/g, '').trim();
-        const normalizedToday = todayFormatted.replace(/^0|\/0/g, '').trim();
-        return normalizedDayLabel === normalizedToday;
-      });
-      console.log("Índice del día actual:", todayIndex);
-      
-      if (todayIndex !== -1) {
-        // Ajusta este valor según la altura aproximada de cada día
-        const estimatedDayHeight = 320; 
-        const yOffset = todayIndex * estimatedDayHeight;
-        
-        setTimeout(() => {
-          scrollViewRef.current?.scrollTo({
-            y: yOffset,
-            animated: true
-          });
-        }, 500); // Incrementar el delay para asegurar el renderizado completo
-      } else {
-        console.log("No se encontró el día actual en los días disponibles");
-      }
-    }
-  }, [weekDays, todayFormatted]);
 
   // Función para refrescar actividades después de crear una nueva
   const refreshActivities = async () => {
@@ -320,9 +287,6 @@ export default function Activity(props: any) {
   ).current;
 
   return (
-    <ScrollView 
-  ref={scrollViewRef}
-  style={styles.scrollContainer}>
     <View style={styles.container}>
       <ExpoStatusBar style='light' />
       <View style={styles.header}>
@@ -438,7 +402,6 @@ export default function Activity(props: any) {
         </View>
       </Modal>
     </View>
-    </ScrollView>
   );
 }
 
