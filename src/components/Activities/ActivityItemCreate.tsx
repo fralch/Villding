@@ -24,7 +24,22 @@ import * as ImagePicker from 'expo-image-picker';
 import { styles } from "./styles/ActivityItemCreateStyles";
 import { Activity } from './Activity';
 
-// Tipos y constantes
+// Tipos simplificados
+interface ActivityData {
+  project_id: number;
+  tracking_id: number;
+  name: string;
+  description: string;
+  location: string;
+  horas: string;
+  status: string;
+  icon: string;
+  comments: string;
+  fecha_creacion: string;
+  images?: string[];
+  id?: number;
+}
+
 interface ActivityItemCreateProps {
   project_id: number;
   tracking_id: number;
@@ -35,440 +50,205 @@ interface ActivityItemCreateProps {
   activity?: Activity | null;
   hideModal?: () => void;
 }
-interface TitleSectionProps {
-  titulo: string;
-  onTituloChange: (text: string) => void;
-  onFinishTask: () => Promise<boolean>;
-  isAdmin: boolean;
-  images: string[]; // Array of image URIs
-  onTakePhoto: () => void;
-  onPickImages: () => void;
-  onRemoveImage: (index: number) => void;
-  imagesNewlyAdded: boolean; // Add this new prop
+
+// Add at the top with other interfaces
+interface ActivityItemCreateRef {
+  handleCreateActivity: () => Promise<boolean>;
+  finishTask: () => Promise<boolean>;
+  handleUpdateActivity: () => Promise<boolean>;
 }
 
-// Componente principal
-const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateProps>(({ tipo, project_id, tracking_id, date, isEditing = false, itemData, activity, hideModal, }, ref) => {
-  // Add this new state
-  const [imagesNewlyAdded, setImagesNewlyAdded] = useState(false);
-  // estado del formulario
-  console.log(isEditing);
-   // Other existing state...
-   const [state, setState] = useState({
-    tipoTask: tipo,
-    titulo: isEditing ? itemData.name : "",
-    description: isEditing ? itemData.description : "",
-    location: isEditing ? itemData.location : "",
-    horas: isEditing ? itemData.horas : "",
-    comments: isEditing ? itemData.comments : "",
-    selectedIcon: isEditing ? itemData.icon : "local-shipping" as keyof typeof MaterialIcons.glyphMap,
-    fecha_creacion: isEditing ? itemData.fecha_creacion : "",
-    images: isEditing && itemData.image ? JSON.parse(itemData.image) : [],
-  });
-    console.log(itemData);
-    /* 
-      {"comments": "Bsbd", "created_at": "2025-04-04T17:52:18.000000Z", "description": "Bsjd", "fecha_creacion": "2025-04-03", "horas": "Bsbd", "icon": "fa-local-shipping", "id": 24, "image": "[\"1743789138_67f01c522bae6.jpeg\",\"1743789138_67f01c522bbfe.jpeg\"]", "location": "Bsbd", "name": "Img 1", "project_id": 1, "status": "pendiente", "tracking_id": 2, "updated_at": "2025-04-04T17:52:18.000000Z"}
-    */
+interface ItemData {
+  id: number;
+  name: string;
+  description: string;
+  location: string;
+  horas: string;
+  comments: string;
+  icon: string;
+  image?: string;
+}
 
-  const [tipoActual, setTipoActual] = useState(tipo === "edit" ? "pendiente" : tipo);
-  // estados para el modal de confirmación
-  const [confirmationModalVisible, setConfirmationModalVisible] = useState(false);
+interface FormDataState {
+  titulo: string;
+  description: string;
+  location: string;
+  horas: string;
+  comments: string;
+  selectedIcon: keyof typeof MaterialIcons.glyphMap;
+  fecha_creacion: string;
+  images: string[];
+  status: ActivityStatus;
+}
+
+type ActivityStatus = 'programado' | 'pendiente' | 'completado';
+
+// Componente principal
+const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateProps>(({ 
+  tipo, 
+  project_id, 
+  tracking_id, 
+  date, 
+  isEditing = false, 
+  itemData, 
+  activity, 
+  hideModal 
+}, ref) => {
+  // Estado unificado
+  const [formData, setFormData] = useState<FormDataState>({
+    titulo: isEditing ? itemData?.name : "",
+    description: isEditing ? itemData?.description : "",
+    location: isEditing ? itemData?.location : "",
+    horas: isEditing ? itemData?.horas : "",
+    comments: isEditing ? itemData?.comments : "",
+    selectedIcon: isEditing ? itemData?.icon?.replace('fa-', '') : "local-shipping",
+    fecha_creacion: "",
+    images: isEditing && itemData?.image ? JSON.parse(itemData.image) : [],
+    status: (tipo === "edit" ? "pendiente" : tipo) as ActivityStatus
+  });
+
   const [isAdmin, setIsAdmin] = useState(false);
   const [modalMessage, setModalMessage] = useState("");
-  const [data, setData] = useState({
-    id: "1",
-    nombres: "Piero",
-    apellidos: "Rodriguez",
-    email: "icemail@gmail.com",
-    email_contact: "emailcontact@gmail.com",
-    telefono: "123456789",
-    uri: '',
-    user_code: "12345",
-  });
-  // Interfaz para la referencia del componente
+  const [showModal, setShowModal] = useState(false);
 
-  React.useEffect(() => {
-    getSesion().then((StoredSesion : any) => {
-      let sesion = JSON.parse(StoredSesion);
-      console.log(sesion);
-      setData(sesion);
-        
-    });
-  }, [ ]);
-
-
+  // Efectos simplificados
   useEffect(() => {
-    // date es la fecha pasada como prop para crear la actividad
-    // Convertir formato de fecha "y/m" a "yyyy-mm-dd"
-    let newDate = date.split("/").reverse().join("-");
-    newDate = new Date().getFullYear() + "-" + newDate;
-    newDate = new Date(newDate).toISOString().split('T')[0];
-    setState(prevState => ({ ...prevState, fecha_creacion: newDate })); // añadiendo fecha de creación al formulario
-  }, []);
-  React.useEffect(() => {
-    const fetchSessionAndCheckAdmin = async () => {
+    const checkAdminStatus = async () => {
+      const session = JSON.parse(await getSesion() || "{}");
+      if (session?.is_admin === 1) {
+        setIsAdmin(true);
+        return;
+      }
+
       try {
-        const storedSession = await getSesion();
-        if (!storedSession) {
-          throw new Error('No session found');
-        }
-        const session = JSON.parse(storedSession);
-        console.log(session);
-        setData(session);
-        
-        // Verifica si el usuario es admin global
-        if (session?.is_admin === 1) {
-          setIsAdmin(true);
-          return; // Si ya sabemos que es admin global, no necesitamos hacer la consulta
-        }
-        
-        // Si no es admin global, verificamos si es admin en el proyecto actual
         const response = await axios.post(
           "https://centroesteticoedith.com/endpoint/project/check-attachment",
-          { project_id: project_id },
-          { headers: { "Content-Type": "application/json" } }
+          { project_id }
         );
-        
-        const apiResponse = response.data;
-        
-        // Verifica si el usuario es admin en este proyecto específico
-        const userIsAdmin = apiResponse.users.some((user: { id: number; is_admin: number }) =>
+        setIsAdmin(response.data.users.some((user: any) => 
           user.id === session?.id && user.is_admin === 1
-        );
-        
-        setIsAdmin(userIsAdmin);
-        console.log(`isAdmin: ${userIsAdmin}`);
-        
+        ));
       } catch (error) {
         console.error("Error checking admin status:", error);
       }
     };
-    
-    fetchSessionAndCheckAdmin();
-  }, [project_id]); 
 
-  useEffect(() => {
-    if (activity) {
-      setState({
-        tipoTask: activity.status,
-        titulo: activity.name,
-        description: activity.description,
-        location: activity.location,
-        horas: activity.horas,
-        comments: activity.comments,
-        selectedIcon: activity.icon.replace('fa-', '') as keyof typeof MaterialIcons.glyphMap,
-        fecha_creacion: activity.fecha_creacion,
-        images: activity.image ? 
-          (typeof activity.image === 'string' ? JSON.parse(activity.image) : activity.image) 
-          : [],
-      });
-    }
-  }, [activity]);
+    checkAdminStatus();
+    setInitialDate();
+  }, []);
 
-  // Función para actualizar el estado (Pendiente,  Programado, Completado) del formulario
-  const updateState = (updates: Partial<typeof state>) => { // recibo un objeto con los campos a actualizar en el parametro updates
-    setState(prevState => ({ ...prevState, ...updates })); // fijo los valores del estado con los valores del objeto updates
+  // Funciones auxiliares
+  const setInitialDate = () => {
+    const newDate = new Date().getFullYear() + "-" + date.split("/").reverse().join("-");
+    setFormData(prev => ({ ...prev, fecha_creacion: new Date(newDate).toISOString().split('T')[0] }));
   };
 
-  // Función para actualizar el valor de un campo del formulario
-  const handleFieldChange = (field: string, value: string) => { // recibo el nombre del campo y el valor a actualizar
-    updateState({ [field]: value } as Partial<typeof state>); // fijo los valores del estado con los valores del objeto updates
-  };
+  const handleImagePicker = async (useCamera = false) => {
+    const { status } = await (useCamera ? 
+      ImagePicker.requestCameraPermissionsAsync() : 
+      ImagePicker.requestMediaLibraryPermissionsAsync());
 
-  // 2. Updated picker functions for multiple images
-  const pickImages = async () => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') {
-      showConfirmationModal("Error", "Se necesita permiso para acceder a la galería");
+      showMessage("Error", "Se necesitan permisos para acceder a " + (useCamera ? "la cámara" : "la galería"));
       return;
     }
 
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsMultipleSelection: true,
-      quality: 0.8,
-    });
+    const result = await (useCamera ?
+      ImagePicker.launchCameraAsync({ quality: 0.8 }) :
+      ImagePicker.launchImageLibraryAsync({ 
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsMultipleSelection: true,
+        quality: 0.8
+      }));
 
-    if (!result.canceled && result.assets && result.assets.length > 0) {
-      // Get the URIs from the selected assets
-      const newImageUris = result.assets.map(asset => asset.uri);
-      
-      // Update state by adding new images to existing ones
-      updateState({ 
-        images: [...state.images, ...newImageUris] 
-      });
-      
-      // Set flag to true when images are added
-      setImagesNewlyAdded(true);
-      
-      // Add this console.log to debug
-      console.log('Updated images array:', [...state.images, ...newImageUris]);
-    }
-  };
-  // Function to take a photo
-  const takePhoto = async () => {
-    const { status } = await ImagePicker.requestCameraPermissionsAsync();
-    if (status !== 'granted') {
-      showConfirmationModal("Error", "Se necesita permiso para acceder a la cámara");
-      return;
-    }
-
-    const result = await ImagePicker.launchCameraAsync({
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 0.8,
-    });
-
-    if (!result.canceled && result.assets && result.assets.length > 0) {
-      // Add the new photo to the existing images array
-      updateState({ 
-        images: [...state.images, result.assets[0].uri] 
-      });
-      
-      // Set flag to true when image is added
-      setImagesNewlyAdded(true);
+    if (!result.canceled && result.assets) {
+      const newImages = result.assets.map(asset => asset.uri);
+      setFormData(prev => ({
+        ...prev,
+        images: [...prev.images, ...newImages]
+      }));
     }
   };
 
-  // Function to remove a specific image by its index
-  const removeImage = (indexToRemove: number) => {
-    updateState({
-      images: state.images.filter((_: string, index: number) => index !== indexToRemove)
-    });
-  };
-
-
-  // Función para preparar los datos de la actividad
-  const prepareActivityData = () => {
-    // Convertir ambas fechas a objetos Date para comparación adecuada
-    const today = new Date();
-    today.setHours(0, 0, 0, 0); // Establecer a medianoche para comparación justa
-    const todayString = today.toISOString().split('T')[0];
-    // Suponiendo que state.fecha_creacion es un string en formato 'YYYY-MM-DD'
-    const fechaCreacion = new Date(state.fecha_creacion);
-    fechaCreacion.setHours(0, 0, 0, 0);
-    const status = state.fecha_creacion > todayString ? "programado" : tipoActual.toLowerCase();
-
-    // Definimos la interfaz para el objeto data
-    interface ActivityData {
-      project_id: number;
-      tracking_id: number;
-      name: string;
-      description: string;
-      location: string;
-      horas: string;
-      status: string;
-      icon: string;
-      comments: string;
-      fecha_creacion: string;
-      images?: string[]; // Add this line for images array
-      id?: number;
+  // Funciones principales
+  const handleSubmit = async (status = formData.status) => {
+    if (!formData.titulo.trim()) {
+      showMessage("Error", "El título es obligatorio");
+      return false;
     }
 
-    let data: ActivityData = {
+    const activityData: ActivityData = {
       project_id,
       tracking_id,
-      name: state.titulo,
-      description: state.description,
-      location: state.location,
-      horas: state.horas,
-      status: status,
-      icon: `fa-${state.selectedIcon}`,
-      comments: state.comments,
-      fecha_creacion: state.fecha_creacion,
-      images: state.images, // Include the images array
-    };
-
-    if (isEditing) {
-      data.id = itemData.id;
-    }
-
-    console.log(data);
-    return data;
-};
-
-
-
-const handleCreateActivity = async (): Promise<boolean> => {
-  // Validación
-  if (!state.titulo.trim()) {
-    showConfirmationModal("Error", "El título es obligatorio");
-    return false;
-  }
-
-  const activityData = prepareActivityData();
-
-  try {
-    // If there are images, we need to create a FormData object
-    if (state.images.length > 0) {
-      const formData = new FormData();
-      
-      // Add all the activity data (except images)
-      Object.entries(activityData).forEach(([key, value]) => {
-        if (key !== 'images') {
-          formData.append(key, String(value));
-        }
-      });
-      
-      // Add each image to the FormData
-      state.images.forEach((imageUri: string, index: number) => {
-        const uriParts = imageUri.split('.');
-        const fileType = uriParts[uriParts.length - 1];
-        
-        formData.append(`images[${index}]`, {
-          uri: imageUri,
-          name: `photo_${index}.${fileType}`,
-          type: `image/${fileType}`
-        } as any);
-      });
-      
-      // Send the formData to the server
-      const response = await axios.post(
-        'https://centroesteticoedith.com/endpoint/activities/create',
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-            'Cookie': 'XSRF-TOKEN=...'
-          }
-        }
-      );
-    } else {
-      // If there are no images, send the JSON data as before
-      const response = await axios.post(
-        'https://centroesteticoedith.com/endpoint/activities/create',
-        activityData,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            'Cookie': 'XSRF-TOKEN=...'
-          }
-        }
-      );
-    }
-
-    showConfirmationModal("Éxito", "Actividad creada correctamente");
-    setTimeout(() => {
-      resetForm();
-    }, 3000);
-    return true;
-  } catch (error) {
-    console.error('Error al crear la actividad:', error);
-    showConfirmationModal("Error", "No se pudo crear la actividad. Intente nuevamente.");
-    return false;
-  }
-};
-
-  const handleUpdateActivity = async (): Promise<boolean> => {
-    // Validación
-    if (!state.titulo.trim()) {
-      showConfirmationModal("Error", "El título es obligatorio");
-      return false;
-    }
-
-    const activityData = prepareActivityData(); // Preparo los datos de la actividad
-
-    try {
-      console.log(activityData);
-      const response = await axios.put(
-        `https://centroesteticoedith.com/endpoint/activities/${itemData.id}`,
-        activityData,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            'Cookie': 'XSRF-TOKEN=...' // Usar el mismo token que en el componente padre
-          }
-        }
-      );
-
-      showConfirmationModal("Éxito", "Actividad actualizada correctamente");
-      setTimeout(() => {
-        resetForm();
-      }, 3000);
-      return true;
-    } catch (error) {
-      console.error('Error al actualizar la actividad:', error);
-      showConfirmationModal("Error", "No se pudo actualizar la actividad. Intente nuevamente.");
-      return false;
-    }
-  };
-
-  // Función crear actividad pero con el estado "completado"
-  const finishTask = async (): Promise<boolean> => {
-    // Crear una copia de los datos actuales
-    const activityData = {
-      ...prepareActivityData(),
-      status: "completado" // Forzar el estado a "completado" explícitamente
+      name: formData.titulo,
+      description: formData.description,
+      location: formData.location,
+      horas: formData.horas,
+      status,
+      icon: `fa-${formData.selectedIcon}`,
+      comments: formData.comments,
+      fecha_creacion: formData.fecha_creacion,
+      images: formData.images,
+      ...(isEditing && { id: itemData.id })
     };
 
     try {
-      console.log(activityData);
-      const response = await axios({
-        method: isEditing ? 'put' : 'post',
-        url: isEditing
+      if (formData.images.length > 0) {
+        const formDataObj = new FormData();
+        Object.entries(activityData).forEach(([key, value]) => {
+          if (key !== 'images') {
+            formDataObj.append(key, String(value));
+          }
+        });
+
+        formData.images.forEach((imageUri, index) => {
+          const fileType = imageUri.split('.').pop();
+          formDataObj.append(`images[${index}]`, {
+            uri: imageUri,
+            name: `photo_${index}.${fileType}`,
+            type: `image/${fileType}`
+          } as any);
+        });
+
+        await axios.post(
+          'https://centroesteticoedith.com/endpoint/activities/create',
+          formDataObj,
+          { headers: { "Content-Type": "multipart/form-data" } }
+        );
+      } else {
+        const url = isEditing 
           ? `https://centroesteticoedith.com/endpoint/activities/${itemData.id}`
-          : 'https://centroesteticoedith.com/endpoint/activities/create',
-        data: activityData,
-        headers: {
-          "Content-Type": "application/json",
-          'Cookie': 'XSRF-TOKEN=...'
-        }
-      });
+          : 'https://centroesteticoedith.com/endpoint/activities/create';
+        
+        await axios({
+          method: isEditing ? 'put' : 'post',
+          url,
+          data: activityData,
+          headers: { "Content-Type": "application/json" }
+        });
+      }
 
-      showConfirmationModal("Éxito", `Actividad ${isEditing ? 'actualizada' : 'completada'} correctamente`);
-      setTimeout(() => {
-        resetForm();
-        if (hideModal) {
-          hideModal(); // Cerrar el modal después de completar la actividad
-        }
-      }, 2000);
+      showMessage("Éxito", `Actividad ${isEditing ? 'actualizada' : 'creada'} correctamente`);
+      if (hideModal) setTimeout(hideModal, 2000);
       return true;
     } catch (error) {
-      console.error('Error al finalizar la actividad:', error);
-      showConfirmationModal("Error", `No se pudo ${isEditing ? 'actualizar' : 'finalizar'} la actividad. Intente nuevamente.`);
+      console.error('Error:', error);
+      showMessage("Error", `No se pudo ${isEditing ? 'actualizar' : 'crear'} la actividad`);
       return false;
     }
   };
 
-  // Enviar métodos al componente padre a través de la referencia
-  useImperativeHandle(ref, () => ({
-    handleCreateActivity, // Método para crear una actividad
-    finishTask, // Método para finalizar una actividad
-    handleUpdateActivity, // Método para actualizar una actividad
-  }));
-
-  const resetForm = () => {
-    setState({
-      tipoTask: tipoActual,
-      titulo: "",
-      description: "",
-      location: "",
-      horas: "",
-      comments: "",
-      selectedIcon: "local-shipping",
-      fecha_creacion: state.fecha_creacion,
-      images: [], // Reset the images array
-    });
-  };
-
-  const handleSubmit = async () => {
-    if (isEditing) {
-      await handleUpdateActivity();
-    } else {
-      await handleCreateActivity();
-    }
-  };
-
-  const showConfirmationModal = (title: string, message: string) => {
+  const showMessage = (title: string, message: string) => {
     setModalMessage(message);
-    setConfirmationModalVisible(true);
+    setShowModal(true);
   };
 
-  const hideConfirmationModal = () => {
-    setConfirmationModalVisible(false);
-  };
-
-  console.log('Parsed images:', state.images);
+  // Exponer métodos al componente padre
+  useImperativeHandle(ref, () => ({
+    handleCreateActivity: () => handleSubmit(),
+    finishTask: () => handleSubmit('completado'),
+    handleUpdateActivity: () => handleSubmit()
+  }));
 
   return (
     <View style={{ backgroundColor: "#0a3649" }}>
@@ -476,34 +256,36 @@ const handleCreateActivity = async (): Promise<boolean> => {
       <ScrollView>
         <View>
           {/* Componente Indicador de Estado e Imagen */}
-          <StatusIndicator tipoTask={state.tipoTask} />
+          <StatusIndicator tipoTask={formData.status} />
 
           {/* Componente Sección de Título */}
           <TitleSection
-            titulo={state.titulo}
-            onTituloChange={(text) => updateState({ titulo: text })}
-            onFinishTask={finishTask}
+            titulo={formData.titulo}
+            onTituloChange={(text) => setFormData(prev => ({ ...prev, titulo: text }))}
+            onFinishTask={() => handleSubmit()}
             isAdmin={isAdmin}
-            images={state.images}
-            onTakePhoto={takePhoto}
-            onPickImages={pickImages}
-            onRemoveImage={removeImage}
-            imagesNewlyAdded={imagesNewlyAdded} // Pass the new flag
+            images={formData.images}
+            onTakePhoto={() => handleImagePicker(true)}
+            onPickImages={() => handleImagePicker()}
+            onRemoveImage={(index) => setFormData(prev => ({
+              ...prev,
+              images: prev.images.filter((_: string, i: number) => i !== index)
+            }))}
           />
 
           {/* Componente Campos del Formulario */}
           <FormFields
-            description={state.description}
-            location={state.location}
-            horas={state.horas}
-            comments={state.comments}
-            onValueChange={handleFieldChange}
+            description={formData.description}
+            location={formData.location}
+            horas={formData.horas}
+            comments={formData.comments}
+            onValueChange={(field, value) => setFormData(prev => ({ ...prev, [field]: value }))}
           />
 
           {/* Componente Selector de Íconos */}
           <IconSelector
-            selectedIcon={state.selectedIcon}
-            onIconSelect={(icon) => updateState({ selectedIcon: icon })}
+            selectedIcon={formData.selectedIcon}
+            onIconSelect={(icon) => setFormData(prev => ({ ...prev, selectedIcon: icon }))}
           />
         </View>
       </ScrollView>
@@ -515,7 +297,7 @@ const handleCreateActivity = async (): Promise<boolean> => {
           backgroundColor: "#dedede",
           borderRadius: 5,
         }}
-        onPress={handleSubmit}
+        onPress={() => handleSubmit()}
       >
         <Text style={{ fontSize: 14, color: "#0a455e", padding: 15 }}>
           {isEditing ? 'Actualizar Actividad' : 'Crear Actividad'}
@@ -523,11 +305,11 @@ const handleCreateActivity = async (): Promise<boolean> => {
       </TouchableOpacity>
 
       {/* Modal de Confirmación */}
-      <Modal transparent={true} animationType="slide" visible={confirmationModalVisible}>
+      <Modal transparent={true} animationType="slide" visible={showModal}>
         <View style={modalStyles.modalContainer}>
           <View style={modalStyles.modalContent}>
             <Text style={modalStyles.modalText}>{modalMessage}</Text>
-            <TouchableOpacity style={modalStyles.button} onPress={hideConfirmationModal}>
+            <TouchableOpacity style={modalStyles.button} onPress={() => setShowModal(false)}>
               <Text style={modalStyles.buttonText}>OK</Text>
             </TouchableOpacity>
           </View>
@@ -536,13 +318,6 @@ const handleCreateActivity = async (): Promise<boolean> => {
     </View>
   );
 });
-
-// Referencia al componente
-export interface ActivityItemCreateRef {
-  handleCreateActivity: () => Promise<boolean>; // Método para crear una actividad
-  finishTask: () => Promise<boolean>; // Método para finalizar una tarea
-  handleUpdateActivity: () => Promise<boolean>; // Método para actualizar una actividad
-}
 
 // Opciones de íconos
 const ICON_OPTIONS: Array<keyof typeof MaterialIcons.glyphMap> = [
@@ -626,8 +401,16 @@ const TitleSection = ({
   onTakePhoto,
   onPickImages,
   onRemoveImage,
-  imagesNewlyAdded, // Use this prop
-}: TitleSectionProps) => {
+}: {
+  titulo: string;
+  onTituloChange: (text: string) => void;
+  onFinishTask: () => void;
+  isAdmin: boolean;
+  images: string[];
+  onTakePhoto: () => void;
+  onPickImages: () => void;
+  onRemoveImage: (index: number) => void;
+}) => {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
 
   return (
