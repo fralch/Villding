@@ -59,8 +59,13 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
     comments: isEditing ? itemData.comments : "",
     selectedIcon: isEditing ? itemData.icon : "local-shipping" as keyof typeof MaterialIcons.glyphMap,
     fecha_creacion: isEditing ? itemData.fecha_creacion : "",
-    images: isEditing && itemData.images ? itemData.images : [], // Array to store multiple images
+    images: isEditing && itemData.image ? JSON.parse(itemData.image) : [],
   });
+    console.log(itemData);
+    /* 
+      {"comments": "Bsbd", "created_at": "2025-04-04T17:52:18.000000Z", "description": "Bsjd", "fecha_creacion": "2025-04-03", "horas": "Bsbd", "icon": "fa-local-shipping", "id": 24, "image": "[\"1743789138_67f01c522bae6.jpeg\",\"1743789138_67f01c522bbfe.jpeg\"]", "location": "Bsbd", "name": "Img 1", "project_id": 1, "status": "pendiente", "tracking_id": 2, "updated_at": "2025-04-04T17:52:18.000000Z"}
+    */
+
   const [tipoActual, setTipoActual] = useState(tipo === "edit" ? "pendiente" : tipo);
   // estados para el modal de confirmación
   const [confirmationModalVisible, setConfirmationModalVisible] = useState(false);
@@ -149,7 +154,9 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
         comments: activity.comments,
         selectedIcon: activity.icon.replace('fa-', '') as keyof typeof MaterialIcons.glyphMap,
         fecha_creacion: activity.fecha_creacion,
-        images: itemData.images || [], // Si images es undefined, establece un array vacío
+        images: activity.image ? 
+          (typeof activity.image === 'string' ? JSON.parse(activity.image) : activity.image) 
+          : [],
       });
     }
   }, [activity]);
@@ -448,6 +455,8 @@ const handleCreateActivity = async (): Promise<boolean> => {
     setConfirmationModalVisible(false);
   };
 
+  console.log('Parsed images:', state.images);
+
   return (
     <View style={{ backgroundColor: "#0a3649" }}>
       <ExpoStatusBar style="light" />
@@ -604,8 +613,66 @@ const TitleSection = ({
   onPickImages,
   onRemoveImage,
 }: TitleSectionProps) => {
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
+
   return (
     <View style={{ backgroundColor: "#0a3649", padding: 20 }}>
+      {/* Image Slider */}
+      {images.length > 0 && (
+        <View style={{ marginBottom: 20 }}>
+          <View style={{ height: 200, width: '100%', marginBottom: 10 }}>
+            <Image 
+              source={{ 
+                uri: images[activeImageIndex].startsWith('http') 
+                  ? images[activeImageIndex] 
+                  : `https://centroesteticoedith.com/endpoint/images/activities/${images[activeImageIndex]}`
+              }} 
+              style={{ 
+                width: '100%', 
+                height: '100%', 
+                borderRadius: 10 
+              }}
+              resizeMode="cover"
+            />
+          </View>
+          
+          {/* Thumbnail scroll for other images */}
+          <ScrollView 
+            horizontal 
+            showsHorizontalScrollIndicator={false}
+            style={{ height: 60 }}
+          >
+            {images.map((image: string, index: number) => (
+              <TouchableOpacity
+                key={index}
+                onPress={() => setActiveImageIndex(index)}
+                style={{
+                  marginRight: 10,
+                  borderWidth: 2,
+                  borderColor: activeImageIndex === index ? '#33baba' : 'transparent',
+                  borderRadius: 5,
+                }}
+              >
+                <Image
+                  source={{ 
+                    uri: image.startsWith('http') 
+                      ? image 
+                      : `https://centroesteticoedith.com/endpoint/images/activities/${image}`
+                  }}
+                  style={{
+                    width: 50,
+                    height: 50,
+                    borderRadius: 5,
+                  }}
+                  resizeMode="cover"
+                />
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+      )}
+
+      {/* Existing title input */}
       <TextInput
         style={{
           fontSize: 35,
@@ -632,7 +699,11 @@ const TitleSection = ({
             {images.map((imageUri, index) => (
               <View key={index} style={{ marginRight: 10, position: 'relative' }}>
                 <Image 
-                  source={{ uri: imageUri }} 
+                  source={{ 
+                    uri: imageUri.startsWith('http') 
+                      ? imageUri 
+                      : `https://centroesteticoedith.com/endpoint/images/activities/${imageUri}`
+                  }} 
                   style={{ width: 100, height: 100, borderRadius: 5 }} 
                   resizeMode="cover" 
                 />
