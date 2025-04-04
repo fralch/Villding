@@ -271,6 +271,7 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
               ...prev,
               images: prev.images.filter((_: string, i: number) => i !== index)
             }))}
+            itemData={itemData}
           />
 
           {/* Componente Campos del Formulario */}
@@ -401,6 +402,7 @@ const TitleSection = ({
   onTakePhoto,
   onPickImages,
   onRemoveImage,
+  itemData,
 }: {
   titulo: string;
   onTituloChange: (text: string) => void;
@@ -410,6 +412,7 @@ const TitleSection = ({
   onTakePhoto: () => void;
   onPickImages: () => void;
   onRemoveImage: (index: number) => void;
+  itemData?: any;
 }) => {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
 
@@ -518,8 +521,8 @@ const TitleSection = ({
         numberOfLines={4}
       />
       
-      {/* Display image gallery when there are images */}
-      {images.length > 0 && (
+      {/* Display image gallery when there are images and no itemData */}
+      {images.length > 0 && !itemData && (
         <View style={{ marginVertical: 10 }}>
           <Text style={{ color: '#dedede', marginBottom: 8, fontSize: 16 }}>
             Imágenes ({images.length})
