@@ -418,7 +418,28 @@ const TitleSection = ({
       {/* Image Slider - only show when there are images to display */}
       {images.length > 0 && (
         <View style={{ marginBottom: 20 }}>
-          <View style={{ height: 200, width: '100%', marginBottom: 10 }}>
+          <View style={{ height: 200, width: '100%', marginBottom: 10, position: 'relative' }}>
+            {/* Navigation Buttons */}
+            <TouchableOpacity 
+              style={{
+                position: 'absolute',
+                left: 0,
+                top: '50%',
+                transform: [{ translateY: -20 }],
+                zIndex: 1,
+                backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                width: 40,
+                height: 40,
+                justifyContent: 'center',
+                alignItems: 'center'
+              }}
+              onPress={() => setActiveImageIndex((prev) => 
+                prev === 0 ? images.length - 1 : prev - 1
+              )}
+            >
+              <MaterialIcons name="chevron-left" size={30} color="white" />
+            </TouchableOpacity>
+
             <Image 
               source={{ 
                 uri: images[activeImageIndex].startsWith('file://') || images[activeImageIndex].startsWith('content://')
@@ -434,43 +455,49 @@ const TitleSection = ({
               }}
               resizeMode="cover"
             />
-          </View>
-          
-          {/* Thumbnail scroll */}
-          <ScrollView 
-            horizontal 
-            showsHorizontalScrollIndicator={false}
-            style={{ height: 60 }}
-          >
-            {images.map((image: string, index: number) => (
-              <TouchableOpacity
-                key={index}
-                onPress={() => setActiveImageIndex(index)}
-                style={{
-                  marginRight: 10,
-                  borderWidth: 2,
-                  borderColor: activeImageIndex === index ? '#33baba' : 'transparent',
-                  borderRadius: 5,
-                }}
-              >
-                <Image
-                  source={{ 
-                    uri: image.startsWith('file://') || image.startsWith('content://')
-                      ? image
-                      : image.startsWith('http')
-                        ? image
-                        : `https://centroesteticoedith.com/endpoint/images/activities/${image}`
-                  }}
+
+            <TouchableOpacity 
+              style={{
+                position: 'absolute',
+                right: 0,
+                top: '50%',
+                transform: [{ translateY: -20 }],
+                zIndex: 1,
+                backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                width: 40,
+                height: 40,
+                justifyContent: 'center',
+                alignItems: 'center'
+              }}
+              onPress={() => setActiveImageIndex((prev) => 
+                prev === images.length - 1 ? 0 : prev + 1
+              )}
+            >
+              <MaterialIcons name="chevron-right" size={30} color="white" />
+            </TouchableOpacity>
+
+            {/* Dots Indicator */}
+            <View style={{
+              position: 'absolute',
+              bottom: 10,
+              width: '100%',
+              flexDirection: 'row',
+              justifyContent: 'center',
+              gap: 8
+            }}>
+              {images.map((_, index) => (
+                <View
+                  key={index}
                   style={{
-                    width: 50,
-                    height: 50,
-                    borderRadius: 5,
+                    width: 8,
+                    height: 8,
+                    borderRadius: 4,
+                    backgroundColor: index === activeImageIndex ? '#33baba' : 'rgba(255, 255, 255, 0.5)'
                   }}
-                  resizeMode="cover"
                 />
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
+              ))}
+            </View>
+          </View>
         </View>
       )}
 
