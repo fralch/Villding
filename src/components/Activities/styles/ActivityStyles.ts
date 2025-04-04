@@ -24,7 +24,7 @@ export const styles = StyleSheet.create({
   },
   weekContainer: {
     padding: 16,
-    backgroundColor: '#034757',
+    backgroundColor: '#0D465E',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -59,10 +59,8 @@ export const styles = StyleSheet.create({
     backgroundColor: '#034757',
   },
   dayContainer: {
-    paddingVertical: 16,
-    backgroundColor: '#034757',
-    borderBottomColor: '#056375',
-    borderBottomWidth: 1,
+    backgroundColor: '#053648',
+    
   },
   dayTitle: {
     backgroundColor: '#05222F',
@@ -76,6 +74,8 @@ export const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 8,
     marginBottom: 8,
+    borderBottomWidth: 2,
+    borderBottomColor: '#034757',
   },
   taskHeader: {
     flexDirection: 'row',
@@ -97,6 +97,7 @@ export const styles = StyleSheet.create({
     color: 'white',
     fontSize: 14,
     marginTop: 4,
+    
   },
   addNewTaskButton: {
     padding: 16,
@@ -105,6 +106,7 @@ export const styles = StyleSheet.create({
   addNewTaskText: {
     color: '#F4C724',
     fontSize: 16,
+    marginBottom: 10,
   },
   modalContainerOptions: {
     backgroundColor: '#0A3649',

@@ -78,6 +78,10 @@ export default function Activity(props: any) {
   // New state variables for editing
   const [isEditing, setIsEditing] = useState(false);
   const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
+  
+  // Get today's date in DD/MM format
+  const today = new Date();
+  const todayFormatted = `${today.getDate()}/${today.getMonth() + 1}`;
 
   const getDayName = (dateString: string) => {
     const days = [ 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
@@ -125,14 +129,10 @@ export default function Activity(props: any) {
         const response = await axios.request(config);
         const apiActivities: Activity[] = response.data;
   
-        // Log para depuración
-        // console.log('Actividades recibidas:', apiActivities);
-        
         const weekDaysWithActivities: WeekDay[] = tracking.days.map(dayLabel => {
           const dayActivities = apiActivities.filter(activity => {
             // Usar la función específica para formatear YYYY-MM-DD a DD/MM
             const formattedActivityDate = formatDateFromString(activity.fecha_creacion);
-            // console.log(`Comparando fecha: ${activity.fecha_creacion} -> ${formattedActivityDate} con ${dayLabel}`);
             return formattedActivityDate === dayLabel;
           });
   
@@ -322,6 +322,7 @@ export default function Activity(props: any) {
                   activity={activity}
                   showModal={() => showModal(activity, day.dayLabel)}
                   setActivityItemCreateType={setActivityItemCreateType}
+                  isToday={day.dayLabel === todayFormatted}
                 />
               ))
             ) : (
@@ -408,7 +409,8 @@ const ActivityCard: React.FC<{
   activity: Activity;
   showModal: () => void;
   setActivityItemCreateType: (type: string) => void;
-}> = ({ activity, showModal, setActivityItemCreateType }) => {
+  isToday: boolean;
+}> = ({ activity, showModal, setActivityItemCreateType, isToday }) => {
   const getStatusLabel = (status: string) => {
     switch (status.toLowerCase()) {
       case 'completado': return 'Completado';
@@ -419,9 +421,15 @@ const ActivityCard: React.FC<{
 
   const statusLabel = getStatusLabel(activity.status);
 
+  // Definimos los colores de fondo según si es hoy o no
+  const backgroundColor = isToday ? '#0D5A73' : '#053648';
+
   return (
     <TouchableOpacity
-      style={styles.taskCard}
+      style={[
+        styles.taskCard,
+        { backgroundColor: backgroundColor } // Aplicamos el color de fondo según la fecha
+      ]}
       onPress={() => {
         setActivityItemCreateType(statusLabel);
         showModal();
