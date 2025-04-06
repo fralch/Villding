@@ -10,6 +10,7 @@ import {
   Pressable,
   StyleSheet,
   Alert,
+  ActivityIndicator,
 } from "react-native";
 import { StatusBar as ExpoStatusBar } from "expo-status-bar";
 import { getSesion, removeSesion , updateSesion } from '../../hooks/localStorageUser';
@@ -110,6 +111,7 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
   const [isAdmin, setIsAdmin] = useState(false);
   const [modalMessage, setModalMessage] = useState("");
   const [showModal, setShowModal] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Efectos simplificados
   useEffect(() => {
@@ -193,6 +195,8 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
     };
 
     try {
+      setIsLoading(true);
+      
       if (formData.images.length > 0) {
         const formDataObj = new FormData();
         Object.entries(activityData).forEach(([key, value]) => {
@@ -230,15 +234,18 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
         });
       }
 
+      setIsLoading(false);
       showMessage("Éxito", `Actividad ${isEditing ? 'actualizada' : 'creada'} correctamente`);
       if (hideModal) setTimeout(hideModal, 2000);
       return true;
     } catch (error) {
       console.error('Error:', error);
+      setIsLoading(false);
       showMessage("Error", `No se pudo ${isEditing ? 'actualizar' : 'crear'} la actividad`);
       return false;
     }
   };
+  
   const handleSubmitFinish = async (status = formData.status) => {
     if (!formData.titulo.trim()) {
       showMessage("Error", "El título es obligatorio");
@@ -261,22 +268,26 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
     };
 
     try {
+      setIsLoading(true);
+      
       const url = isEditing 
           ? `https://centroesteticoedith.com/endpoint/activities/${itemData.id}`
           : 'https://centroesteticoedith.com/endpoint/activities/create';
         
-        await axios({
-          method: isEditing ? 'put' : 'post',
-          url,
-          data: activityData,
-          headers: { "Content-Type": "application/json" }
-        });
+      await axios({
+        method: isEditing ? 'put' : 'post',
+        url,
+        data: activityData,
+        headers: { "Content-Type": "application/json" }
+      });
 
+      setIsLoading(false);
       showMessage("Éxito", `Actividad ${isEditing ? 'actualizada' : 'creada'} correctamente`);
       if (hideModal) setTimeout(hideModal, 2000);
       return true;
     } catch (error) {
       console.error('Error:', error);
+      setIsLoading(false);
       showMessage("Error", `No se pudo ${isEditing ? 'actualizar' : 'crear'} la actividad`);
       return false;
     }
@@ -341,12 +352,24 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
           marginTop: 10,
           backgroundColor: "#dedede",
           borderRadius: 5,
+          flexDirection: "row",
+          padding: 15,
         }}
         onPress={() => handleSubmit()}
+        disabled={isLoading}
       >
-        <Text style={{ fontSize: 14, color: "#0a455e", padding: 15 }}>
-          {isEditing ? 'Actualizar Actividad' : 'Crear Actividad'}
-        </Text>
+        {isLoading ? (
+          <>
+            <ActivityIndicator size="small" color="#0a455e" style={{ marginRight: 8 }} />
+            <Text style={{ fontSize: 14, color: "#0a455e" }}>
+              {formData.images.length > 0 ? 'Subiendo imágenes...' : 'Procesando...'}
+            </Text>
+          </>
+        ) : (
+          <Text style={{ fontSize: 14, color: "#0a455e" }}>
+            {isEditing ? 'Actualizar Actividad' : 'Crear Actividad'}
+          </Text>
+        )}
       </TouchableOpacity>
 
       {/* Modal de Confirmación */}
@@ -360,6 +383,23 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
           </View>
         </View>
       </Modal>
+
+      {/* Loading Overlay - Shows only when isLoading is true */}
+      {isLoading && (
+        <Modal transparent={true} visible={true}>
+          <View style={loadingStyles.overlay}>
+            <View style={loadingStyles.loadingContainer}>
+              <ActivityIndicator size="large" color="#33baba" />
+              <Text style={loadingStyles.loadingText}>
+                {formData.images.length > 0 
+                  ? `Subiendo ${formData.images.length} ${formData.images.length === 1 ? 'imagen' : 'imágenes'}...` 
+                  : 'Procesando...'
+                }
+              </Text>
+            </View>
+          </View>
+        </Modal>
+      )}
     </View>
   );
 });
@@ -786,8 +826,6 @@ const IconSelector = ({ selectedIcon, onIconSelect }: { selectedIcon: keyof type
   );
 };
 
-export default ActivityItemCreate;
-
 const modalStyles = StyleSheet.create({
   modalContainer: {
     flex: 1,
@@ -819,3 +857,28 @@ const modalStyles = StyleSheet.create({
     fontSize: 16,
   },
 });
+
+// New loading overlay styles
+const loadingStyles = StyleSheet.create({
+  overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingContainer: {
+    backgroundColor: '#0A3649',
+    borderRadius: 10,
+    padding: 20,
+    alignItems: 'center',
+    minWidth: 200,
+  },
+  loadingText: {
+    color: 'white',
+    marginTop: 15,
+    fontSize: 16,
+    textAlign: 'center',
+  }
+});
+
+export default ActivityItemCreate;
