@@ -237,6 +237,48 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
       return false;
     }
   };
+  const handleSubmitFinish = async (status = formData.status) => {
+    if (!formData.titulo.trim()) {
+      showMessage("Error", "El título es obligatorio");
+      return false;
+    }
+
+    const activityData: ActivityData = {
+      project_id,
+      tracking_id,
+      name: formData.titulo,
+      description: formData.description,
+      location: formData.location,
+      horas: formData.horas,
+      status: "completado",
+      icon: `fa-${formData.selectedIcon}`,
+      comments: formData.comments,
+      fecha_creacion: formData.fecha_creacion,
+      images: formData.images,
+      ...(isEditing && { id: itemData.id })
+    };
+
+    try {
+      const url = isEditing 
+          ? `https://centroesteticoedith.com/endpoint/activities/${itemData.id}`
+          : 'https://centroesteticoedith.com/endpoint/activities/create';
+        
+        await axios({
+          method: isEditing ? 'put' : 'post',
+          url,
+          data: activityData,
+          headers: { "Content-Type": "application/json" }
+        });
+
+      showMessage("Éxito", `Actividad ${isEditing ? 'actualizada' : 'creada'} correctamente`);
+      if (hideModal) setTimeout(hideModal, 2000);
+      return true;
+    } catch (error) {
+      console.error('Error:', error);
+      showMessage("Error", `No se pudo ${isEditing ? 'actualizar' : 'crear'} la actividad`);
+      return false;
+    }
+  };
 
   const showMessage = (title: string, message: string) => {
     setModalMessage(message);
@@ -262,7 +304,7 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
           <TitleSection
             titulo={formData.titulo}
             onTituloChange={(text) => setFormData(prev => ({ ...prev, titulo: text }))}
-            onFinishTask={() => handleSubmit()}
+            onFinishTask={() => handleSubmitFinish()}
             isAdmin={isAdmin}
             images={formData.images}
             onTakePhoto={() => handleImagePicker(true)}
