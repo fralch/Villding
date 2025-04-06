@@ -210,6 +210,8 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
           } as any);
         });
 
+        console.log('FormData:', formDataObj); // Debugging line
+
         await axios.post(
           'https://centroesteticoedith.com/endpoint/activities/create',
           formDataObj,
