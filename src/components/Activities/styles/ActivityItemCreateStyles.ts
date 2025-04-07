@@ -77,13 +77,12 @@ export const styles = StyleSheet.create({
     justifyContent: "flex-start",
   },
   iconContainer: {
-    width: 80,
-    height: 80,
+    width: 50,
+    height: 50,
     justifyContent: "center",
     alignItems: "center",
     borderRadius: 8,
-    backgroundColor: "#0a455e",
-    padding: 5,
+    padding: 2,
   },
   selectedIconContainer: {
     backgroundColor: "#33baba",
