@@ -55,7 +55,7 @@ interface ActivityItemCreateProps {
 }
 
 // Add at the top with other interfaces
-interface ActivityItemCreateRef {
+export interface ActivityItemCreateRef {
   handleCreateActivity: () => Promise<boolean>;
   finishTask: () => Promise<boolean>;
   handleUpdateActivity: () => Promise<boolean>;
@@ -190,7 +190,7 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
       horas: formData.horas,
       status,
       icon: formData.selectedIcon, // Ya no es necesario agregar 'fa-'
-      comments: formData.comments,
+      comments: formData.comments || "",
       fecha_creacion: formData.fecha_creacion,
       images: formData.images,
       ...(isEditing && { id: itemData.id })

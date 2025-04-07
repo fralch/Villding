@@ -9,6 +9,7 @@ import {
   Modal,
   Pressable,
   PanResponder,
+  Image,
 } from 'react-native';
 import { StatusBar as ExpoStatusBar } from 'expo-status-bar';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
@@ -16,6 +17,55 @@ import axios from "axios";
 import { MaterialIcons, MaterialCommunityIcons, Feather, Ionicons } from '@expo/vector-icons';
 import ActivityItemCreate, { ActivityItemCreateRef } from './ActivityItemCreate';
 import { styles } from "./styles/ActivityStyles";
+
+// Add icon mapping
+const iconMapping: { [key: string]: any } = {
+  'acero.png': require('../../assets/icons-png/acero.png'),
+  'albaneria.png': require('../../assets/icons-png/albaneria.png'),
+  'aparatos-sanitarios.png': require('../../assets/icons-png/aparatos-sanitarios.png'),
+  'ascensores.png': require('../../assets/icons-png/ascensores.png'),
+  'barandas.png': require('../../assets/icons-png/barandas.png'),
+  'carpinteria.png': require('../../assets/icons-png/carpinteria.png'),
+  'carpinteria-metalica.png': require('../../assets/icons-png/carpinteria-metalica.png'),
+  'casco.png': require('../../assets/icons-png/casco.png'),
+  'casco2.png': require('../../assets/icons-png/casco2.png'),
+  'checklist.png': require('../../assets/icons-png/checklist.png'),
+  'compactacion.png': require('../../assets/icons-png/compactacion.png'),
+  'concreto.png': require('../../assets/icons-png/concreto.png'),
+  'concreto-armado.png': require('../../assets/icons-png/concreto-armado.png'),
+  'concreto-hormigon.png': require('../../assets/icons-png/concreto-hormigon.png'),
+  'concreto-simple.png': require('../../assets/icons-png/concreto-simple.png'),
+  'cristaleria-y-espejos.png': require('../../assets/icons-png/cristaleria-y-espejos.png'),
+  'demolicion.png': require('../../assets/icons-png/demolicion.png'),
+  'demolicion2.png': require('../../assets/icons-png/demolicion2.png'),
+  'desmontaje.png': require('../../assets/icons-png/desmontaje.png'),
+  'encofrado.png': require('../../assets/icons-png/encofrado.png'),
+  'estructura-metalica.png': require('../../assets/icons-png/estructura-metalica.png'),
+  'instalaciones-a-gas.png': require('../../assets/icons-png/instalaciones-a-gas.png'),
+  'instalaciones-electricas.png': require('../../assets/icons-png/instalaciones-electricas.png'),
+  'instalaciones-sanitarias.png': require('../../assets/icons-png/instalaciones-sanitarias.png'),
+  'montaje-y-desmontaje.png': require('../../assets/icons-png/montaje-y-desmontaje.png'),
+  'movimiento-tierra.png': require('../../assets/icons-png/movimiento-tierra.png'),
+  'muebleria.png': require('../../assets/icons-png/muebleria.png'),
+  'otras-actividades.png': require('../../assets/icons-png/otras-actividades.png'),
+  'pastelero.png': require('../../assets/icons-png/pastelero.png'),
+  'pavimentos.png': require('../../assets/icons-png/pavimentos.png'),
+  'pintura.png': require('../../assets/icons-png/pintura.png'),
+  'relleno.png': require('../../assets/icons-png/relleno.png'),
+  'reporte.png': require('../../assets/icons-png/reporte.png'),
+  'retiro-de-material.png': require('../../assets/icons-png/retiro-de-material.png'),
+  'revestimiento.png': require('../../assets/icons-png/revestimiento.png'),
+  'sistema-construccion-en-seco.png': require('../../assets/icons-png/sistema-construccion-en-seco.png'),
+  'sistema-contra-incendios.png': require('../../assets/icons-png/sistema-contra-incendios.png'),
+  'sistema-de-contencion.png': require('../../assets/icons-png/sistema-de-contencion.png'),
+  'suministro-materiales.png': require('../../assets/icons-png/suministro-materiales.png'),
+  'supervision.png': require('../../assets/icons-png/supervision.png'),
+  'telecomunicaciones.png': require('../../assets/icons-png/telecomunicaciones.png'),
+  'trabajos-humedos.png': require('../../assets/icons-png/trabajos-humedos.png'),
+  'usuario-hombre.png': require('../../assets/icons-png/usuario-hombre.png'),
+  'usuario-mujer.png': require('../../assets/icons-png/usuario-mujer.png'),
+  'vaciado.png': require('../../assets/icons-png/vaciado.png'),
+};
 
 export interface Activity {
   id: number;
@@ -141,7 +191,7 @@ export default function Activity(props: any) {
             activities: dayActivities
           };
         });
-  
+        console.log(weekDaysWithActivities);
         setWeekDays(weekDaysWithActivities);
   
         // Calcular el número de actividades pendientes solo para los días mostrados
@@ -446,7 +496,7 @@ const ActivityCard: React.FC<{
         }]}>
           {statusLabel}
         </Text>
-        <Feather name={activity.icon === 'fa-local-shipping' ? 'truck' : 'calendar'} size={24} color="white" />
+        <Image source={iconMapping[activity.icon] || iconMapping['otras-actividades.png']} style={{ width: 24, height: 24, marginRight: 10, resizeMode: 'contain'}} />
       </View>
       <Text style={styles.taskTitle}>{activity.name}</Text>
       <Text style={styles.taskTime}>{activity.horas} horas</Text>
