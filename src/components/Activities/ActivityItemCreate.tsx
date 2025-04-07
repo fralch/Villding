@@ -321,32 +321,7 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
           />
         </View>
       </ScrollView>
-      <TouchableOpacity
-        style={{
-          justifyContent: "center",
-          alignItems: "center",
-          marginTop: 10,
-          backgroundColor: "#dedede",
-          borderRadius: 5,
-          flexDirection: "row",
-          padding: 15,
-        }}
-        onPress={() => handleSubmit()}
-        disabled={isLoading}
-      >
-        {isLoading ? (
-          <>
-            <ActivityIndicator size="small" color="#0a455e" style={{ marginRight: 8 }} />
-            <Text style={{ fontSize: 14, color: "#0a455e" }}>
-              {formData.images.length > 0 ? 'Subiendo imágenes...' : 'Procesando...'}
-            </Text>
-          </>
-        ) : (
-          <Text style={{ fontSize: 14, color: "#0a455e" }}>
-            {isEditing ? 'Actualizar Actividad' : 'Crear Actividad'}
-          </Text>
-        )}
-      </TouchableOpacity>
+     
 
       {/* Modal de Confirmación */}
       <Modal transparent={true} animationType="slide" visible={showModal}>
