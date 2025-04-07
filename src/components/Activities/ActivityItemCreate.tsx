@@ -286,8 +286,6 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
       <ExpoStatusBar style="light" />
       <ScrollView>
         <View>
-          {/* Componente Indicador de Estado e Imagen */}
-          <StatusIndicator tipoTask={formData.status} />
 
           {/* Componente Sección de Título */}
           <TitleSection
@@ -303,7 +301,9 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
               images: prev.images.filter((_: string, i: number) => i !== index)
             }))}
             itemData={itemData}
+            status={formData.status} // Añadir esta prop
           />
+          
 
           {/* Componente Campos del Formulario */}
           <FormFields
@@ -453,17 +453,7 @@ const StatusIndicator = ({ tipoTask }: { tipoTask: string }) => {
 };
 
 // Componente de sección de título
-const TitleSection = ({
-  titulo,
-  onTituloChange,
-  onFinishTask,
-  isAdmin,
-  images,
-  onTakePhoto,
-  onPickImages,
-  onRemoveImage,
-  itemData,
-}: {
+interface TitleSectionProps {
   titulo: string;
   onTituloChange: (text: string) => void;
   onFinishTask: () => void;
@@ -473,6 +463,20 @@ const TitleSection = ({
   onPickImages: () => void;
   onRemoveImage: (index: number) => void;
   itemData?: any;
+  status: string; // Añadir esta prop
+}
+
+const TitleSection: React.FC<TitleSectionProps> = ({
+  titulo,
+  onTituloChange,
+  onFinishTask,
+  isAdmin,
+  images,
+  onTakePhoto,
+  onPickImages,
+  onRemoveImage,
+  itemData,
+  status
 }) => {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
 
@@ -563,7 +567,7 @@ const TitleSection = ({
           </View>
         </View>
       )}
-
+      <StatusIndicator tipoTask={status} /> 
       {/* Existing title input */}
       <TextInput
         style={{
