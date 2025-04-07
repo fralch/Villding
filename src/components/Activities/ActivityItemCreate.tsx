@@ -749,84 +749,91 @@ const IconSelector = ({
   onIconSelect: (icon: string) => void 
 }) => {
   const recentIcons = iconsFiles.slice(0, 5);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   return (
-    <>
-      <View
+    <View style={{ flex: 1, backgroundColor: "#0a3649" }}>
+      <TouchableOpacity
         style={{
           flexDirection: "row",
           alignItems: "center",
           borderBottomWidth: 1,
           borderBottomColor: "#05222f",
+          padding: 15,
         }}
+        onPress={() => setIsExpanded(!isExpanded)}
       >
-        <Text style={{ fontSize: 17, color: "#dedede", padding: 15 }}>
+        <Text style={{ fontSize: 17, color: "#dedede" }}>
           Seleccionar un ícono
         </Text>
         <MaterialIcons
-          name="arrow-forward-ios"
-          size={15}
+          name={isExpanded ? "keyboard-arrow-up" : "keyboard-arrow-down"}
+          size={24}
           color="#dedede"
-          style={{ marginTop: 5 }}
+          style={{ marginLeft: 10 }}
         />
-      </View>
+      </TouchableOpacity>
 
-      <View style={{ backgroundColor: "#0a3649" }}>
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Recientes</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            <View style={styles.iconRow}>
-              {recentIcons.map((icon, index) => (
-                <TouchableOpacity
-                  key={index}
-                  onPress={() => {
-                    console.log("Selected icon:", icon);
-                    onIconSelect(icon);
-                  }}
-                  style={[
-                    styles.iconContainer,
-                    selectedIcon === icon && styles.selectedIconContainer
-                  ]}
-                >
-                  <Image
-                    source={iconImports[icon as keyof typeof iconImports]}
-                    style={styles.iconImage}
-                  />
-               
-                </TouchableOpacity>
-              ))}
-            </View>
-          </ScrollView>
-        </View>
+      {isExpanded && (
+        <View style={{ flex: 1 }}>
+          <View style={[styles.section, { maxHeight: 120 }]}>
+            <Text style={styles.sectionTitle}>Recientes</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              <View style={styles.iconRow}>
+                {recentIcons.map((icon, index) => (
+                  <TouchableOpacity
+                    key={index}
+                    onPress={() => {
+                      console.log("Selected icon:", icon);
+                      onIconSelect(icon);
+                    }}
+                    style={[
+                      styles.iconContainer,
+                      selectedIcon === icon && styles.selectedIconContainer
+                    ]}
+                  >
+                    <Image
+                      source={iconImports[icon as keyof typeof iconImports]}
+                      style={styles.iconImage}
+                    />
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </ScrollView>
+          </View>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Todos los íconos</Text>
-          <ScrollView style={{ maxHeight: 200 }}>
-            <View style={styles.iconGrid}>
-              {iconsFiles.map((icon, index) => (
-                <TouchableOpacity
-                  key={index}
-                  onPress={() => {
-                    console.log("Icon clicked:", icon);
-                    onIconSelect(icon);
-                  }}
-                  style={[
-                    styles.iconContainer,
-                    selectedIcon === icon && styles.selectedIconContainer
-                  ]}
-                >
-                  <Image
-                    source={iconImports[icon as keyof typeof iconImports]}
-                    style={styles.iconImage}
-                  />
-               
-                </TouchableOpacity>
-              ))}
-            </View>
-          </ScrollView>
+          <View style={[styles.section, { flex: 1 }]}>
+            <Text style={styles.sectionTitle}>Todos los íconos</Text>
+            <ScrollView 
+              style={{ flex: 1 }}
+              contentContainerStyle={{ paddingBottom: 20 }}
+              showsVerticalScrollIndicator={true}
+            >
+              <View style={styles.iconGrid}>
+                {iconsFiles.map((icon, index) => (
+                  <TouchableOpacity
+                    key={index}
+                    onPress={() => {
+                      console.log("Icon clicked:", icon);
+                      onIconSelect(icon);
+                    }}
+                    style={[
+                      styles.iconContainer,
+                      selectedIcon === icon && styles.selectedIconContainer
+                    ]}
+                  >
+                    <Image
+                      source={iconImports[icon as keyof typeof iconImports]}
+                      style={styles.iconImage}
+                    />
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </ScrollView>
+          </View>
         </View>
-      </View>
-    </>
+      )}
+    </View>
   );
 };
 
