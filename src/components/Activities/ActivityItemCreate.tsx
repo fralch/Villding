@@ -73,6 +73,40 @@ const iconsFiles: string[] = [
   "vaciado.png"
 ];
 
+// Primero creamos un objeto que mapee los nombres de los iconos a sus rutas
+const iconImports = {
+  'acero.png': require('../../assets/icons-png/acero.png'),
+  'albaneria.png': require('../../assets/icons-png/albaneria.png'),
+  'aparatos-sanitarios.png': require('../../assets/icons-png/aparatos-sanitarios.png'),
+  'ascensores.png': require('../../assets/icons-png/ascensores.png'),
+  'barandas.png': require('../../assets/icons-png/barandas.png'),
+  'carpinteria.png': require('../../assets/icons-png/carpinteria.png'),
+  'carpinteria-metalica.png': require('../../assets/icons-png/carpinteria-metalica.png'),
+  'casco.png': require('../../assets/icons-png/casco.png'),
+  'casco2.png': require('../../assets/icons-png/casco2.png'),
+  'checklist.png': require('../../assets/icons-png/checklist.png'),
+  'compactacion.png': require('../../assets/icons-png/compactacion.png'),
+  'concreto.png': require('../../assets/icons-png/concreto.png'),
+  'concreto-armado.png': require('../../assets/icons-png/concreto-armado.png'),
+  'concreto-hormigon.png': require('../../assets/icons-png/concreto-hormigon.png'),
+  'concreto-simple.png': require('../../assets/icons-png/concreto-simple.png'),
+  'cristaleria-y-espejos.png': require('../../assets/icons-png/cristaleria-y-espejos.png'),
+  'demolicion.png': require('../../assets/icons-png/demolicion.png'),
+  'demolicion2.png': require('../../assets/icons-png/demolicion2.png'),
+  'desmontaje.png': require('../../assets/icons-png/desmontaje.png'),
+  'encofrado.png': require('../../assets/icons-png/encofrado.png'),
+  'estructura-metalica.png': require('../../assets/icons-png/estructura-metalica.png'),
+  'instalaciones-a-gas.png': require('../../assets/icons-png/instalaciones-a-gas.png'),
+  'instalaciones-electricas.png': require('../../assets/icons-png/instalaciones-electricas.png'),
+  'instalaciones-sanitarias.png': require('../../assets/icons-png/instalaciones-sanitarias.png'),
+  'montaje-y-desmontaje.png': require('../../assets/icons-png/montaje-y-desmontaje.png'),
+  'supervision.png': require('../../assets/icons-png/supervision.png'),
+  'telecomunicaciones.png': require('../../assets/icons-png/telecomunicaciones.png'),
+  'trabajos-humedos.png': require('../../assets/icons-png/trabajos-humedos.png'),
+  'usuario-hombre.png': require('../../assets/icons-png/usuario-hombre.png'),
+  'usuario-mujer.png': require('../../assets/icons-png/usuario-mujer.png'),
+  'vaciado.png': require('../../assets/icons-png/vaciado.png'),
+};
 
 // Tipos simplificados
 interface ActivityData {
@@ -791,8 +825,7 @@ const IconSelector = ({
   selectedIcon: string, 
   onIconSelect: (icon: string) => void 
 }) => {
-  // Agrupar los iconos por categorías
-  const recentIcons = iconsFiles.slice(0, 5); // Mostrar los 5 primeros como recientes
+  const recentIcons = iconsFiles.slice(0, 5);
 
   return (
     <>
@@ -820,27 +853,27 @@ const IconSelector = ({
           <Text style={styles.sectionTitle}>Recientes</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             <View style={styles.iconRow}>
-                {recentIcons.map((icon, index) => (
+              {recentIcons.map((icon, index) => (
                 <TouchableOpacity
                   key={index}
                   onPress={() => {
-                  console.log("Selected icon:", icon);
-                  onIconSelect(icon);
+                    console.log("Selected icon:", icon);
+                    onIconSelect(icon);
                   }}
                   style={[
-                  styles.iconContainer,
-                  selectedIcon === icon && styles.selectedIconContainer
+                    styles.iconContainer,
+                    selectedIcon === icon && styles.selectedIconContainer
                   ]}
                 >
-                  {/* <Image
-                  source={require('../../assets/icons-png/'+icon)}
-                  style={styles.iconImage}
-                  /> */}
+                  <Image
+                    source={iconImports[icon]} // Usamos el objeto de mapeo aquí
+                    style={styles.iconImage}
+                  />
                   <Text style={styles.iconText}>
-                  {icon.replace('.png', '').replace(/-/g, ' ')}
+                    {icon.replace('.png', '').replace(/-/g, ' ')}
                   </Text>
                 </TouchableOpacity>
-                ))}
+              ))}
             </View>
           </ScrollView>
         </View>
@@ -849,27 +882,27 @@ const IconSelector = ({
           <Text style={styles.sectionTitle}>Todos los íconos</Text>
           <ScrollView style={{ maxHeight: 200 }}>
             <View style={styles.iconGrid}>
-                {iconsFiles.map((icon, index) => (
+              {iconsFiles.map((icon, index) => (
                 <TouchableOpacity
                   key={index}
                   onPress={() => {
-                  console.log("Icon clicked:", icon);
-                  onIconSelect(icon);
+                    console.log("Icon clicked:", icon);
+                    onIconSelect(icon);
                   }}
                   style={[
-                  styles.iconContainer,
-                  selectedIcon === icon && styles.selectedIconContainer
+                    styles.iconContainer,
+                    selectedIcon === icon && styles.selectedIconContainer
                   ]}
                 >
-                  {/* <Image
-                  source={require('../../assets/icons-png/'+icon)}
-                  style={styles.iconImage}
-                  /> */}
+                  <Image
+                    source={iconImports[icon]} // Usamos el objeto de mapeo aquí también
+                    style={styles.iconImage}
+                  />
                   <Text style={styles.iconText}>
-                  {icon.replace('.png', '').replace(/-/g, ' ')}
+                    {icon.replace('.png', '').replace(/-/g, ' ')}
                   </Text>
                 </TouchableOpacity>
-                ))}
+              ))}
             </View>
           </ScrollView>
         </View>
