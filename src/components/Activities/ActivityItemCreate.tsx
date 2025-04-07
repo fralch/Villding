@@ -25,6 +25,55 @@ import * as ImagePicker from 'expo-image-picker';
 import { styles } from "./styles/ActivityItemCreateStyles";
 import { Activity } from './Activity';
 
+const iconsFiles: string[] = [
+  "acero.png",
+  "albaneria.png",
+  "aparatos-sanitarios.png",
+  "ascensores.png",
+  "barandas.png",
+  "carpinteria.png",
+  "carpinteria-metalica.png",
+  "casco.png",
+  "casco2.png",
+  "checklist.png",
+  "compactacion.png",
+  "concreto.png",
+  "concreto-armado.png",
+  "concreto-hormigon.png",
+  "concreto-simple.png",
+  "cristaleria-y-espejos.png",
+  "demolicion.png",
+  "demolicion2.png",
+  "desmontaje.png", 
+  "encofrado.png",
+  "estructura-metalica.png",
+  "instalaciones-a-gas.png",
+  "instalaciones-electricas.png",
+  "instalaciones-sanitarias.png",
+  "montaje-y-desmontaje.png",
+  "movimiento-tierra.png",
+  "muebleria.png",
+  "otras-actividades.png",
+  "pastelero.png",
+  "pavimentos.png",
+  "pintura.png",
+  "relleno.png",
+  "reporte.png",
+  "retiro-de-material.png",
+  "revestimiento.png",
+  "sistema-construccion-en-seco.png",
+  "sistema-contra-incendios.png",
+  "sistema-de-contencion.png",
+  "suministro-materiales.png",
+  "supervision.png",
+  "telecomunicaciones.png",
+  "trabajos-humedos.png",
+  "usuario-hombre.png",
+  "usuario-mujer.png", 
+  "vaciado.png"
+];
+
+
 // Tipos simplificados
 interface ActivityData {
   project_id: number;
@@ -76,7 +125,7 @@ interface FormDataState {
   location: string;
   horas: string;
   comments: string;
-  selectedIcon: keyof typeof MaterialIcons.glyphMap;
+  selectedIcon: string; // Cambiado de keyof typeof MaterialIcons.glyphMap a string
   fecha_creacion: string;
   images: string[];
   status: ActivityStatus;
@@ -102,7 +151,7 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
     location: isEditing ? itemData?.location : "",
     horas: isEditing ? itemData?.horas : "",
     comments: isEditing ? itemData?.comments : "",
-    selectedIcon: isEditing ? itemData?.icon?.replace('fa-', '') : "local-shipping",
+    selectedIcon: isEditing ? itemData?.icon : "local-shipping.svg", // Valor por defecto actualizado
     fecha_creacion: "",
     images: isEditing && itemData?.image ? JSON.parse(itemData.image) : [],
     status: (tipo === "edit" ? "pendiente" : tipo) as ActivityStatus
@@ -187,7 +236,7 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
       location: formData.location,
       horas: formData.horas,
       status,
-      icon: `fa-${formData.selectedIcon}`,
+      icon: formData.selectedIcon, // Ya no es necesario agregar 'fa-'
       comments: formData.comments,
       fecha_creacion: formData.fecha_creacion,
       images: formData.images,
@@ -258,7 +307,7 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
     showMessage("Éxito", `Actividad ${isEditing ? 'actualizada' : 'creada'} correctamente`);
     if (hideModal) setTimeout(hideModal, 2000);
     return true;
-    
+
    }catch (error) {
     console.error('Error:', error);
     setIsLoading(false);
@@ -735,7 +784,16 @@ const FormFields = ({
 };
 
 // Componente selector de íconos
-const IconSelector = ({ selectedIcon, onIconSelect }: { selectedIcon: keyof typeof MaterialIcons.glyphMap, onIconSelect: (icon: keyof typeof MaterialIcons.glyphMap) => void }) => {
+const IconSelector = ({ 
+  selectedIcon, 
+  onIconSelect 
+}: { 
+  selectedIcon: string, 
+  onIconSelect: (icon: string) => void 
+}) => {
+  // Agrupar los iconos por categorías
+  const recentIcons = iconsFiles.slice(0, 5); // Mostrar los 5 primeros como recientes
+
   return (
     <>
       <View
@@ -760,40 +818,60 @@ const IconSelector = ({ selectedIcon, onIconSelect }: { selectedIcon: keyof type
       <View style={{ backgroundColor: "#0a3649" }}>
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Recientes</Text>
-          <View style={styles.iconRow}>
-            {RECENT_ICONS.map((icon, index) => (
-              <TouchableOpacity
-                key={index}
-                onPress={() => onIconSelect(icon)}
-              >
-                <MaterialIcons
-                  name={icon}
-                  size={40}
-                  color={selectedIcon === icon ? "white" : "grey"}
-                  style={styles.icon}
-                />
-              </TouchableOpacity>
-            ))}
-          </View>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            <View style={styles.iconRow}>
+                {recentIcons.map((icon, index) => (
+                <TouchableOpacity
+                  key={index}
+                  onPress={() => {
+                  console.log("Selected icon:", icon);
+                  onIconSelect(icon);
+                  }}
+                  style={[
+                  styles.iconContainer,
+                  selectedIcon === icon && styles.selectedIconContainer
+                  ]}
+                >
+                  {/* <Image
+                  source={require('../../assets/icons-png/'+icon)}
+                  style={styles.iconImage}
+                  /> */}
+                  <Text style={styles.iconText}>
+                  {icon.replace('.png', '').replace(/-/g, ' ')}
+                  </Text>
+                </TouchableOpacity>
+                ))}
+            </View>
+          </ScrollView>
         </View>
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Todos los íconos</Text>
-          <View style={styles.iconRow}>
-            {ICON_OPTIONS.map((icon, index) => (
-              <TouchableOpacity
-                key={index}
-                onPress={() => onIconSelect(icon)}
-              >
-                <MaterialIcons
-                  name={icon}
-                  size={40}
-                  color={selectedIcon === icon ? "white" : "grey"}
-                  style={styles.icon}
-                />
-              </TouchableOpacity>
-            ))}
-          </View>
+          <ScrollView style={{ maxHeight: 200 }}>
+            <View style={styles.iconGrid}>
+                {iconsFiles.map((icon, index) => (
+                <TouchableOpacity
+                  key={index}
+                  onPress={() => {
+                  console.log("Icon clicked:", icon);
+                  onIconSelect(icon);
+                  }}
+                  style={[
+                  styles.iconContainer,
+                  selectedIcon === icon && styles.selectedIconContainer
+                  ]}
+                >
+                  {/* <Image
+                  source={require('../../assets/icons-png/'+icon)}
+                  style={styles.iconImage}
+                  /> */}
+                  <Text style={styles.iconText}>
+                  {icon.replace('.png', '').replace(/-/g, ' ')}
+                  </Text>
+                </TouchableOpacity>
+                ))}
+            </View>
+          </ScrollView>
         </View>
       </View>
     </>

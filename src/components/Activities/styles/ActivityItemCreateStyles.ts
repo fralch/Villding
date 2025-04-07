@@ -58,23 +58,45 @@ export const styles = StyleSheet.create({
 
   // -----
   section: {
-    marginVertical: 20,
-    paddingHorizontal: 20,
+    padding: 10,
   },
   sectionTitle: {
-    color: "#fff",
-    fontSize: 18,
-    fontWeight: "bold",
+    fontSize: 16,
+    color: "#dedede",
+    marginBottom: 10,
   },
   iconRow: {
     flexDirection: "row",
     flexWrap: "wrap",
-    justifyContent: "flex-start",
-    marginTop: 10,
     gap: 10,
   },
-  icon: {
-    marginVertical: 10,
+  iconGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
+    justifyContent: "flex-start",
+  },
+  iconContainer: {
+    width: 80,
+    height: 80,
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 8,
+    backgroundColor: "#0a455e",
+    padding: 5,
+  },
+  selectedIconContainer: {
+    backgroundColor: "#33baba",
+  },
+  iconImage: {
+    width: 40,
+    height: 40,
+  },
+  iconText: {
+    color: "white",
+    fontSize: 10,
+    textAlign: "center",
+    marginTop: 4,
   },
   footer: {
     marginTop: 20,
