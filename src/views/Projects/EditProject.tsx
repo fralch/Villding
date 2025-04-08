@@ -45,7 +45,7 @@ interface Project {
 // Tipos para los parámetros de la ruta
 type RouteParams = {
   params: {
-    project: Project; // Ahora project es requerido, no opcional
+    project?: Project;
   };
 };
 
@@ -120,39 +120,44 @@ const EditProject: React.FC = () => {
     setSubtipoProyectoFilter(filteredSubtipos);
   }, [formData.tipoProyecto, subtiposProyecto]);
 
-  // Cargar los datos del proyecto al montar el componente
+  // Cargar los datos del proyecto
   useEffect(() => {
-    const project = route.params.project;
+    if (route.params?.project) {
+      const project = route.params.project;
 
-    // Calcular la duración y la unidad a partir de las semanas
-    let duration = "";
-    let durationUnit = "";
-    const weeks = project.week;
+      // Calcular la duración y la unidad a partir de las semanas
+      let duration = "";
+      let durationUnit = "";
+      const weeks = project.week;
 
-    if (weeks >= 52) {
-      duration = Math.floor(weeks / 52).toString();
-      durationUnit = "Años";
-    } else if (weeks >= 4) {
-      duration = Math.floor(weeks / 4).toString();
-      durationUnit = "Meses";
+      if (weeks >= 52) {
+        duration = Math.floor(weeks / 52).toString();
+        durationUnit = "Años";
+      } else if (weeks >= 4) {
+        duration = Math.floor(weeks / 4).toString();
+        durationUnit = "Meses";
+      } else {
+        duration = weeks.toString();
+        durationUnit = "Semanas";
+      }
+
+      setFormData({
+        projectName: project.title,
+        location: project.subtitle,
+        company: project.company,
+        startDate: project.start_date,
+        duration,
+        durationUnit,
+        durationOnWeeks: weeks,
+        projectImage: project.image,
+        tipoProyecto: project.project_type_id || "",
+        subtipoProyecto: project.project_subtype_id || ""
+      });
     } else {
-      duration = weeks.toString();
-      durationUnit = "Semanas";
+      // Redireccionar si no hay proyecto para editar
+      navigate('HomeProject');
     }
-
-    setFormData({
-      projectName: project.title,
-      location: project.subtitle,
-      company: project.company,
-      startDate: project.start_date,
-      duration,
-      durationUnit,
-      durationOnWeeks: weeks,
-      projectImage: project.image,
-      tipoProyecto: project.project_type_id || "",
-      subtipoProyecto: project.project_subtype_id || ""
-    });
-  }, [route.params.project]);
+  }, [route.params?.project]);
 
   // Función para formatear la fecha
   const formatDate = (dateString: string) => {
@@ -305,7 +310,10 @@ const EditProject: React.FC = () => {
     }
 
     try {
-      const projectId = route.params.project.id;
+      const projectId = route.params?.project?.id;
+      if (!projectId) {
+        throw new Error("Project ID is required for update");
+      }
 
       const form = new FormData();
       form.append("name", formData.projectName);
@@ -355,7 +363,7 @@ const EditProject: React.FC = () => {
         subtitle: response.data.project.location,
         company: response.data.project.company,
         week: formData.durationOnWeeks,
-        week_current: route.params.project.week_current || 0,
+        week_current: route.params.project?.week_current || 0,
         start_date: formData.startDate,
         end_date: calculateEndDate(),
         nearest_monday: getNearestMonday(),
@@ -395,7 +403,10 @@ const EditProject: React.FC = () => {
     setShowModalLoading(true);
 
     try {
-      const projectId = route.params.project.id;
+      const projectId = route.params?.project?.id;
+      if (!projectId) {
+        throw new Error("Project ID is required for deletion");
+      }
 
       await deleteProject(projectId);
 
