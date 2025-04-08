@@ -3,10 +3,8 @@ import {
   View,
   Text,
   TextInput,
-  Button,
   TouchableOpacity,
   Image,
-  StyleSheet,
   ScrollView,
 } from "react-native";
 import { DateTimePickerAndroid } from "@react-native-community/datetimepicker";
@@ -17,13 +15,14 @@ import * as ImageManipulator from 'expo-image-manipulator';
 import * as FileSystem from 'expo-file-system';
 import axios from 'axios';
 import { saveProject, deleteProject } from "../../hooks/localStorageProject";
-import { getSesion, removeSesion , updateSesion } from '../../hooks/localStorageUser';
+import { getSesion } from '../../hooks/localStorageUser';
 import { useRoute, RouteProp } from "@react-navigation/native";
 import { styles } from "./styles/NewProject";
 
 import ConfirmModal from '../../components/Alerta/ConfirmationModal';
 import LoadingModal from '../../components/Alerta/LoadingModal';
 const MAX_FILE_SIZE = 500 * 1024; // 500 KB en bytes
+const API_BASE_URL = "https://centroesteticoedith.com/endpoint";
 
 interface Project {
   company: string;
@@ -39,6 +38,7 @@ interface Project {
   project_subtype_id?: string;
   nearest_monday?: string;
 }
+
 type RouteParams = {
   params: {
     project?: Project;
@@ -48,182 +48,125 @@ type RouteParams = {
 const EditProject: React.FC = () => {
   const { navigate } = useNavigation<NavigationProp<any>>();
   const route = useRoute<RouteProp<RouteParams, "params">>();
+  
+  // Modal states
   const [showModalConfirm, setShowModalConfirm] = useState(false);
   const [showModalLoading, setShowModalLoading] = useState(false);
   const [msjeModal, setMsjeModal] = useState('');
-
-  const [projectName, setProjectName] = useState("");
-  const [location, setLocation] = useState("");
-  const [company, setCompany] = useState("");
-  const [startDate, setStartDate] = useState(new Date().toLocaleDateString("es-ES"));
-  const [duration, setDuration] = useState("6");
-  const [durationUnit, setDurationUnit] = useState("Meses");
-  const [durationOnWeeks, setDurationOnWeeks] = useState(0);
-  const [projectImage, setProjectImage] = useState<string | null>(null);
+  
+  // Form states
+  const [formData, setFormData] = useState({
+    projectName: "",
+    location: "",
+    company: "",
+    startDate: new Date().toLocaleDateString("es-ES"),
+    duration: "6",
+    durationUnit: "Meses",
+    durationOnWeeks: 0,
+    projectImage: null as string | null,
+    tipoProyecto: "",
+    subtipoProyecto: ""
+  });
+  
+  // Other states
   const [errorBoolean, setErrorBoolean] = useState(false);
-  const [tipoProyecto, setTipoProyecto] = useState("");
-  const [tiposProyectos, setTiposProyectos] = useState<
-    { name: string; id: string }[]
-  >([]);
-  const [subtiposProyecto, setSubtiposProyecto] = useState<
-    { name: string; id: string; project_type_id: string }[]
-  >([]);
-  const [subtipoProyectoFilter, setSubtipoProyectoFilter] = useState<
-    { name: string; id: string }[]
-  >([]);
-  const [subtipoProyecto, setSubtipoProyecto] = useState<string>("");
+  const [tiposProyectos, setTiposProyectos] = useState<{ name: string; id: string }[]>([]);
+  const [subtiposProyecto, setSubtiposProyecto] = useState<{ name: string; id: string; project_type_id: string }[]>([]);
+  const [subtipoProyectoFilter, setSubtipoProyectoFilter] = useState<{ name: string; id: string }[]>([]);
   const [userData, setUserData] = useState<any>(null);
   const [isEditing, setIsEditing] = useState(false);
 
-  React.useEffect(() => {
-    getSesion().then((StoredSesion : any) => {
-      let sesion = JSON.parse(StoredSesion);
-      setUserData(sesion);  
+  // Update form data with a single function
+  const updateFormData = (field: string, value: any) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  // Fetch user session
+  useEffect(() => {
+    getSesion().then((storedSession: any) => {
+      const session = JSON.parse(storedSession);
+      setUserData(session);
     });
-  }, [ ]);
-
-  useEffect(() => {
-    fetch("https://centroesteticoedith.com/endpoint/project/types")
-      .then((response) => response.json())
-      .then((data) => {
-        setTiposProyectos(data);
-      });
   }, []);
 
+  // Fetch project types
   useEffect(() => {
-    fetch("https://centroesteticoedith.com/endpoint/project/subtypes")
-      .then((response2) => response2.json())
-      .then((data2) => {
-        setSubtiposProyecto(data2);
-      });
+    fetch(`${API_BASE_URL}/project/types`)
+      .then(response => response.json())
+      .then(data => setTiposProyectos(data));
+      
+    fetch(`${API_BASE_URL}/project/subtypes`)
+      .then(response => response.json())
+      .then(data => setSubtiposProyecto(data));
   }, []);
 
+  // Calculate end date and duration in weeks when relevant values change
   useEffect(() => {
-    calculateEndDate();
-    handleCalculationOnWeeks();
-  }, [startDate, duration, durationUnit]);
+    calculateDurationOnWeeks();
+  }, [formData.startDate, formData.duration, formData.durationUnit]);
 
+  // Filter subtypes based on selected project type
   useEffect(() => {
     const filteredSubtipos = subtiposProyecto.filter(
-      (subtipo) => subtipo.project_type_id == tipoProyecto
+      subtipo => subtipo.project_type_id === formData.tipoProyecto
     );
     setSubtipoProyectoFilter(filteredSubtipos);
-  }, [tipoProyecto]);
+  }, [formData.tipoProyecto, subtiposProyecto]);
 
+  // Load project data if editing
   useEffect(() => {
     if (route.params?.project) {
       const project = route.params.project;
       setIsEditing(true);
-      setProjectName(project.title);
-      setLocation(project.subtitle);
-      setCompany(project.company);
-      setStartDate(project.start_date);
-      setProjectImage(project.image);
       
       // Calculate duration and unit from weeks
+      let duration = "";
+      let durationUnit = "";
       const weeks = project.week;
+      
       if (weeks >= 52) {
-        setDuration(Math.floor(weeks / 52).toString());
-        setDurationUnit("Años");
+        duration = Math.floor(weeks / 52).toString();
+        durationUnit = "Años";
       } else if (weeks >= 4) {
-        setDuration(Math.floor(weeks / 4).toString());
-        setDurationUnit("Meses");
+        duration = Math.floor(weeks / 4).toString();
+        durationUnit = "Meses";
       } else {
-        setDuration(weeks.toString());
-        setDurationUnit("Semanas");
+        duration = weeks.toString();
+        durationUnit = "Semanas";
       }
       
-      setDurationOnWeeks(weeks);
-      
-      // Set project type and subtype if available
-      if (project.project_type_id) {
-        setTipoProyecto(project.project_type_id);
-      }
-      if (project.project_subtype_id) {
-        setSubtipoProyecto(project.project_subtype_id);
-      }
+      setFormData({
+        projectName: project.title,
+        location: project.subtitle,
+        company: project.company,
+        startDate: project.start_date,
+        duration,
+        durationUnit,
+        durationOnWeeks: weeks,
+        projectImage: project.image,
+        tipoProyecto: project.project_type_id || "",
+        subtipoProyecto: project.project_subtype_id || ""
+      });
     }
   }, [route.params?.project]);
 
-  const handleCalculationOnWeeks = () => {
-    const [day, month, year] = startDate.split("/").map(Number);
-    const start = new Date(year, month - 1, day); // Meses en JavaScript son 0-indexados
-    let durationInWeeks = 0;
-
-    switch (durationUnit) {
-      case "Dias":
-        durationInWeeks = parseInt(duration, 10) / 7; // Convertir días a semanas
-        break;
-      case "Semanas":
-        durationInWeeks = parseInt(duration, 10);
-        break;
-      case "Meses":
-        durationInWeeks = parseInt(duration, 10) * 4.34524; // 1 mes ≈ 4.345 semanas
-        break;
-      case "Años":
-        durationInWeeks = parseInt(duration, 10) * 52.1429; // 1 año ≈ 52.14 semanas
-        break;
-      default:
-        console.error("Unidad de duración no reconocida");
-        return;
-    }
-
-    const end = new Date(start);
-    end.setDate(start.getDate() + Math.ceil(durationInWeeks * 7)); // Sumar las semanas en días
-
-    console.log(`Duration on weeks: ${durationInWeeks}`);
-    setDurationOnWeeks(Math.ceil(durationInWeeks));
-  };
-  const handlePickImage = async () => {
-    let pickerResult = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 1, // Calidad original
-    });
-  
-    if (!pickerResult.canceled && pickerResult.assets && pickerResult.assets.length > 0) {
-      let selectedImage = pickerResult.assets[0].uri;
-      let compressLevel = 0.8; // Comenzamos con 80% de compresión
-      let resizedWidth = 800; // Ancho inicial para redimensionar
-  
-      let manipulatedImage = await ImageManipulator.manipulateAsync(
-        selectedImage,
-        [{ resize: { width: resizedWidth } }], // Redimensionar
-        { compress: compressLevel, format: ImageManipulator.SaveFormat.JPEG } // Comprimir
-      );
-  
-      let fileInfo = await FileSystem.getInfoAsync(manipulatedImage.uri) as any;
-  
-      // Reducir el tamaño iterativamente si supera 500 KB
-      while (fileInfo.size> MAX_FILE_SIZE && compressLevel > 0.1) {
-        compressLevel -= 0.1; // Reducir nivel de compresión
-        resizedWidth -= 100; // Reducir ancho de la imagen
-        manipulatedImage = await ImageManipulator.manipulateAsync(
-          selectedImage,
-          [{ resize: { width: resizedWidth } }], // Redimensionar
-          { compress: compressLevel, format: ImageManipulator.SaveFormat.JPEG } // Comprimir
-        );
-        fileInfo = await FileSystem.getInfoAsync(manipulatedImage.uri);
-      }
-  
-      if (fileInfo.size <= MAX_FILE_SIZE) {
-        console.log(`Imagen lista: ${(fileInfo.size / 1024).toFixed(2)} KB`);
-        setProjectImage(manipulatedImage.uri); // Actualizar imagen reducida
-      } else {
-        console.log("No se pudo reducir la imagen a menos de 500 KB.");
-        alert("La imagen seleccionada es demasiado grande incluso después de ser comprimida.");
-      }
-    }
+  // Date handling functions
+  const formatDate = (dateString: string) => {
+    // (dd/mm/yyyy) -> (yyyy-mm-dd)
+    const [day, month, year] = dateString.split("/");
+    return `${year}-${month}-${day}`;
   };
 
-  const showDataTimePicker = () => {
+  const showDateTimePicker = () => {
     DateTimePickerAndroid.open({
       value: new Date(),
       onChange: (event, date) => {
         if (event.type === "set" && date) {
           const formattedDate = new Date(date).toLocaleDateString("es-ES");
-          setStartDate(formattedDate);
+          updateFormData("startDate", formattedDate);
         }
       },
       mode: "date",
@@ -232,172 +175,218 @@ const EditProject: React.FC = () => {
   };
 
   const calculateEndDate = () => {
-    const [day, month, year] = startDate.split("/").map(Number);
-    const start = new Date(year, month - 1, day); // Meses en JavaScript son 0-indexados
-
-    const durationInUnits = parseInt(duration, 10);
-    if (durationUnit === "Meses") {
-      start.setMonth(start.getMonth() + durationInUnits);
-    } else if (durationUnit === "Años") {
-      start.setFullYear(start.getFullYear() + durationInUnits);
-    } else if (durationUnit === "Semanas") {
-      start.setDate(start.getDate() + durationInUnits * 7);
-    } else if (durationUnit === "Dias") {
-      start.setDate(start.getDate() + durationInUnits);
+    const [day, month, year] = formData.startDate.split("/").map(Number);
+    const start = new Date(year, month - 1, day);
+    const durationInUnits = parseInt(formData.duration, 10);
+    
+    switch(formData.durationUnit) {
+      case "Meses":
+        start.setMonth(start.getMonth() + durationInUnits);
+        break;
+      case "Años":
+        start.setFullYear(start.getFullYear() + durationInUnits);
+        break;
+      case "Semanas":
+        start.setDate(start.getDate() + durationInUnits * 7);
+        break;
+      case "Dias":
+        start.setDate(start.getDate() + durationInUnits);
+        break;
     }
     
     return start.toLocaleDateString("es-ES");
   };
 
-  const formatDate = (dateString: string) => {
-    // (dd/mm/yyyy) -> (yyyy-mm-dd)
-    const [day, month, year] = dateString.split("/");
-    return `${year}-${month}-${day}`;
+  const calculateDurationOnWeeks = () => {
+    const [day, month, year] = formData.startDate.split("/").map(Number);
+    const start = new Date(year, month - 1, day);
+    let durationInWeeks = 0;
+
+    switch (formData.durationUnit) {
+      case "Dias":
+        durationInWeeks = parseInt(formData.duration, 10) / 7;
+        break;
+      case "Semanas":
+        durationInWeeks = parseInt(formData.duration, 10);
+        break;
+      case "Meses":
+        durationInWeeks = parseInt(formData.duration, 10) * 4.34524;
+        break;
+      case "Años":
+        durationInWeeks = parseInt(formData.duration, 10) * 52.1429;
+        break;
+    }
+
+    updateFormData("durationOnWeeks", Math.ceil(durationInWeeks));
+  };
+
+  // Get nearest Monday from start date
+  const getNearestMonday = () => {
+    const date = new Date(formatDate(formData.startDate));
+    const day = date.getDay();
+    const diff = (day === 0 ? -6 : 1) - day;
+    date.setDate(date.getDate() + diff);
+    return date.toISOString().split('T')[0];
+  };
+
+  // Image handling
+  const handlePickImage = async () => {
+    const pickerResult = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+  
+    if (!pickerResult.canceled && pickerResult.assets && pickerResult.assets.length > 0) {
+      let selectedImage = pickerResult.assets[0].uri;
+      await processImage(selectedImage);
+    }
+  };
+
+  const processImage = async (imageUri: string) => {
+    let compressLevel = 0.8;
+    let resizedWidth = 800;
+  
+    let manipulatedImage = await ImageManipulator.manipulateAsync(
+      imageUri,
+      [{ resize: { width: resizedWidth } }],
+      { compress: compressLevel, format: ImageManipulator.SaveFormat.JPEG }
+    );
+  
+    let fileInfo = await FileSystem.getInfoAsync(manipulatedImage.uri) as any;
+  
+    // Reduce size iteratively if needed
+    while (fileInfo.size > MAX_FILE_SIZE && compressLevel > 0.1) {
+      compressLevel -= 0.1;
+      resizedWidth -= 100;
+      
+      manipulatedImage = await ImageManipulator.manipulateAsync(
+        imageUri,
+        [{ resize: { width: resizedWidth } }],
+        { compress: compressLevel, format: ImageManipulator.SaveFormat.JPEG }
+      );
+      
+      fileInfo = await FileSystem.getInfoAsync(manipulatedImage.uri);
+    }
+  
+    if (fileInfo.size <= MAX_FILE_SIZE) {
+      updateFormData("projectImage", manipulatedImage.uri);
+    } else {
+      alert("La imagen seleccionada es demasiado grande incluso después de ser comprimida.");
+    }
+  };
+
+  // Form validation
+  const validateForm = () => {
+    if (
+      formData.projectName === "" ||
+      formData.location === "" ||
+      formData.company === ""
+    ) {
+      setErrorBoolean(true);
+      return false;
+    }
+    return true;
+  };
+
+  // API interaction functions
+  const createFormData = () => {
+    const formdata = new FormData();
+    formdata.append("name", formData.projectName);
+    formdata.append("location", formData.location);
+    formdata.append("company", formData.company);
+    formdata.append("start_date", formatDate(formData.startDate));
+    formdata.append("end_date", formatDate(calculateEndDate()));
+    formdata.append("project_type_id", formData.tipoProyecto);
+    formdata.append("nearest_monday", getNearestMonday());
+    
+    if (formData.subtipoProyecto !== "0" && formData.subtipoProyecto !== "") {
+      formdata.append("project_subtype_id", formData.subtipoProyecto);
+    }
+
+    // Add image if available
+    if (formData.projectImage) {
+      // Skip if it's a remote URL (for editing existing projects)
+      if (!formData.projectImage.startsWith('http')) {
+        const uriParts = formData.projectImage.split('.');
+        const fileType = uriParts[uriParts.length - 1];
+
+        formdata.append('uri', {
+          uri: formData.projectImage,
+          name: `profile_image.${fileType}`,
+          type: `image/${fileType}`,
+        } as any);
+      }
+    }
+
+    return formdata;
   };
 
   const handleCreateProject = async () => {
     setShowModalLoading(true);
-    console.log("Creando nuevo proyecto...");
-    if (
-      projectName === "" ||
-      location === "" ||
-      company === "" ||
-      ImagePicker === null
-    ) {
-      setErrorBoolean(true);
+    
+    if (!validateForm()) {
+      setShowModalLoading(false);
       return;
     }
 
-    let monday = new Date(formatDate(startDate));
-    let day = monday.getDay();  // Obtiene el día de la semana (0 = Domingo, 1 = Lunes, ...)
-    let diff = (day === 0 ? -6 : 1) - day;  // Calcula la diferencia para ajustar al lunes
-    monday.setDate(monday.getDate() + diff); // 
-
-    // Guarda el proyecto y espera a que se complete antes de navegar
-    const formdata = new FormData();
-    formdata.append("name", projectName);
-    formdata.append("location", location);
-    formdata.append("company", company);
-    formdata.append("start_date", formatDate(startDate));
-    formdata.append("end_date", formatDate(calculateEndDate()));
-    formdata.append("project_type_id", tipoProyecto);
-    formdata.append("nearest_monday", monday.toISOString().split('T')[0]);
-    if (subtipoProyecto !== "0") {
-      formdata.append("project_subtype_id", subtipoProyecto);
-    }
-
-    
-
-    // Si hay una imagen seleccionada, la agregamos al FormData
-    if (projectImage) {
-      const uriParts = projectImage.split('.');
-      const fileType = uriParts[uriParts.length - 1];
-
-      formdata.append('uri', {
-        uri: projectImage,
-        name: `profile_image.${fileType}`,
-        type: `image/${fileType}`, // Tipo de imagen
-      } as any); // Especificar el tipo como 'any' para evitar errores de tipado en TypeScript
-    }
-
-    let reqOptions = {
-      url: "https://centroesteticoedith.com/endpoint/project/store",
-      method: "POST",
-      data: formdata, // Enviar el FormData
-      headers: {
-        'Content-Type': 'multipart/form-data', // Asegurarse de usar el tipo correcto de contenido
-      },
-    };
-
     try {
-      let response = await axios(reqOptions);
+      // Create project
+      const reqOptions = {
+        url: `${API_BASE_URL}/project/store`,
+        method: "POST",
+        data: createFormData(),
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      };
 
-      const AttachUserProjectJson = {
-        user_id:  userData.id,
+      const response = await axios(reqOptions);
+      
+      // Attach user to project
+      const attachData = {
+        user_id: userData.id,
         project_id: response.data.id,
         is_admin: true,
       };
 
-      let reqOptions2 = {
-        url: "https://centroesteticoedith.com/endpoint/project/attach",
+      await axios({
+        url: `${API_BASE_URL}/project/attach`,
         method: "POST",
-        data: AttachUserProjectJson,
-      };
+        data: attachData,
+      });
 
-      response = await axios(reqOptions2);
-
-      console.log(response.data);
-
-      console.log("Se ha creado el proyecto con exito");
-
-      const newProject: any = {
+      // Save to local storage
+      const newProject = {
         id: response.data.id, 
-        image: projectImage || "",
-        title: projectName,
-        subtitle: location,
-        company,
-        week: durationOnWeeks,
-        start_date: startDate,
-        nearest_monday: monday.toISOString().split('T')[0],
+        image: formData.projectImage || "",
+        title: formData.projectName,
+        subtitle: formData.location,
+        company: formData.company,
+        week: formData.durationOnWeeks,
+        start_date: formData.startDate,
+        nearest_monday: getNearestMonday(),
       };
 
+      await saveProject(newProject as any);
+      
       setShowModalLoading(false);
-      //  setMsjeModal("Se ha actualizado el perfil con exito") ;
-      // setShowModalConfirm (true);
-      
-      
-      await saveProject(newProject)
-        .then(() => {
-          console.log("Proyecto guardado en el almacenamiento local");
-        })
-        .catch((error) => {
-          console.error("Error al guardar el proyecto en el almacenamiento local:", error);
-        });
-      navigate('HomeProject', 'nuevoProyecto'); // Navega a HomeProject después de que se guarde
+      navigate('HomeProject', 'nuevoProyecto');
     } catch (error) {
       console.error("Error al guardar el proyecto:", error);
+      setShowModalLoading(false);
+      setMsjeModal("Error al guardar el proyecto");
+      setShowModalConfirm(true);
     }
   };
 
   const handleUpdateProject = async () => {
     setShowModalLoading(true);
-    console.log("Actualizando proyecto...");
-    if (
-      projectName === "" ||
-      location === "" ||
-      company === ""
-    ) {
-      setErrorBoolean(true);
+    
+    if (!validateForm()) {
       setShowModalLoading(false);
       return;
-    }
-
-    let monday = new Date(formatDate(startDate));
-    let day = monday.getDay();
-    let diff = (day === 0 ? -6 : 1) - day;
-    monday.setDate(monday.getDate() + diff);
-
-    const formdata = new FormData();
-    formdata.append("name", projectName);
-    formdata.append("location", location);
-    formdata.append("company", company);
-    formdata.append("start_date", formatDate(startDate));
-    formdata.append("end_date", formatDate(calculateEndDate()));
-    formdata.append("project_type_id", tipoProyecto);
-    formdata.append("nearest_monday", monday.toISOString().split('T')[0]);
-    if (subtipoProyecto !== "0") {
-      formdata.append("project_subtype_id", subtipoProyecto);
-    }
-
-    if (projectImage && !projectImage.startsWith('http')) {
-      const uriParts = projectImage.split('.');
-      const fileType = uriParts[uriParts.length - 1];
-
-      formdata.append('uri', {
-        uri: projectImage,
-        name: `profile_image.${fileType}`,
-        type: `image/${fileType}`,
-      } as any);
     }
 
     try {
@@ -406,31 +395,31 @@ const EditProject: React.FC = () => {
         throw new Error("Project ID is required for update");
       }
 
-      let reqOptions = {
-        url: `https://centroesteticoedith.com/endpoint/project/update/${projectId}`,
+      const reqOptions = {
+        url: `${API_BASE_URL}/project/update/${projectId}`,
         method: "POST",
-        data: formdata,
+        data: createFormData(),
         headers: {
           'Content-Type': 'multipart/form-data',
         },
       };
 
-      const response = await axios(reqOptions);
-      console.log("Proyecto actualizado con éxito");
-
+      await axios(reqOptions);
+      
+      // Update local storage
       const updatedProject: Project = {
         id: projectId,
-        image: projectImage || "",
-        title: projectName,
-        subtitle: location,
-        company,
-        week: durationOnWeeks,
+        image: formData.projectImage || "",
+        title: formData.projectName,
+        subtitle: formData.location,
+        company: formData.company,
+        week: formData.durationOnWeeks,
         week_current: route.params.project?.week_current || 0,
-        start_date: startDate,
+        start_date: formData.startDate,
         end_date: calculateEndDate(),
-        nearest_monday: monday.toISOString().split('T')[0],
-        project_type_id: tipoProyecto || undefined,
-        project_subtype_id: subtipoProyecto !== "0" ? subtipoProyecto : undefined
+        nearest_monday: getNearestMonday(),
+        project_type_id: formData.tipoProyecto || undefined,
+        project_subtype_id: formData.subtipoProyecto !== "0" ? formData.subtipoProyecto : undefined
       };
 
       await saveProject(updatedProject);
@@ -450,21 +439,19 @@ const EditProject: React.FC = () => {
 
   const handleDeleteProject = async () => {
     setShowModalLoading(true);
+    
     try {
       const projectId = route.params?.project?.id;
       if (!projectId) {
         throw new Error("Project ID is required for deletion");
-        return;
       }
       
       await deleteProject(projectId);
       
-      const reqOptions = {
-        url: `https://centroesteticoedith.com/endpoint/project/delete/${projectId}`,
+      await axios({
+        url: `${API_BASE_URL}/project/delete/${projectId}`,
         method: "DELETE",
-      };
-      
-      await axios(reqOptions);
+      });
       
       setShowModalLoading(false);
       setMsjeModal("Proyecto eliminado con éxito");
@@ -480,20 +467,13 @@ const EditProject: React.FC = () => {
   };
 
   const handleSubmit = () => {
-    if (isEditing) {
-      handleUpdateProject();
-    } else {
-      handleCreateProject();
-    }
-  };
-
-  const handleCancel = () => {
-    navigate("HomeProject");
+    isEditing ? handleUpdateProject() : handleCreateProject();
   };
 
   const capitalizarPrimeraLetra = (cadena: string) => {
     return cadena.charAt(0).toUpperCase() + cadena.slice(1);
-  }
+  };
+
   return (
     <ScrollView style={styles.container}>
       <View style={[styles.header]}>
@@ -505,7 +485,7 @@ const EditProject: React.FC = () => {
             width: "100%",
           }}
         >
-          <TouchableOpacity onPress={handleCancel}>
+          <TouchableOpacity onPress={() => navigate("HomeProject")}>
             <Text style={{ color: "white", fontSize: 18 }}>Cancelar</Text>
           </TouchableOpacity>
           <Text style={{ color: "white", fontSize: 18, fontWeight: "bold" }}>
@@ -518,50 +498,53 @@ const EditProject: React.FC = () => {
           </TouchableOpacity>
         </View>
       </View>
+      
       <View style={styles.formContainer}>
         <Text style={styles.label}>Nombre del proyecto*</Text>
         <TextInput
           style={styles.input}
-          value={projectName}
-          onChangeText={setProjectName}
+          value={formData.projectName}
+          onChangeText={(value) => updateFormData("projectName", value)}
           placeholder="Nombre del proyecto"
           placeholderTextColor="#888"
         />
-        {errorBoolean && projectName === "" ? (
+        {errorBoolean && formData.projectName === "" && (
           <Text style={{ color: "#ff7979", marginTop: -20, marginBottom: 10 }}>
-            Ingresa un correo
+            Ingresa un nombre de proyecto
           </Text>
-        ) : null}
+        )}
+        
         <Text style={styles.label}>Ubicación</Text>
         <TextInput
           style={styles.input}
-          value={location}
-          onChangeText={setLocation}
+          value={formData.location}
+          onChangeText={(value) => updateFormData("location", value)}
           placeholder="Ubicación"
           placeholderTextColor="#888"
         />
-        {errorBoolean && location === "" ? (
+        {errorBoolean && formData.location === "" && (
           <Text style={{ color: "#ff7979", marginTop: -20, marginBottom: 10 }}>
             Ingresa una ubicación
           </Text>
-        ) : null}
+        )}
 
         <Text style={styles.label}>Empresa ejecutora</Text>
         <TextInput
           style={styles.input}
-          value={company}
-          onChangeText={setCompany}
+          value={formData.company}
+          onChangeText={(value) => updateFormData("company", value)}
           placeholder="Empresa ejecutora"
           placeholderTextColor="#888"
         />
-        {errorBoolean && company === "" ? (
+        {errorBoolean && formData.company === "" && (
           <Text style={{ color: "#ff7979", marginTop: -20, marginBottom: 10 }}>
             Ingresa una empresa
           </Text>
-        ) : null}
+        )}
+        
         <Text style={styles.label}>Tipo de proyecto</Text>
         <Picker
-          selectedValue={tipoProyecto}
+          selectedValue={formData.tipoProyecto}
           style={{
             height: 50,
             width: "100%",
@@ -569,18 +552,23 @@ const EditProject: React.FC = () => {
             color: "white",
             borderRadius: 5,
           }}
-          onValueChange={(itemValue) => setTipoProyecto(itemValue)}
+          onValueChange={(value) => updateFormData("tipoProyecto", value)}
         >
-           <Picker.Item label="Seleccionar" value="0" />
+          <Picker.Item label="Seleccionar" value="0" />
           {tiposProyectos.map((item, index) => (
-            <Picker.Item key={index} label={capitalizarPrimeraLetra(item.name)} value={item.id} />
+            <Picker.Item 
+              key={index} 
+              label={capitalizarPrimeraLetra(item.name)} 
+              value={item.id} 
+            />
           ))}
         </Picker>
-        {subtipoProyectoFilter.length > 0 ? (
+        
+        {subtipoProyectoFilter.length > 0 && (
           <View>
             <Text style={styles.label}>Subtipo de proyecto</Text>
             <Picker
-              selectedValue={subtipoProyecto}
+              selectedValue={formData.subtipoProyecto}
               style={{
                 height: 50,
                 width: "100%",
@@ -588,18 +576,23 @@ const EditProject: React.FC = () => {
                 color: "white",
                 borderRadius: 5,
               }}
-              onValueChange={(itemValue) => setSubtipoProyecto(itemValue)}
+              onValueChange={(value) => updateFormData("subtipoProyecto", value)}
             >
               <Picker.Item label="Seleccionar" value="0" />
               {subtipoProyectoFilter.map((item, index) => (
-                <Picker.Item key={index} label={capitalizarPrimeraLetra(item.name)} value={item.id} />
+                <Picker.Item 
+                  key={index} 
+                  label={capitalizarPrimeraLetra(item.name)} 
+                  value={item.id} 
+                />
               ))}
             </Picker>
           </View>
-        ) : null}
+        )}
+        
         <Text style={styles.label}>Fecha de inicio</Text>
-        <TouchableOpacity style={styles.input} onPress={showDataTimePicker}>
-          <Text style={{ color: "#888" }}>{startDate}</Text>
+        <TouchableOpacity style={styles.input} onPress={showDateTimePicker}>
+          <Text style={{ color: "#888" }}>{formData.startDate}</Text>
         </TouchableOpacity>
 
         <Text style={styles.label}>Tiempo de ejecución</Text>
@@ -612,8 +605,8 @@ const EditProject: React.FC = () => {
                 textAlign: "left",
               },
             ]}
-            value={duration}
-            onChangeText={setDuration}
+            value={formData.duration}
+            onChangeText={(value) => updateFormData("duration", value)}
             keyboardType="numeric"
             placeholderTextColor="#888"
           />
@@ -627,7 +620,7 @@ const EditProject: React.FC = () => {
             }}
           >
             <Picker
-              selectedValue={durationUnit}
+              selectedValue={formData.durationUnit}
               style={{
                 height: 50,
                 width: "100%",
@@ -635,7 +628,7 @@ const EditProject: React.FC = () => {
                 color: "white",
                 borderRadius: 5,
               }}
-              onValueChange={(itemValue) => setDurationUnit(itemValue)}
+              onValueChange={(value) => updateFormData("durationUnit", value)}
             >
               <Picker.Item label="Semanas" value="Semanas" />
               <Picker.Item label="Dias" value="Dias" />
@@ -647,20 +640,21 @@ const EditProject: React.FC = () => {
 
         <Text style={styles.label}>Fecha estimada de entrega:</Text>
         <Text style={styles.endDate}>{calculateEndDate()}</Text>
+        
         <Text style={styles.label}>Foto de proyecto</Text>
-
         <TouchableOpacity style={styles.imagePicker} onPress={handlePickImage}>
-          {projectImage ? (
-            <Image source={{ uri: projectImage }} style={styles.image} />
+          {formData.projectImage ? (
+            <Image source={{ uri: formData.projectImage }} style={styles.image} />
           ) : (
             <Text style={styles.imageText}>Subir foto del proyecto</Text>
           )}
         </TouchableOpacity>
-        {errorBoolean && !projectImage ? (
+        {errorBoolean && !formData.projectImage && (
           <Text style={{ color: "#ff7979", marginTop: -20, marginBottom: 10 }}>
             Ingresa una imagen
           </Text>
-        ) : null}
+        )}
+        
         {isEditing && (
           <TouchableOpacity
             style={{
@@ -687,12 +681,17 @@ const EditProject: React.FC = () => {
           </TouchableOpacity>
         )}
       </View>
-      <ConfirmModal visible={showModalConfirm} message={msjeModal} onClose={() => {
-        setShowModalConfirm(false);
-        if (msjeModal.includes("éxito")) {
-          navigate('HomeProject');
-        }
-      }} />
+      
+      <ConfirmModal 
+        visible={showModalConfirm} 
+        message={msjeModal} 
+        onClose={() => {
+          setShowModalConfirm(false);
+          if (msjeModal.includes("éxito")) {
+            navigate('HomeProject');
+          }
+        }} 
+      />
       <LoadingModal visible={showModalLoading} />
     </ScrollView>
   );
