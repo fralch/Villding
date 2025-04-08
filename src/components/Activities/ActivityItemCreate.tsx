@@ -282,11 +282,10 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
   }));
 
   return (
-    <View style={{ backgroundColor: "#0a3649" }}>
+    <View style={{ backgroundColor: "#0a3649", flex: 1 }}>
       <ExpoStatusBar style="light" />
-      <ScrollView>
-        <View>
-
+      <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+        <View style={{ flex: 1 }}>
           {/* Componente Sección de Título */}
           <TitleSection
             titulo={formData.titulo}
@@ -304,7 +303,6 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
             status={formData.status} // Añadir esta prop
           />
           
-
           {/* Componente Campos del Formulario */}
           <FormFields
             description={formData.description}
@@ -322,7 +320,6 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
         </View>
       </ScrollView>
      
-
       {/* Modal de Confirmación */}
       <Modal transparent={true} animationType="slide" visible={showModal}>
         <View style={modalStyles.modalContainer}>
@@ -727,7 +724,7 @@ const IconSelector = ({
   const [isExpanded, setIsExpanded] = useState(false);
 
   return (
-    <View style={{ flex: 1, backgroundColor: "#0a3649" }}>
+    <View style={{ backgroundColor: "#0a3649", marginBottom: 20 }}>
       <TouchableOpacity
         style={{
           flexDirection: "row",
@@ -750,7 +747,7 @@ const IconSelector = ({
       </TouchableOpacity>
 
       {isExpanded && (
-        <View style={{ flex: 1 }}>
+        <View>
           <View style={[styles.section, { maxHeight: 120 }]}>
             <Text style={styles.sectionTitle}>Recientes</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
@@ -777,11 +774,9 @@ const IconSelector = ({
             </ScrollView>
           </View>
 
-          <View style={[styles.section, { flex: 1 }]}>
+          <View style={[styles.section, { maxHeight: 600 }]}>
             <Text style={styles.sectionTitle}>Todos los íconos</Text>
             <ScrollView 
-              style={{ flex: 1 }}
-              contentContainerStyle={{ paddingBottom: 20 }}
               showsVerticalScrollIndicator={true}
             >
               <View style={styles.iconGrid}>
