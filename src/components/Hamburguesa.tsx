@@ -177,7 +177,7 @@ export default function Hamburguesa(props: any) {
           />
         )}
         onPress={() => {
-          navigate('NewProject', {
+          navigate('EditProject', {
             project: recibiendoProyecto,
           });
         }}

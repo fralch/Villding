@@ -35,6 +35,9 @@ interface Project {
   end_date: string;
   week: number;
   week_current: number;
+  project_type_id?: string;
+  project_subtype_id?: string;
+  nearest_monday?: string;
 }
 type RouteParams = {
   params: {
@@ -42,7 +45,7 @@ type RouteParams = {
   };
 };
 
-const NewProject: React.FC = () => {
+const EditProject: React.FC = () => {
   const { navigate } = useNavigation<NavigationProp<any>>();
   const route = useRoute<RouteProp<RouteParams, "params">>();
   const [showModalConfirm, setShowModalConfirm] = useState(false);
@@ -70,7 +73,7 @@ const NewProject: React.FC = () => {
   >([]);
   const [subtipoProyecto, setSubtipoProyecto] = useState<string>("");
   const [userData, setUserData] = useState<any>(null);
-
+  const [isEditing, setIsEditing] = useState(false);
 
   React.useEffect(() => {
     getSesion().then((StoredSesion : any) => {
@@ -106,6 +109,41 @@ const NewProject: React.FC = () => {
     );
     setSubtipoProyectoFilter(filteredSubtipos);
   }, [tipoProyecto]);
+
+  useEffect(() => {
+    if (route.params?.project) {
+      const project = route.params.project;
+      setIsEditing(true);
+      setProjectName(project.title);
+      setLocation(project.subtitle);
+      setCompany(project.company);
+      setStartDate(project.start_date);
+      setProjectImage(project.image);
+      
+      // Calculate duration and unit from weeks
+      const weeks = project.week;
+      if (weeks >= 52) {
+        setDuration(Math.floor(weeks / 52).toString());
+        setDurationUnit("Años");
+      } else if (weeks >= 4) {
+        setDuration(Math.floor(weeks / 4).toString());
+        setDurationUnit("Meses");
+      } else {
+        setDuration(weeks.toString());
+        setDurationUnit("Semanas");
+      }
+      
+      setDurationOnWeeks(weeks);
+      
+      // Set project type and subtype if available
+      if (project.project_type_id) {
+        setTipoProyecto(project.project_type_id);
+      }
+      if (project.project_subtype_id) {
+        setSubtipoProyecto(project.project_subtype_id);
+      }
+    }
+  }, [route.params?.project]);
 
   const handleCalculationOnWeeks = () => {
     const [day, month, year] = startDate.split("/").map(Number);
@@ -321,6 +359,134 @@ const NewProject: React.FC = () => {
     }
   };
 
+  const handleUpdateProject = async () => {
+    setShowModalLoading(true);
+    console.log("Actualizando proyecto...");
+    if (
+      projectName === "" ||
+      location === "" ||
+      company === ""
+    ) {
+      setErrorBoolean(true);
+      setShowModalLoading(false);
+      return;
+    }
+
+    let monday = new Date(formatDate(startDate));
+    let day = monday.getDay();
+    let diff = (day === 0 ? -6 : 1) - day;
+    monday.setDate(monday.getDate() + diff);
+
+    const formdata = new FormData();
+    formdata.append("name", projectName);
+    formdata.append("location", location);
+    formdata.append("company", company);
+    formdata.append("start_date", formatDate(startDate));
+    formdata.append("end_date", formatDate(calculateEndDate()));
+    formdata.append("project_type_id", tipoProyecto);
+    formdata.append("nearest_monday", monday.toISOString().split('T')[0]);
+    if (subtipoProyecto !== "0") {
+      formdata.append("project_subtype_id", subtipoProyecto);
+    }
+
+    if (projectImage && !projectImage.startsWith('http')) {
+      const uriParts = projectImage.split('.');
+      const fileType = uriParts[uriParts.length - 1];
+
+      formdata.append('uri', {
+        uri: projectImage,
+        name: `profile_image.${fileType}`,
+        type: `image/${fileType}`,
+      } as any);
+    }
+
+    try {
+      const projectId = route.params?.project?.id;
+      if (!projectId) {
+        throw new Error("Project ID is required for update");
+      }
+
+      let reqOptions = {
+        url: `https://centroesteticoedith.com/endpoint/project/update/${projectId}`,
+        method: "POST",
+        data: formdata,
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      };
+
+      const response = await axios(reqOptions);
+      console.log("Proyecto actualizado con éxito");
+
+      const updatedProject: Project = {
+        id: projectId,
+        image: projectImage || "",
+        title: projectName,
+        subtitle: location,
+        company,
+        week: durationOnWeeks,
+        week_current: route.params.project?.week_current || 0,
+        start_date: startDate,
+        end_date: calculateEndDate(),
+        nearest_monday: monday.toISOString().split('T')[0],
+        project_type_id: tipoProyecto || undefined,
+        project_subtype_id: subtipoProyecto !== "0" ? subtipoProyecto : undefined
+      };
+
+      await saveProject(updatedProject);
+      
+      setShowModalLoading(false);
+      setMsjeModal("Se ha actualizado el proyecto con éxito");
+      setShowModalConfirm(true);
+      
+      navigate('HomeProject', 'proyectoActualizado');
+    } catch (error) {
+      console.error("Error al actualizar el proyecto:", error);
+      setShowModalLoading(false);
+      setMsjeModal("Error al actualizar el proyecto");
+      setShowModalConfirm(true);
+    }
+  };
+
+  const handleDeleteProject = async () => {
+    setShowModalLoading(true);
+    try {
+      const projectId = route.params?.project?.id;
+      if (!projectId) {
+        throw new Error("Project ID is required for deletion");
+        return;
+      }
+      
+      await deleteProject(projectId);
+      
+      const reqOptions = {
+        url: `https://centroesteticoedith.com/endpoint/project/delete/${projectId}`,
+        method: "DELETE",
+      };
+      
+      await axios(reqOptions);
+      
+      setShowModalLoading(false);
+      setMsjeModal("Proyecto eliminado con éxito");
+      setShowModalConfirm(true);
+      
+      navigate('HomeProject', 'proyectoEliminado');
+    } catch (error) {
+      console.error("Error al eliminar el proyecto:", error);
+      setShowModalLoading(false);
+      setMsjeModal("Error al eliminar el proyecto");
+      setShowModalConfirm(true);
+    }
+  };
+
+  const handleSubmit = () => {
+    if (isEditing) {
+      handleUpdateProject();
+    } else {
+      handleCreateProject();
+    }
+  };
+
   const handleCancel = () => {
     navigate("HomeProject");
   };
@@ -343,10 +509,12 @@ const NewProject: React.FC = () => {
             <Text style={{ color: "white", fontSize: 18 }}>Cancelar</Text>
           </TouchableOpacity>
           <Text style={{ color: "white", fontSize: 18, fontWeight: "bold" }}>
-            Nuevo proyecto
+            {isEditing ? "Editar proyecto" : "Nuevo proyecto"}
           </Text>
-          <TouchableOpacity onPress={handleCreateProject}>
-            <Text style={{ color: "white", fontSize: 18 }}>Crear</Text>
+          <TouchableOpacity onPress={handleSubmit}>
+            <Text style={{ color: "white", fontSize: 18 }}>
+              {isEditing ? "Guardar" : "Crear"}
+            </Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -493,36 +661,41 @@ const NewProject: React.FC = () => {
             Ingresa una imagen
           </Text>
         ) : null}
-        {route.params.project ? (
+        {isEditing && (
           <TouchableOpacity
             style={{
-              backgroundColor: "#0A3649", // Color de fondo
-              borderColor: "#ff0033", // Color del borde
-              borderWidth: 1, // Grosor del borde
-              paddingVertical: 10, // Espaciado vertical
-              paddingHorizontal: 20, // Espaciado horizontal
-              borderRadius: 8, // Esquinas redondeadas
-              alignItems: "center", // Centrar el texto
-              marginHorizontal: 20, // Margen horizontal
+              backgroundColor: "#0A3649",
+              borderColor: "#ff0033",
+              borderWidth: 1,
+              paddingVertical: 10,
+              paddingHorizontal: 20,
+              borderRadius: 8,
+              alignItems: "center",
+              marginHorizontal: 20,
+              marginBottom: 20,
             }}
+            onPress={handleDeleteProject}
           >
             <Text
               style={{
-                color: "#ff0033", // Color del texto
-                fontSize: 16, // Tamaño de la fuente
+                color: "#ff0033",
+                fontSize: 16,
               }}
             >
               Eliminar proyecto
             </Text>
           </TouchableOpacity>
-        ) : null}
+        )}
       </View>
-      <ConfirmModal visible={showModalConfirm} message={msjeModal} onClose={() => setShowModalConfirm(false)} />
+      <ConfirmModal visible={showModalConfirm} message={msjeModal} onClose={() => {
+        setShowModalConfirm(false);
+        if (msjeModal.includes("éxito")) {
+          navigate('HomeProject');
+        }
+      }} />
       <LoadingModal visible={showModalLoading} />
     </ScrollView>
   );
 };
 
-
-
-export default NewProject;
+export default EditProject;

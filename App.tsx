@@ -11,6 +11,7 @@ import CreacionCuenta from './src/views/Login/CreacionCuenta';
 import EditUser from './src/views/Login/EditUser';
 import HomeProject from './src/views/Projects/HomeProject';
 import NewProject from './src/views/Projects/NewProject';
+import EditProject from './src/views/Projects/EditProject';
 import Project from './src/views/Projects/Project';
 import Activity from './src/components/Activities/Activity';
 import VistaMiembros from './src/views/Accesos/VistaMiembros';
@@ -33,6 +34,7 @@ export default function RootNavigator() {
     { name: 'CreacionCuenta', component: CreacionCuenta },
     { name: 'HomeProject', component: HomeProject },
     { name: 'NewProject', component: NewProject },
+    {name: 'EditProject', component: EditProject},
     { name: 'Project', component: Project },
     { name: 'Activity', component: Activity },
     { name: 'EditUser', component: EditUser },
