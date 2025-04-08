@@ -60,6 +60,18 @@ const TrackingCurrent = () => {
     filterTrackingsByWeek();
   }, [trackingSections, weekDates]); // Se ejecuta cuando cambian las secciones de seguimiento o las fechas de la semana
 
+  // Verificar periódicamente si el día actual está en la semana mostrada
+  useEffect(() => {
+    if (!project?.start_date) return;
+    
+    // Verificar cada hora si el día actual está en la semana mostrada
+    const intervalId = setInterval(() => {
+      checkAndAdjustCurrentWeek(project.start_date, currentWeekIndex, true);
+    }, 60 * 60 * 1000); // Cada hora
+    
+    return () => clearInterval(intervalId);
+  }, [project, currentWeekIndex]);
+
   // Función para cargar el proyecto desde el almacenamiento local
   
 const loadProject = async () => {
@@ -89,8 +101,42 @@ const loadProject = async () => {
     
     // Calcular las fechas de la semana inicial
     calculateWeekDates(parsedProject.start_date, initialWeekIndex + 1);
+    
+    // Verificar si el día actual está en la semana mostrada
+    checkAndAdjustCurrentWeek(parsedProject.start_date, initialWeekIndex, true);
   } catch (error) {
     console.error("Error loading project:", error);
+  }
+};
+
+// Verificar si el día actual está en la semana mostrada y ajustar si es necesario
+const checkAndAdjustCurrentWeek = (startDateStr: string, weekIndex: number, isInitialLoad: boolean = false) => {
+  if (!startDateStr) return;
+  
+  const [year, month, day] = startDateStr.split('/').map(Number);
+  const projectStartDate = new Date(year, month - 1, day);
+  const firstMonday = getMonday(projectStartDate);
+  
+  // Calcular el lunes de la semana actual
+  const targetMonday = new Date(firstMonday);
+  targetMonday.setDate(firstMonday.getDate() + (weekIndex * 7));
+  
+  // Calcular el domingo de la semana actual
+  const targetSunday = new Date(targetMonday);
+  targetSunday.setDate(targetMonday.getDate() + 6);
+  
+  // Obtener la fecha actual
+  const currentDate = new Date();
+  
+  // Solo ajustar automáticamente si es la carga inicial
+  if (isInitialLoad && (currentDate < targetMonday || currentDate > targetSunday)) {
+    // Calcular la semana correcta basada en la fecha actual
+    const currentMonday = getMonday(currentDate);
+    const weeksDiff = Math.floor((currentMonday.getTime() - firstMonday.getTime()) / (7 * 24 * 60 * 60 * 1000));
+    
+    // Actualizar el índice de semana y recalcular las fechas
+    setCurrentWeekIndex(weeksDiff);
+    calculateWeekDates(startDateStr, weeksDiff + 1);
   }
 };
 
