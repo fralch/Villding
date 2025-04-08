@@ -686,12 +686,7 @@ const FormFields = ({
       value: horas,
       field: "horas"
     },
-    {
-      icon: <MaterialCommunityIcons name="comment-processing" size={24} color="white" />,
-      placeholder: "Comentarios (opcional)",
-      value: comments,
-      field: "comments"
-    }
+   
   ];
 
   return (
