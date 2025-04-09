@@ -184,24 +184,19 @@ const EditProject: React.FC = () => {
   // Función para calcular la fecha de finalización
   const calculateEndDate = () => {
     const [day, month, year] = formData.startDate.split("/").map(Number);
-    const start = new Date(year, month - 1, day);
+    const start = new Date(year, month - 1, day); // Meses en JavaScript son 0-indexados
+
     const durationInUnits = parseInt(formData.duration, 10);
-
-    switch(formData.durationUnit) {
-      case "Meses":
-        start.setMonth(start.getMonth() + durationInUnits);
-        break;
-      case "Años":
-        start.setFullYear(start.getFullYear() + durationInUnits);
-        break;
-      case "Semanas":
-        start.setDate(start.getDate() + durationInUnits * 7);
-        break;
-      case "Dias":
-        start.setDate(start.getDate() + durationInUnits);
-        break;
+    if (formData.durationUnit === "Meses") {
+      start.setMonth(start.getMonth() + durationInUnits);
+    } else if (formData.durationUnit === "Años") {
+      start.setFullYear(start.getFullYear() + durationInUnits);
+    } else if (formData.durationUnit === "Semanas") {
+      start.setDate(start.getDate() + durationInUnits * 7);
+    } else if (formData.durationUnit === "Dias") {
+      start.setDate(start.getDate() + durationInUnits);
     }
-
+    
     return start.toLocaleDateString("es-ES");
   };
 
@@ -315,7 +310,17 @@ const EditProject: React.FC = () => {
         throw new Error("Project ID is required for update");
       }
 
+      // Validar que la fecha de fin sea posterior o igual a la fecha de inicio
+      const startDate = new Date(formatDate(formData.startDate));
+      const endDate = new Date(formatDate(calculateEndDate()));
+
+      if (endDate < startDate) {
+        throw new Error("La fecha de finalización debe ser posterior o igual a la fecha de inicio");
+      }
+
       const form = new FormData();
+      
+      // Append all required fields with correct names
       form.append("name", formData.projectName);
       form.append("location", formData.location);
       form.append("company", formData.company);
@@ -323,18 +328,33 @@ const EditProject: React.FC = () => {
       form.append("end_date", formatDate(calculateEndDate()));
       form.append("nearest_monday", getNearestMonday());
 
-      if (formData.tipoProyecto !== "0") {
+      // Only append project_type_id if a valid type is selected
+      if (formData.tipoProyecto && formData.tipoProyecto !== "0") {
         form.append("project_type_id", formData.tipoProyecto);
       }
 
-      if (formData.subtipoProyecto !== "0") {
+      // Only append project_subtype_id if a valid subtype is selected
+      if (formData.subtipoProyecto && formData.subtipoProyecto !== "0") {
         form.append("project_subtype_id", formData.subtipoProyecto);
       }
 
-      // Agregar la imagen solo si se ha seleccionado una nueva
+      // Agregar la imagen solo si se ha seleccionado una nueva y no es una URL
       if (formData.projectImage && !formData.projectImage.startsWith('http')) {
         const uriParts = formData.projectImage.split('.');
         const fileType = uriParts[uriParts.length - 1];
+
+        // Get the file info to check size
+        const fileInfo = await FileSystem.getInfoAsync(formData.projectImage);
+        
+        // Check if file exists and has size info
+        if (!fileInfo.exists || !('size' in fileInfo)) {
+          throw new Error('No se pudo obtener información del archivo');
+        }
+        
+        // Check if file size is within 2MB limit (2 * 1024 * 1024 bytes)
+        if (fileInfo.size > 2 * 1024 * 1024) {
+          throw new Error('La imagen seleccionada excede el límite de 2MB permitido');
+        }
 
         form.append('uri', {
           uri: formData.projectImage,
@@ -342,6 +362,17 @@ const EditProject: React.FC = () => {
           type: `image/${fileType}`,
         } as any);
       }
+
+      console.log('Form data to be sent:', {
+        name: formData.projectName,
+        location: formData.location,
+        company: formData.company,
+        start_date: formatDate(formData.startDate),
+        end_date: formatDate(calculateEndDate()),
+        nearest_monday: getNearestMonday(),
+        project_type_id: formData.tipoProyecto,
+        project_subtype_id: formData.subtipoProyecto
+      });
 
       const reqOptions = {
         url: `${API_BASE_URL}/project/update/${projectId}`,
@@ -354,6 +385,7 @@ const EditProject: React.FC = () => {
       };
 
       const response = await axios(reqOptions);
+      console.log('Response from server:', response.data);
 
       // Actualizar el almacenamiento local con los datos devueltos por el servidor
       const updatedProject: Project = {
@@ -364,9 +396,9 @@ const EditProject: React.FC = () => {
         company: response.data.project.company,
         week: formData.durationOnWeeks,
         week_current: route.params.project?.week_current || 0,
-        start_date: formData.startDate,
-        end_date: calculateEndDate(),
-        nearest_monday: getNearestMonday(),
+        start_date: response.data.project.start_date,
+        end_date: response.data.project.end_date,
+        nearest_monday: response.data.project.nearest_monday,
         project_type_id: response.data.project.project_type_id,
         project_subtype_id: response.data.project.project_subtype_id
       };
@@ -391,6 +423,8 @@ const EditProject: React.FC = () => {
         } else if (error.response.data.message) {
           errorMessage = error.response.data.message;
         }
+      } else if (error.message) {
+        errorMessage = error.message;
       }
       
       setMsjeModal(errorMessage);
@@ -411,7 +445,7 @@ const EditProject: React.FC = () => {
       await deleteProject(projectId);
 
       await axios({
-        url: `${API_BASE_URL}/project/delete/${projectId}`,
+        url: `${API_BASE_URL}/project/destroy/${projectId}`,
         method: "DELETE",
       });
 
