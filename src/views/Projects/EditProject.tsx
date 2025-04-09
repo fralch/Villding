@@ -70,7 +70,8 @@ const EditProject: React.FC = () => {
     durationOnWeeks: 0,
     projectImage: null as string | null,
     tipoProyecto: "",
-    subtipoProyecto: ""
+    subtipoProyecto: "",
+    endDate: ""
   });
 
   // Otros estados
@@ -82,10 +83,20 @@ const EditProject: React.FC = () => {
 
   // Función para actualizar los datos del formulario
   const updateFormData = (field: string, value: any) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
+    setFormData(prev => {
+      const newData = {
+        ...prev,
+        [field]: value
+      };
+
+      // Si se está actualizando la duración o unidad, recalcular la fecha final
+      if (field === 'duration' || field === 'durationUnit') {
+        const endDate = calculateEndDate();
+        newData.endDate = endDate;
+      }
+
+      return newData;
+    });
   };
 
   // Obtener la sesión del usuario al montar el componente
@@ -120,44 +131,60 @@ const EditProject: React.FC = () => {
     setSubtipoProyectoFilter(filteredSubtipos);
   }, [formData.tipoProyecto, subtiposProyecto]);
 
-  // Cargar los datos del proyecto
+  // Calcular la fecha de finalización cuando cambian los valores relevantes
   useEffect(() => {
-    if (route.params?.project) {
-      const project = route.params.project;
+    const endDate = calculateEndDate();
+    updateFormData("endDate", endDate);
+  }, [formData.startDate, formData.duration, formData.durationUnit]);;
 
-      // Calcular la duración y la unidad a partir de las semanas
-      let duration = "";
-      let durationUnit = "";
-      const weeks = project.week;
+  // Cargar los datos del proyecto
+  // In your useEffect for loading project data
+useEffect(() => {
+  if (route.params?.project) {
+    const project = route.params.project;
 
-      if (weeks >= 52) {
-        duration = Math.floor(weeks / 52).toString();
-        durationUnit = "Años";
-      } else if (weeks >= 4) {
-        duration = Math.floor(weeks / 4).toString();
-        durationUnit = "Meses";
-      } else {
-        duration = weeks.toString();
-        durationUnit = "Semanas";
-      }
-
-      setFormData({
-        projectName: project.title,
-        location: project.subtitle,
-        company: project.company,
-        startDate: project.start_date,
-        duration,
-        durationUnit,
-        durationOnWeeks: weeks,
-        projectImage: project.image,
-        tipoProyecto: project.project_type_id || "",
-        subtipoProyecto: project.project_subtype_id || ""
-      });
-    } else {
-      // Redireccionar si no hay proyecto para editar
-      navigate('HomeProject');
+    // Ensure start_date is in the correct format (dd/mm/yyyy)
+    let formattedStartDate = project.start_date;
+    if (formattedStartDate.includes('-')) {
+      // Convert from yyyy-mm-dd to dd/mm/yyyy
+      const [year, month, day] = formattedStartDate.split('-');
+      formattedStartDate = `${day}/${month}/${year}`;
     }
-  }, [route.params?.project]);
+
+    // Calculate the duration and unit from weeks
+    let duration = "";
+    let durationUnit = "";
+    const weeks = project.week;
+
+    if (weeks >= 52) {
+      duration = Math.floor(weeks / 52).toString();
+      durationUnit = "Años";
+    } else if (weeks >= 4) {
+      duration = Math.floor(weeks / 4).toString();
+      durationUnit = "Meses";
+    } else {
+      duration = weeks.toString();
+      durationUnit = "Semanas";
+    }
+
+    setFormData({
+      projectName: project.title,
+      location: project.subtitle,
+      company: project.company,
+      startDate: formattedStartDate,
+      duration,
+      durationUnit,
+      durationOnWeeks: weeks,
+      projectImage: project.image,
+      tipoProyecto: project.project_type_id || "",
+      subtipoProyecto: project.project_subtype_id || "",
+      endDate: project.end_date
+    });
+  } else {
+    // Redirect if no project to edit
+    navigate('HomeProject');
+  }
+}, [route.params?.project]);
 
   // Función para formatear la fecha
   const formatDate = (dateString: string) => {
@@ -183,23 +210,104 @@ const EditProject: React.FC = () => {
 
   // Función para calcular la fecha de finalización
   const calculateEndDate = () => {
-    const [day, month, year] = formData.startDate.split("/").map(Number);
-    const start = new Date(year, month - 1, day); // Meses en JavaScript son 0-indexados
+    try {
+      // Add this at the beginning of calculateEndDate
+      console.log('Starting date calculation with:', {
+        startDate: formData.startDate,
+        duration: formData.duration,
+        durationUnit: formData.durationUnit
+      });
 
-    const durationInUnits = parseInt(formData.duration, 10);
-    if (formData.durationUnit === "Meses") {
-      start.setMonth(start.getMonth() + durationInUnits);
-    } else if (formData.durationUnit === "Años") {
-      start.setFullYear(start.getFullYear() + durationInUnits);
-    } else if (formData.durationUnit === "Semanas") {
-      start.setDate(start.getDate() + durationInUnits * 7);
-    } else if (formData.durationUnit === "Dias") {
-      start.setDate(start.getDate() + durationInUnits);
+      // Handle different date formats and normalize them
+      let day, month, year;
+      
+      if (formData.startDate.includes('/')) {
+        // Handle dd/mm/yyyy format
+        const parts = formData.startDate.split('/');
+        if (parts.length === 3) {
+          // Check if the year comes first (yyyy/mm/dd)
+          if (parts[0].length === 4) {
+            [year, month, day] = parts;
+          } else {
+            // Assume dd/mm/yyyy
+            [day, month, year] = parts;
+          }
+        } else {
+          throw new Error('Invalid date format');
+        }
+      } else if (formData.startDate.includes('-')) {
+        // Handle yyyy-mm-dd format
+        const parts = formData.startDate.split('-');
+        if (parts.length === 3) {
+          [year, month, day] = parts;
+        } else {
+          throw new Error('Invalid date format');
+        }
+      } else {
+        throw new Error('Unsupported date format');
+      }
+
+      // Convert all parts to numbers
+      day = parseInt(day, 10);
+      month = parseInt(month, 10);
+      year = parseInt(year, 10);
+
+      // Validate date components
+      if (isNaN(day) || isNaN(month) || isNaN(year) ||
+          day < 1 || day > 31 || month < 1 || month > 12 || year < 2000 || year > 2100) {
+        console.log('Invalid date components:', { day, month, year });
+        throw new Error('Invalid date components');
+      }
+
+      console.log('Parsed date components:', { day, month, year });
+      
+      // Create a date object using the parsed components
+      const start = new Date(year, month - 1, day);
+      
+      console.log('Created date object:', start, 'valid?', !isNaN(start.getTime()));
+      
+      // Validate the created date
+      if (isNaN(start.getTime())) {
+        throw new Error('Invalid date created');
+      }
+      
+      // Get the duration value as a number
+      const durationInUnits = parseInt(formData.duration, 10) || 0;
+      
+      // Create a new date for the end date calculation
+      const endDate = new Date(start.getTime());
+      
+      // Apply the duration based on the selected unit
+      switch (formData.durationUnit) {
+        case "Meses":
+          endDate.setMonth(endDate.getMonth() + durationInUnits);
+          break;
+        case "Años":
+          endDate.setFullYear(endDate.getFullYear() + durationInUnits);
+          break;
+        case "Semanas":
+          endDate.setDate(endDate.getDate() + (durationInUnits * 7));
+          break;
+        case "Dias":
+          endDate.setDate(endDate.getDate() + durationInUnits);
+          break;
+      }
+      
+      // Format the result to Spanish locale date format (dd/mm/yyyy)
+      const formattedEndDate = `${endDate.getDate()}/${endDate.getMonth() + 1}/${endDate.getFullYear()}`;
+      console.log('Calculated end date:', formattedEndDate);
+      
+      return formattedEndDate;
+
+    } catch (error) {
+      console.error('Error calculating end date:', error);
+      // Return current date as fallback
+      const now = new Date();
+      return `${now.getDate()}/${now.getMonth() + 1}/${now.getFullYear()}`;
     }
-    
-    return start.toLocaleDateString("es-ES");
   };
 
+  
   // Función para calcular la duración en semanas
   const calculateDurationOnWeeks = () => {
     const [day, month, year] = formData.startDate.split("/").map(Number);
@@ -310,14 +418,6 @@ const EditProject: React.FC = () => {
         throw new Error("Project ID is required for update");
       }
 
-      // Validar que la fecha de fin sea posterior o igual a la fecha de inicio
-      const startDate = new Date(formatDate(formData.startDate));
-      const endDate = new Date(formatDate(calculateEndDate()));
-
-      if (endDate < startDate) {
-        throw new Error("La fecha de finalización debe ser posterior o igual a la fecha de inicio");
-      }
-
       const form = new FormData();
       
       // Append all required fields with correct names
@@ -325,7 +425,7 @@ const EditProject: React.FC = () => {
       form.append("location", formData.location);
       form.append("company", formData.company);
       form.append("start_date", formatDate(formData.startDate));
-      form.append("end_date", formatDate(calculateEndDate()));
+      form.append("end_date", formatDate(formData.endDate));
       form.append("nearest_monday", getNearestMonday());
 
       // Only append project_type_id if a valid type is selected
@@ -368,7 +468,7 @@ const EditProject: React.FC = () => {
         location: formData.location,
         company: formData.company,
         start_date: formatDate(formData.startDate),
-        end_date: formatDate(calculateEndDate()),
+        end_date: formatDate(formData.endDate),
         nearest_monday: getNearestMonday(),
         project_type_id: formData.tipoProyecto,
         project_subtype_id: formData.subtipoProyecto
@@ -465,6 +565,14 @@ const EditProject: React.FC = () => {
   // Función para capitalizar la primera letra de una cadena
   const capitalizarPrimeraLetra = (cadena: string) => {
     return cadena.charAt(0).toUpperCase() + cadena.slice(1);
+  };
+
+  // Función para manejar cambios en la duración
+  const handleDurationChange = (value: string) => {
+    // Validar que sea un número
+    if (/^\d*$/.test(value)) {
+      updateFormData("duration", value);
+    }
   };
 
   return (
@@ -599,7 +707,7 @@ const EditProject: React.FC = () => {
               },
             ]}
             value={formData.duration}
-            onChangeText={(value) => updateFormData("duration", value)}
+            onChangeText={handleDurationChange}
             keyboardType="numeric"
             placeholderTextColor="#888"
           />
@@ -632,7 +740,7 @@ const EditProject: React.FC = () => {
         </View>
 
         <Text style={styles.label}>Fecha estimada de entrega:</Text>
-        <Text style={styles.endDate}>{calculateEndDate()}</Text>
+        <Text style={styles.endDate}>{formData.endDate}</Text>
 
         <Text style={styles.label}>Foto de proyecto</Text>
         <TouchableOpacity style={styles.imagePicker} onPress={handlePickImage}>
