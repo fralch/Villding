@@ -188,9 +188,46 @@ useEffect(() => {
 
   // Función para formatear la fecha
   const formatDate = (dateString: string) => {
-    // (dd/mm/yyyy) -> (yyyy-mm-dd)
-    const [day, month, year] = dateString.split("/");
-    return `${year}-${month}-${day}`;
+    try {
+      let day, month, year;
+      
+      // Handle different date formats
+      if (dateString.includes('/')) {
+        const parts = dateString.split('/');
+        if (parts.length === 3) {
+          // Check if year comes first (yyyy/mm/dd)
+          if (parts[0].length === 4) {
+            [year, month, day] = parts;
+          } else {
+            // Assume dd/mm/yyyy
+            [day, month, year] = parts;
+          }
+        } else {
+          throw new Error('Invalid date format');
+        }
+      } else if (dateString.includes('-')) {
+        // Handle yyyy-mm-dd format
+        const parts = dateString.split('-');
+        if (parts.length === 3) {
+          [year, month, day] = parts;
+        } else {
+          throw new Error('Invalid date format');
+        }
+      } else {
+        throw new Error('Unsupported date format');
+      }
+
+      // Convert to numbers and pad with zeros if needed
+      day = parseInt(day, 10).toString().padStart(2, '0');
+      month = parseInt(month, 10).toString().padStart(2, '0');
+      year = parseInt(year, 10);
+
+      // Return in YYYY-MM-DD format
+      return `${year}-${month}-${day}`;
+    } catch (error) {
+      console.error('Error formatting date:', error);
+      return dateString;
+    }
   };
 
   // Función para mostrar el selector de fecha y hora
@@ -334,11 +371,17 @@ useEffect(() => {
 
   // Función para obtener el lunes más cercano a la fecha de inicio
   const getNearestMonday = () => {
-    const date = new Date(formatDate(formData.startDate));
-    const day = date.getDay();
-    const diff = (day === 0 ? -6 : 1) - day;
-    date.setDate(date.getDate() + diff);
-    return date.toISOString().split('T')[0];
+    try {
+      const [year, month, day] = formatDate(formData.startDate).split('-');
+      const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+      const dayOfWeek = date.getDay();
+      const diff = (dayOfWeek === 0 ? -6 : 1) - dayOfWeek;
+      date.setDate(date.getDate() + diff);
+      return date.toISOString().split('T')[0];
+    } catch (error) {
+      console.error('Error getting nearest Monday:', error);
+      return new Date().toISOString().split('T')[0];
+    }
   };
 
   // Función para manejar la selección de imágenes
@@ -473,6 +516,7 @@ useEffect(() => {
         project_type_id: formData.tipoProyecto,
         project_subtype_id: formData.subtipoProyecto
       });
+      console.log(`${API_BASE_URL}/project/update/${projectId}`);
 
       const reqOptions = {
         url: `${API_BASE_URL}/project/update/${projectId}`,
