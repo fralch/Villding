@@ -176,77 +176,79 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
 
   // Funciones principales
   const handleSubmit = async (status = formData.status) => {
-    if (!formData.titulo.trim()) {
-      showMessage("Error", "El título es obligatorio");
-      return false;
-    }
+  if (!formData.titulo.trim()) {
+    showMessage("Error", "El título es obligatorio");
+    return false;
+  }
 
-    const activityData: ActivityData = {
-      project_id,
-      tracking_id,
-      name: formData.titulo,
-      description: formData.description,
-      location: formData.location,
-      horas: formData.horas,
-      status,
-      icon: formData.selectedIcon, // Ya no es necesario agregar 'fa-'
-      comments: formData.comments || "",
-      fecha_creacion: formData.fecha_creacion,
-      images: formData.images,
-      ...(isEditing && { id: itemData.id })
-    };
-
-    try {
-      setIsLoading(true);
-      
-      if (formData.images.length > 0) {
-        const formDataObj = new FormData();
-        Object.entries(activityData).forEach(([key, value]) => {
-          if (key !== 'images') {
-            formDataObj.append(key, String(value));
-          }
-        });
-
-        formData.images.forEach((imageUri, index) => {
-          const fileType = imageUri.split('.').pop();
-          formDataObj.append(`images[${index}]`, {
-            uri: imageUri,
-            name: `photo_${index}.${fileType}`,
-            type: `image/${fileType}`
-          } as any);
-        });
-
-        console.log('FormData:', formDataObj); // Debugging line
-
-        await axios.post(
-          'https://centroesteticoedith.com/endpoint/activities/create',
-          formDataObj,
-          { headers: { "Content-Type": "multipart/form-data" } }
-        );
-      } else {
-        const url = isEditing 
-          ? `https://centroesteticoedith.com/endpoint/activities/${itemData.id}`
-          : 'https://centroesteticoedith.com/endpoint/activities/create';
-        
-        await axios({
-          method: isEditing ? 'put' : 'post',
-          url,
-          data: activityData,
-          headers: { "Content-Type": "application/json" }
-        });
-      }
-
-      setIsLoading(false);
-      showMessage("Éxito", `Actividad ${isEditing ? 'actualizada' : 'creada'} correctamente`);
-      if (hideModal) setTimeout(hideModal, 2000);
-      return true;
-    } catch (error) {
-      console.error('Error:', error);
-      setIsLoading(false);
-      showMessage("Error", `No se pudo ${isEditing ? 'actualizar' : 'crear'} la actividad`);
-      return false;
-    }
+  const activityData: ActivityData = {
+    project_id,
+    tracking_id,
+    name: formData.titulo,
+    description: formData.description,
+    location: formData.location,
+    horas: formData.horas,
+    status,
+    icon: formData.selectedIcon, // Ya no es necesario agregar 'fa-'
+    comments: formData.comments || "",
+    fecha_creacion: formData.fecha_creacion,
+    images: formData.images,
+    ...(isEditing && { id: itemData.id })
   };
+
+  try {
+    setIsLoading(true);
+    
+    // URL correcta según si es edición o creación
+    const url = isEditing 
+      ? `https://centroesteticoedith.com/endpoint/activities/${itemData.id}`
+      : 'https://centroesteticoedith.com/endpoint/activities/create';
+    
+    if (formData.images.length > 0) {
+      const formDataObj = new FormData();
+      Object.entries(activityData).forEach(([key, value]) => {
+        if (key !== 'images') {
+          formDataObj.append(key, String(value));
+        }
+      });
+
+      formData.images.forEach((imageUri, index) => {
+        const fileType = imageUri.split('.').pop();
+        formDataObj.append(`images[${index}]`, {
+          uri: imageUri,
+          name: `photo_${index}.${fileType}`,
+          type: `image/${fileType}`
+        } as any);
+      });
+
+      console.log('FormData:', formDataObj); // Debugging line
+
+      await axios({
+        method: isEditing ? 'put' : 'post',
+        url,
+        data: formDataObj,
+        headers: { "Content-Type": "multipart/form-data" }
+      });
+    } else {
+      await axios({
+        method: isEditing ? 'put' : 'post',
+        url,
+        data: activityData,
+        headers: { "Content-Type": "application/json" }
+      });
+    }
+
+    setIsLoading(false);
+    showMessage("Éxito", `Actividad ${isEditing ? 'actualizada' : 'creada'} correctamente`);
+    if (hideModal) setTimeout(hideModal, 2000);
+    return true;
+  } catch (error) {
+    console.error('Error:', error);
+    setIsLoading(false);
+    showMessage("Error", `No se pudo ${isEditing ? 'actualizar' : 'crear'} la actividad`);
+    return false;
+  }
+};
   
   const handleSubmitFinish = async () => {
    try{
@@ -286,7 +288,6 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
       <ExpoStatusBar style="light" />
       <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
         <View style={{ flex: 1 }}>
-          {/* Componente Sección de Título */}
           <TitleSection
             titulo={formData.titulo}
             onTituloChange={(text) => setFormData(prev => ({ ...prev, titulo: text }))}
@@ -300,10 +301,9 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
               images: prev.images.filter((_: string, i: number) => i !== index)
             }))}
             itemData={itemData}
-            status={formData.status} // Añadir esta prop
+            status={formData.status}
           />
           
-          {/* Componente Campos del Formulario */}
           <FormFields
             description={formData.description}
             location={formData.location}
@@ -312,14 +312,13 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
             onValueChange={(field, value) => setFormData(prev => ({ ...prev, [field]: value }))}
           />
 
-          {/* Componente Selector de Íconos */}
           <IconSelector
             selectedIcon={formData.selectedIcon}
             onIconSelect={(icon) => setFormData(prev => ({ ...prev, selectedIcon: icon }))}
           />
         </View>
       </ScrollView>
-     
+      
       {/* Modal de Confirmación */}
       <Modal transparent={true} animationType="slide" visible={showModal}>
         <View style={modalStyles.modalContainer}>
