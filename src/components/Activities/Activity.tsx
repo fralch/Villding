@@ -16,6 +16,7 @@ import { useNavigation, NavigationProp } from '@react-navigation/native';
 import axios from "axios";
 import { MaterialIcons, MaterialCommunityIcons, Feather, Ionicons } from '@expo/vector-icons';
 import ActivityItemCreate, { ActivityItemCreateRef } from './ActivityItemCreate';
+import ActivityItemUpdate, { ActivityItemUpdateRef } from './ActivityItemUpdate';
 import { styles } from "./styles/ActivityStyles";
 
 // Add icon mapping
@@ -113,6 +114,10 @@ export default function Activity(props: any) {
   
   // Add a ref for the ActivityItemCreate component
   const activityItemCreateRef = useRef<ActivityItemCreateRef>(null);
+  const activityItemUpdateRef = useRef<ActivityItemUpdateRef>(null);
+
+  const [modalVisible, setModalVisible] = useState(false);
+
   
   const [modalOptionsVisible, setModalOptionsVisible] = useState(false);
   const [activityItemCreateType, setActivityItemCreateType] = useState('Pendiente');
@@ -288,23 +293,22 @@ export default function Activity(props: any) {
   };
 
   // Actualizado para refrescar actividades después de guardar
+  // Update the handleSaveActivity function
   const handleSaveActivity = async () => {
-    if (activityItemCreateRef.current) {
-      let success;
-      
-      if (isEditing) {
-        success = await activityItemCreateRef.current.handleUpdateActivity();
-      } else {
-        success = await activityItemCreateRef.current.handleCreateActivity();
-      }
-      
-      if (success) {
-        // Refrescar las actividades
-        await refreshActivities();
-        hideModal();
-      }
+  if (isEditing && activityItemUpdateRef.current) {
+    const success = await activityItemUpdateRef.current.handleUpdateActivity();
+    if (success) {
+      await refreshActivities();
+      hideModal();
     }
-  };
+  } else if (activityItemCreateRef.current) {
+    const success = await activityItemCreateRef.current.handleCreateActivity();
+    if (success) {
+      await refreshActivities();
+      hideModal();
+    }
+  }
+};
 
   // Obtener la etiqueta del estado
   const getStatusLabel = (status: string) => {
@@ -437,17 +441,28 @@ export default function Activity(props: any) {
                 <Text style={{ color: 'white' }}>Guardar</Text>
               </TouchableOpacity>
             </View>
-            <ActivityItemCreate 
-              ref={activityItemCreateRef}
-              project_id={tracking.project_id}
-              tracking_id={tracking.id}
-              tipo={activityItemCreateType} 
-              date={selectedDate} 
-              isEditing={isEditing}
-              itemData={selectedActivity}
-              activity={selectedActivity}
-              hideModal={hideModal}
-            />
+            {isEditing ? (
+              <ActivityItemUpdate
+                ref={activityItemUpdateRef}
+                project_id={tracking.project_id}
+                tracking_id={tracking.id}
+                activity={selectedActivity}
+                date={selectedDate}
+                hideModal={hideModal}
+              />
+            ) : (
+              <ActivityItemCreate
+                ref={activityItemCreateRef}
+                project_id={tracking.project_id}
+                tracking_id={tracking.id}
+                tipo={activityItemCreateType}
+                date={selectedDate}
+                isEditing={isEditing}
+                itemData={selectedActivity}
+                activity={selectedActivity}
+                hideModal={hideModal}
+              />
+            )}
           </Animated.View>
         </View>
       </Modal>
