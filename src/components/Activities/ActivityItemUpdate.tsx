@@ -269,9 +269,11 @@ const ActivityItemUpdate = forwardRef<ActivityItemUpdateRef, ActivityItemUpdateP
       try {
         setIsLoading(true);
         
+        console.log("COMPLETANDO ACTIVIDAD...");
+        console.log(activity?.id);
         await axios({
           method: 'post',
-          url: `https://centroesteticoedith.com/endpoint/activities/complete`,
+          url: `https://centroesteticoedith.com/endpoint/activities_complete`,
           data: { id: activity?.id },
           headers: { "Content-Type": "application/json" }
         });
