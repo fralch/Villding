@@ -127,8 +127,14 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
     setFormData(prev => ({ ...prev, fecha_creacion: new Date(newDate).toISOString().split('T')[0] }));
   };
 
-  // Función para manejar la selección de imágenes desde la cámara o galería
+  // Modificación en la función handleImagePicker para limitar a 5 imágenes
   const handleImagePicker = async (useCamera = false) => {
+    // Verificar primero si ya se alcanzó el límite de imágenes
+    if (formData.images.length >= 5) {
+      showMessage("Límite alcanzado", "Solo se permite un máximo de 5 imágenes");
+      return;
+    }
+
     const { status } = await (useCamera ?
       ImagePicker.requestCameraPermissionsAsync() :
       ImagePicker.requestMediaLibraryPermissionsAsync());
@@ -147,11 +153,22 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
       }));
 
     if (!result.canceled && result.assets) {
-      const newImages = result.assets.map(asset => asset.uri);
+      // Calcular cuántas imágenes podemos agregar sin exceder el límite
+      const remainingSlots = 5 - formData.images.length;
+      const newImages = result.assets.slice(0, remainingSlots).map(asset => asset.uri);
+      
       setFormData(prev => ({
         ...prev,
         images: [...prev.images, ...newImages]
       }));
+      
+      // Si se seleccionaron más imágenes de las permitidas, mostrar un mensaje
+      if (result.assets.length > remainingSlots) {
+        showMessage(
+          "Límite alcanzado", 
+          `Se han agregado ${newImages.length} de ${result.assets.length} imágenes seleccionadas. Máximo permitido: 5`
+        );
+      }
     }
   };
 
@@ -382,7 +399,9 @@ const TitleSection: React.FC<TitleSectionProps> = ({
   status
 }) => {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
-
+  // Calcular imágenes restantes
+  const remainingImages = 5 - images.length;
+  const buttonDisabled = images.length >= 5;
   return (
     <View style={{ backgroundColor: "#0a3649", padding: 20 }}>
       {/* Image Slider - solo se muestra cuando hay imágenes para mostrar */}
@@ -470,8 +489,7 @@ const TitleSection: React.FC<TitleSectionProps> = ({
           </View>
         </View>
       )}
-      <StatusIndicator tipoTask={status} />
-      {/* Entrada de título existente */}
+       <StatusIndicator tipoTask={status} />
       <TextInput
         style={{
           fontSize: 35,
@@ -488,11 +506,12 @@ const TitleSection: React.FC<TitleSectionProps> = ({
         numberOfLines={4}
       />
 
+
       {/* Mostrar galería de imágenes cuando hay imágenes */}
       {images.length > 0 && (
         <View style={{ marginVertical: 10 }}>
           <Text style={{ color: '#dedede', marginBottom: 8, fontSize: 16 }}>
-            Imágenes ({images.length})
+            Imágenes ({images.length}/5)
           </Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             {images.map((imageUri, index) => (
@@ -536,25 +555,34 @@ const TitleSection: React.FC<TitleSectionProps> = ({
               justifyContent: "center",
               alignItems: "center",
               marginTop: 10,
-              backgroundColor: "#dedede",
+              backgroundColor: buttonDisabled ? "#999" : "#dedede",
               borderRadius: 5,
+              opacity: buttonDisabled ? 0.7 : 1,
             }}
             onPress={() => {
-              Alert.alert(
-                "Subir Imágenes",
-                "Seleccione una opción",
-                [
-                  { text: "Tomar Foto", onPress: onTakePhoto },
-                  { text: "Elegir de Galería", onPress: onPickImages },
-                  { text: "Cancelar", style: "cancel" }
-                ]
-              );
+              if (!buttonDisabled) {
+                Alert.alert(
+                  "Subir Imágenes",
+                  `Seleccione una opción (${remainingImages} imágenes restantes)`,
+                  [
+                    { text: "Tomar Foto", onPress: onTakePhoto },
+                    { text: "Elegir de Galería", onPress: onPickImages },
+                    { text: "Cancelar", style: "cancel" }
+                  ]
+                );
+              } else {
+                Alert.alert(
+                  "Límite alcanzado",
+                  "Ha alcanzado el límite de 5 imágenes. Elimine algunas para poder agregar más.",
+                  [{ text: "Entendido", style: "cancel" }]
+                );
+              }
             }}
           >
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
               <MaterialIcons name="photo-camera" size={20} color="#0a455e" />
               <Text style={{ fontSize: 14, color: "#0a455e", padding: 15 }}>
-                Subir Imágenes
+                {buttonDisabled ? "Límite de imágenes alcanzado (5/5)" : `Subir Imágenes (${images.length}/5)`}
               </Text>
             </View>
           </TouchableOpacity>
