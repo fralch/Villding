@@ -14,11 +14,11 @@ import { Activity } from './types/Activity_interface';
 import { iconImports, iconsFiles } from './icons';
 
 // Componentes
-import TitleSection from './components/TitleSection';
-import FormFields from './components/FormFields';
-import IconSelector from './components/IconSelector';
-import MessageModal from './components/MessageModal';
-import LoadingOverlay from './components/LoadingOverlay';
+import TitleSection from './componentsActivityUpdate/TitleSection';
+import FormFields from './componentsActivityUpdate/FormFields';
+import IconSelector from './componentsActivityUpdate/IconSelector';
+import MessageModal from './componentsActivityUpdate/MessageModal';
+import LoadingOverlay from './componentsActivityUpdate/LoadingOverlay';
 
 // Tipos y interfaces
 export interface ActivityItemUpdateRef {handleUpdateActivity: () => Promise<boolean>;}
