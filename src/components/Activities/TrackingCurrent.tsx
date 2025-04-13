@@ -166,7 +166,7 @@ const checkAndAdjustCurrentWeek = (startDateStr: string, weekIndex: number, isIn
       return date.toLocaleDateString("es-PE", { day: "2-digit", month: "2-digit" });
     });
   
-    console.log('Calculated Dates:', dates);
+    // console.log('Calculated Dates:', dates);
     setWeekDates(dates);
   };
 

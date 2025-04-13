@@ -294,19 +294,32 @@ export default function Activity(props: any) {
 
   // Actualizado para refrescar actividades después de guardar
   // Update the handleSaveActivity function
-  const handleSaveActivity = async () => {
-  if (isEditing && activityItemUpdateRef.current) {
-    const success = await activityItemUpdateRef.current.handleUpdateActivity();
+const handleSaveActivity = async () => {
+  try {
+    let success = false;
+    
+    if (isEditing && activityItemUpdateRef.current) {
+      console.log('Attempting to update activity...');
+      success = await activityItemUpdateRef.current.handleUpdateActivity();
+      console.log('Update result:', success);
+    } else if (activityItemCreateRef.current) {
+      console.log('Attempting to create activity...');
+      success = await activityItemCreateRef.current.handleCreateActivity();
+      console.log('Create result:', success);
+    }
+
     if (success) {
+      console.log('Operation successful, refreshing activities...');
       await refreshActivities();
       hideModal();
+    } else {
+      console.log('Operation failed');
+      // Optionally show error message to user
+      alert('Failed to save activity. Please try again.');
     }
-  } else if (activityItemCreateRef.current) {
-    const success = await activityItemCreateRef.current.handleCreateActivity();
-    if (success) {
-      await refreshActivities();
-      hideModal();
-    }
+  } catch (error) {
+    console.error('Error in handleSaveActivity:', error);
+    alert('An error occurred while saving the activity.');
   }
 };
 
