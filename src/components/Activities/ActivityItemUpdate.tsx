@@ -144,20 +144,32 @@ const ActivityItemUpdate = forwardRef<ActivityItemUpdateRef, ActivityItemUpdateP
       * @returns - Promise<boolean> - Indica si la actualización fue exitosa
       */
      
-    const updateActivity = async (newStatus?: ActivityStatus): Promise<boolean> => {
-      console.log("ACTUALIZANDO ACTIVIDAD... FUNCIONANDO!!!");
+     const updateActivity = async (newStatus?: ActivityStatus): Promise<boolean> => {
+      console.log("Actualizando actividad con IMAGEN... FUNCIONANDO!!!");
       // Validación básica
       if (!activity?.id) return false; // verifica si hay un id
-
-      
+    
       if (!formData.titulo.trim()) {
         showMessage('Por favor ingrese un título para la actividad.');
         return false;
       }
-
+    
       setIsLoading(true);
-
+    
       try {
+        // Separar imágenes nuevas de las existentes
+        /* 
+        - Filtramos las imágenes nuevas (aquellas que empiezan con 'file://' o 'content://')
+        - Filtramos las imágenes existentes (aquellas que no empiezan con 'file://' o 'content://')
+        */
+        const newImages = formData.images.filter(img =>  
+          img.startsWith('file://') || img.startsWith('content://')
+        );
+        
+        const existingImages = formData.images.filter(img => 
+          !img.startsWith('file://') && !img.startsWith('content://')
+        );
+    
         // Prepara los datos de la actividad
         const activityData = {
           project_id,
@@ -170,30 +182,28 @@ const ActivityItemUpdate = forwardRef<ActivityItemUpdateRef, ActivityItemUpdateP
           comments: formData.comments,
           icon: formData.selectedIcon,
           fecha_creacion: formData.fecha_creacion,
-          id: activity.id
+          id: activity.id,
+          images: newImages,
+          existing_images: existingImages
         };
-
+    
         console.log("Datos de la actividad:");
         console.log(activityData);
         let response;
-
+    
         // Verificación mejorada para imágenes
-        const hasImages = formData.images && Array.isArray(formData.images) && formData.images.length > 0;
-        if (hasImages) {
-          // Si hay imágenes, usa FormData para manejar la carga de archivos
-          // console.log("¡¡¡¡¡¡ HAY IMÁGENES !!! ¡¡¡¡¡¡");
-          // console.log(activityData);
+        const hasNewImages = newImages.length > 0;
+        if (hasNewImages || existingImages.length > 0) { 
+          // Si hay imágenes nuevas o existentes, usa FormData
           response = await uploadWithImages(activityData);
         } else {
           // Sin imágenes, usa una solicitud JSON normal
-          console.log("Datos de la actividad sin imágenes:");
-          console.log(activityData);
-          response = await axios.put(
+          response = await axios.post(
             `https://centroesteticoedith.com/endpoint/activities/${activity.id}`,
             activityData
           );
         }
-
+    
         setIsLoading(false);
         
         if (response.status === 200) {
@@ -214,6 +224,7 @@ const ActivityItemUpdate = forwardRef<ActivityItemUpdateRef, ActivityItemUpdateP
      * Sube los datos de la actividad con imágenes usando FormData
      */
     const uploadWithImages = async (activityData: any) => {
+      console.log("PROCESANDO IMÁGENES...");
       const formDataObj = new FormData();
       
       // Añade todos los campos al FormData excepto imágenes
@@ -222,32 +233,35 @@ const ActivityItemUpdate = forwardRef<ActivityItemUpdateRef, ActivityItemUpdateP
           formDataObj.append(key, String(value));
         }
       });
-
+    
       // Procesa y añade imágenes al FormData
-      formData.images.forEach((imageUri: string, index: number) => {
-        // Solo procesa nuevas imágenes (las que empiezan con file:// o content://)
-        if (imageUri.startsWith('file://') || imageUri.startsWith('content://')) {
-          const fileType = imageUri.split('.').pop();
-          formDataObj.append(`images[${index}]`, {
-            uri: imageUri,
-            name: `photo_${index}.${fileType}`,
-            type: `image/${fileType}`
-          } as any);
-        } else {
-          // Para imágenes existentes, solo pasamos el nombre
-          formDataObj.append(`existing_images[${index}]`, imageUri);
-        }
-      });
-
+      if (activityData.images && activityData.images.length > 0) {
+        activityData.images.forEach((imageUri: string, index: number) => {
+          // Solo procesa nuevas imágenes (las que empiezan con file:// o content://)
+          if (imageUri.startsWith('file://') || imageUri.startsWith('content://')) {
+            const fileType = imageUri.split('.').pop();
+            formDataObj.append(`images[${index}]`, {
+              uri: imageUri,
+              name: `photo_${index}.${fileType}`,
+              type: `image/${fileType}`
+            } as any);
+          }
+        });
+      }
+    
+      // Añade también las imágenes existentes como un campo separado para que el backend pueda combinarlas
+      if (activityData.existing_images) {
+        formDataObj.append('existing_images', JSON.stringify(activityData.existing_images));
+      }
+    
       // Envía solicitud con el FormData
       return await axios({
-        method: 'put',
-        url: `https://centroesteticoedith.com/endpoint/activities/${activity!.id}`,
+        method: 'post',
+        url: `https://centroesteticoedith.com/endpoint/activities_imgs/${activityData.id}`,
         data: formDataObj,
         headers: { "Content-Type": "multipart/form-data" }
       });
     };
-
     /**
      * Función específica para marcar una actividad como completada
      */

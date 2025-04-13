@@ -459,7 +459,7 @@ const handleSaveActivity = async () => {
                 ref={activityItemUpdateRef}
                 project_id={tracking.project_id}
                 tracking_id={tracking.id}
-                activity={selectedActivity}
+                activity={selectedActivity as any}
                 date={selectedDate}
                 hideModal={hideModal}
               />
@@ -470,9 +470,6 @@ const handleSaveActivity = async () => {
                 tracking_id={tracking.id}
                 tipo={activityItemCreateType}
                 date={selectedDate}
-                isEditing={isEditing}
-                itemData={selectedActivity}
-                activity={selectedActivity}
                 hideModal={hideModal}
               />
             )}
