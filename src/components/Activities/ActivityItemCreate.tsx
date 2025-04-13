@@ -7,13 +7,12 @@ import {
   ScrollView,
   Modal,
   Image,
-  Pressable,
-  StyleSheet,
   Alert,
   ActivityIndicator,
+  StyleSheet,
 } from "react-native";
 import { StatusBar as ExpoStatusBar } from "expo-status-bar";
-import { getSesion, removeSesion , updateSesion } from '../../hooks/localStorageUser';
+import { getSesion } from '../../hooks/localStorageUser';
 import {
   MaterialCommunityIcons,
   Entypo,
@@ -23,11 +22,9 @@ import {
 import axios from "axios";
 import * as ImagePicker from 'expo-image-picker';
 import { styles } from "./styles/ActivityItemCreateStyles";
-import { Activity } from './Activity';
 import { iconImports, iconsFiles } from './icons';
 
-
-// Tipos simplificados
+// Definición de tipos simplificados para los datos de la actividad
 interface ActivityData {
   project_id: number;
   tracking_id: number;
@@ -40,73 +37,56 @@ interface ActivityData {
   comments: string;
   fecha_creacion: string;
   images?: string[];
-  id?: number;
 }
 
+// Definición de tipos para las props del componente
 interface ActivityItemCreateProps {
   project_id: number;
   tracking_id: number;
   tipo: string;
   date: string;
-  isEditing?: boolean;
-  itemData?: any;
-  activity?: Activity | null;
   hideModal?: () => void;
 }
 
-// Add at the top with other interfaces
+// Definición de tipos para las referencias del componente
 export interface ActivityItemCreateRef {
   handleCreateActivity: () => Promise<boolean>;
-  finishTask: () => Promise<boolean>;
-  handleUpdateActivity: () => Promise<boolean>;
 }
 
-interface ItemData {
-  id: number;
-  name: string;
-  description: string;
-  location: string;
-  horas: string;
-  comments: string;
-  icon: string;
-  image?: string;
-}
-
+// Definición de tipos para el estado del formulario
 interface FormDataState {
   titulo: string;
   description: string;
   location: string;
   horas: string;
   comments: string;
-  selectedIcon: string; // Cambiado de keyof typeof MaterialIcons.glyphMap a string
+  selectedIcon: string;
   fecha_creacion: string;
   images: string[];
   status: ActivityStatus;
 }
 
+// Tipos de estado de la actividad
 type ActivityStatus = 'programado' | 'pendiente' | 'completado';
 
 // Componente principal
-const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateProps>(({ 
-  tipo, 
-  project_id, 
-  tracking_id, 
-  date, 
-  isEditing = false, 
-  itemData, 
-  activity, 
-  hideModal 
+const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateProps>(({
+  tipo,
+  project_id,
+  tracking_id,
+  date,
+  hideModal
 }, ref) => {
-  // Estado unificado
+  // Estado unificado para manejar los datos del formulario
   const [formData, setFormData] = useState<FormDataState>({
-    titulo: isEditing ? itemData?.name : "",
-    description: isEditing ? itemData?.description : "",
-    location: isEditing ? itemData?.location : "",
-    horas: isEditing ? itemData?.horas : "",
-    comments: isEditing ? itemData?.comments : "",
-    selectedIcon: isEditing ? itemData?.icon : "local-shipping.svg", // Valor por defecto actualizado
+    titulo: "",
+    description: "",
+    location: "",
+    horas: "",
+    comments: "",
+    selectedIcon: "local-shipping.svg",
     fecha_creacion: "",
-    images: isEditing && itemData?.image ? JSON.parse(itemData.image) : [],
+    images: [],
     status: (tipo === "edit" ? "pendiente" : tipo) as ActivityStatus
   });
 
@@ -115,7 +95,7 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
   const [showModal, setShowModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Efectos simplificados
+  // Efecto para verificar el estado de administrador al montar el componente
   useEffect(() => {
     const checkAdminStatus = async () => {
       const session = JSON.parse(await getSesion() || "{}");
@@ -129,7 +109,7 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
           "https://centroesteticoedith.com/endpoint/project/check-attachment",
           { project_id }
         );
-        setIsAdmin(response.data.users.some((user: any) => 
+        setIsAdmin(response.data.users.some((user: any) =>
           user.id === session?.id && user.is_admin === 1
         ));
       } catch (error) {
@@ -141,15 +121,16 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
     setInitialDate();
   }, []);
 
-  // Funciones auxiliares
+  // Función para establecer la fecha inicial
   const setInitialDate = () => {
     const newDate = new Date().getFullYear() + "-" + date.split("/").reverse().join("-");
     setFormData(prev => ({ ...prev, fecha_creacion: new Date(newDate).toISOString().split('T')[0] }));
   };
 
+  // Función para manejar la selección de imágenes desde la cámara o galería
   const handleImagePicker = async (useCamera = false) => {
-    const { status } = await (useCamera ? 
-      ImagePicker.requestCameraPermissionsAsync() : 
+    const { status } = await (useCamera ?
+      ImagePicker.requestCameraPermissionsAsync() :
       ImagePicker.requestMediaLibraryPermissionsAsync());
 
     if (status !== 'granted') {
@@ -159,7 +140,7 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
 
     const result = await (useCamera ?
       ImagePicker.launchCameraAsync({ quality: 0.8 }) :
-      ImagePicker.launchImageLibraryAsync({ 
+      ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsMultipleSelection: true,
         quality: 0.8
@@ -174,113 +155,85 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
     }
   };
 
-  // Funciones principales
+  // Función principal para manejar el envío del formulario
   const handleSubmit = async (status = formData.status) => {
-  if (!formData.titulo.trim()) {
-    showMessage("Error", "El título es obligatorio");
-    return false;
-  }
-
-  const activityData: ActivityData = {
-    project_id,
-    tracking_id,
-    name: formData.titulo,
-    description: formData.description,
-    location: formData.location,
-    horas: formData.horas,
-    status,
-    icon: formData.selectedIcon, // Ya no es necesario agregar 'fa-'
-    comments: formData.comments || "",
-    fecha_creacion: formData.fecha_creacion,
-    images: formData.images,
-    ...(isEditing && { id: itemData.id })
-  };
-
-  try {
-    setIsLoading(true);
-    
-    // URL correcta según si es edición o creación
-    const url = isEditing 
-      ? `https://centroesteticoedith.com/endpoint/activities/${itemData.id}`
-      : 'https://centroesteticoedith.com/endpoint/activities/create';
-    
-    if (formData.images.length > 0) {
-      const formDataObj = new FormData();
-      Object.entries(activityData).forEach(([key, value]) => {
-        if (key !== 'images') {
-          formDataObj.append(key, String(value));
-        }
-      });
-
-      formData.images.forEach((imageUri, index) => {
-        const fileType = imageUri.split('.').pop();
-        formDataObj.append(`images[${index}]`, {
-          uri: imageUri,
-          name: `photo_${index}.${fileType}`,
-          type: `image/${fileType}`
-        } as any);
-      });
-
-      console.log('FormData:', formDataObj); // Debugging line
-
-      await axios({
-        method: isEditing ? 'put' : 'post',
-        url,
-        data: formDataObj,
-        headers: { "Content-Type": "multipart/form-data" }
-      });
-    } else {
-      await axios({
-        method: isEditing ? 'put' : 'post',
-        url,
-        data: activityData,
-        headers: { "Content-Type": "application/json" }
-      });
+    if (!formData.titulo.trim()) {
+      showMessage("Error", "El título es obligatorio");
+      return false;
     }
 
-    setIsLoading(false);
-    showMessage("Éxito", `Actividad ${isEditing ? 'actualizada' : 'creada'} correctamente`);
-    if (hideModal) setTimeout(hideModal, 2000);
-    return true;
-  } catch (error) {
-    console.error('Error:', error);
-    setIsLoading(false);
-    showMessage("Error", `No se pudo ${isEditing ? 'actualizar' : 'crear'} la actividad`);
-    return false;
-  }
-};
-  
-  const handleSubmitFinish = async () => {
-   try{
-    await axios({
-      method: 'post',
-      url: `https://centroesteticoedith.com/endpoint/activities/complete`,
-      data: { id: itemData.id,},
-      headers: { "Content-Type": "application/json" }
-    });
-    setIsLoading(false);
-    showMessage("Éxito", `Actividad ${isEditing ? 'actualizada' : 'creada'} correctamente`);
-    if (hideModal) setTimeout(hideModal, 2000);
-    return true;
+    const activityData: ActivityData = {
+      project_id,
+      tracking_id,
+      name: formData.titulo,
+      description: formData.description,
+      location: formData.location,
+      horas: formData.horas,
+      status,
+      icon: formData.selectedIcon,
+      comments: formData.comments || "",
+      fecha_creacion: formData.fecha_creacion,
+      images: formData.images
+    };
 
-   }catch (error) {
-    console.error('Error:', error);
-    setIsLoading(false);
-    showMessage("Error", `No se pudo ${isEditing ? 'actualizar' : 'crear'} la actividad`);
-    return false;
-   }
+    try {
+      setIsLoading(true);
+
+      const url = 'https://centroesteticoedith.com/endpoint/activities/create';
+
+      if (formData.images.length > 0) {
+        const formDataObj = new FormData();
+        Object.entries(activityData).forEach(([key, value]) => {
+          if (key !== 'images') {
+            formDataObj.append(key, String(value));
+          }
+        });
+
+        formData.images.forEach((imageUri, index) => {
+          const fileType = imageUri.split('.').pop();
+          formDataObj.append(`images[${index}]`, {
+            uri: imageUri,
+            name: `photo_${index}.${fileType}`,
+            type: `image/${fileType}`
+          } as any);
+        });
+
+        await axios({
+          method: 'post',
+          url,
+          data: formDataObj,
+          headers: { "Content-Type": "multipart/form-data" }
+        });
+      } else {
+        await axios({
+          method: 'post',
+          url,
+          data: activityData,
+          headers: { "Content-Type": "application/json" }
+        });
+      }
+
+      setIsLoading(false);
+      showMessage("Éxito", "Actividad creada correctamente");
+      if (hideModal) setTimeout(hideModal, 2000);
+      return true;
+    } catch (error) {
+      console.error('Error:', error);
+      setIsLoading(false);
+      showMessage("Error", "No se pudo crear la actividad");
+      return false;
+    }
   };
 
+  // Función para mostrar mensajes en el modal
   const showMessage = (title: string, message: string) => {
     setModalMessage(message);
     setShowModal(true);
   };
 
-  // Exponer métodos al componente padre
+  // Exponer método al componente padre
   useImperativeHandle(ref, () => ({
-    handleCreateActivity: () => handleSubmit(),
-    finishTask: () => handleSubmit('completado'),
-    handleUpdateActivity: () => handleSubmit()
+    handleCreateActivity: () => handleSubmit()
   }));
 
   return (
@@ -291,7 +244,6 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
           <TitleSection
             titulo={formData.titulo}
             onTituloChange={(text) => setFormData(prev => ({ ...prev, titulo: text }))}
-            onFinishTask={() => handleSubmitFinish()}
             isAdmin={isAdmin}
             images={formData.images}
             onTakePhoto={() => handleImagePicker(true)}
@@ -300,10 +252,9 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
               ...prev,
               images: prev.images.filter((_: string, i: number) => i !== index)
             }))}
-            itemData={itemData}
             status={formData.status}
           />
-          
+
           <FormFields
             description={formData.description}
             location={formData.location}
@@ -318,7 +269,7 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
           />
         </View>
       </ScrollView>
-      
+
       {/* Modal de Confirmación */}
       <Modal transparent={true} animationType="slide" visible={showModal}>
         <View style={modalStyles.modalContainer}>
@@ -331,15 +282,15 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
         </View>
       </Modal>
 
-      {/* Loading Overlay - Shows only when isLoading is true */}
+      {/* Loading Overlay - Muestra solo cuando isLoading es true */}
       {isLoading && (
         <Modal transparent={true} visible={true}>
           <View style={loadingStyles.overlay}>
             <View style={loadingStyles.loadingContainer}>
               <ActivityIndicator size="large" color="#33baba" />
               <Text style={loadingStyles.loadingText}>
-                {formData.images.length > 0 
-                  ? `Subiendo ${formData.images.length} ${formData.images.length === 1 ? 'imagen' : 'imágenes'}...` 
+                {formData.images.length > 0
+                  ? `Subiendo ${formData.images.length} ${formData.images.length === 1 ? 'imagen' : 'imágenes'}...`
                   : 'Procesando...'
                 }
               </Text>
@@ -350,21 +301,6 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
     </View>
   );
 });
-
-// Opciones de íconos
-const ICON_OPTIONS: Array<keyof typeof MaterialIcons.glyphMap> = [
-  "local-shipping",
-  "directions-car",
-  "ac-unit",
-  "adb",
-  "agriculture",
-];
-
-// Íconos recientes
-const RECENT_ICONS: Array<keyof typeof MaterialIcons.glyphMap> = [
-  "local-shipping",
-  "directions-car",
-];
 
 // Componente indicador de estado e imagen
 const StatusIndicator = ({ tipoTask }: { tipoTask: string }) => {
@@ -399,7 +335,7 @@ const StatusIndicator = ({ tipoTask }: { tipoTask: string }) => {
   };
 
   return (
-    <>     
+    <>
       <View
         style={[
           styles.statusProgramado,
@@ -423,42 +359,38 @@ const StatusIndicator = ({ tipoTask }: { tipoTask: string }) => {
   );
 };
 
-// Componente de sección de título
+// Componente de sección de título (simplificado)
 interface TitleSectionProps {
   titulo: string;
   onTituloChange: (text: string) => void;
-  onFinishTask: () => void;
   isAdmin: boolean;
   images: string[];
   onTakePhoto: () => void;
   onPickImages: () => void;
   onRemoveImage: (index: number) => void;
-  itemData?: any;
-  status: string; // Añadir esta prop
+  status: string;
 }
 
 const TitleSection: React.FC<TitleSectionProps> = ({
   titulo,
   onTituloChange,
-  onFinishTask,
   isAdmin,
   images,
   onTakePhoto,
   onPickImages,
   onRemoveImage,
-  itemData,
   status
 }) => {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
 
   return (
     <View style={{ backgroundColor: "#0a3649", padding: 20 }}>
-      {/* Image Slider - only show when there are images to display */}
+      {/* Image Slider - solo se muestra cuando hay imágenes para mostrar */}
       {images.length > 0 && (
         <View style={{ marginBottom: 20 }}>
           <View style={{ height: 200, width: '100%', marginBottom: 10, position: 'relative' }}>
-            {/* Navigation Buttons */}
-            <TouchableOpacity 
+            {/* Botones de navegación */}
+            <TouchableOpacity
               style={{
                 position: 'absolute',
                 left: 0,
@@ -471,30 +403,30 @@ const TitleSection: React.FC<TitleSectionProps> = ({
                 justifyContent: 'center',
                 alignItems: 'center'
               }}
-              onPress={() => setActiveImageIndex((prev) => 
+              onPress={() => setActiveImageIndex((prev) =>
                 prev === 0 ? images.length - 1 : prev - 1
               )}
             >
               <MaterialIcons name="chevron-left" size={30} color="white" />
             </TouchableOpacity>
 
-            <Image 
-              source={{ 
+            <Image
+              source={{
                 uri: images[activeImageIndex].startsWith('file://') || images[activeImageIndex].startsWith('content://')
                   ? images[activeImageIndex]
                   : images[activeImageIndex].startsWith('http')
                     ? images[activeImageIndex]
                     : `https://centroesteticoedith.com/endpoint/images/activities/${images[activeImageIndex]}`
-              }} 
-              style={{ 
-                width: '100%', 
-                height: '100%', 
-                borderRadius: 10 
+              }}
+              style={{
+                width: '100%',
+                height: '100%',
+                borderRadius: 10
               }}
               resizeMode="cover"
             />
 
-            <TouchableOpacity 
+            <TouchableOpacity
               style={{
                 position: 'absolute',
                 right: 0,
@@ -507,14 +439,14 @@ const TitleSection: React.FC<TitleSectionProps> = ({
                 justifyContent: 'center',
                 alignItems: 'center'
               }}
-              onPress={() => setActiveImageIndex((prev) => 
+              onPress={() => setActiveImageIndex((prev) =>
                 prev === images.length - 1 ? 0 : prev + 1
               )}
             >
               <MaterialIcons name="chevron-right" size={30} color="white" />
             </TouchableOpacity>
 
-            {/* Dots Indicator */}
+            {/* Indicador de puntos */}
             <View style={{
               position: 'absolute',
               bottom: 10,
@@ -538,8 +470,8 @@ const TitleSection: React.FC<TitleSectionProps> = ({
           </View>
         </View>
       )}
-      <StatusIndicator tipoTask={status} /> 
-      {/* Existing title input */}
+      <StatusIndicator tipoTask={status} />
+      {/* Entrada de título existente */}
       <TextInput
         style={{
           fontSize: 35,
@@ -555,9 +487,9 @@ const TitleSection: React.FC<TitleSectionProps> = ({
         multiline={true}
         numberOfLines={4}
       />
-      
-      {/* Display image gallery when there are images and no itemData */}
-      {images.length > 0 && !itemData && (
+
+      {/* Mostrar galería de imágenes cuando hay imágenes */}
+      {images.length > 0 && (
         <View style={{ marginVertical: 10 }}>
           <Text style={{ color: '#dedede', marginBottom: 8, fontSize: 16 }}>
             Imágenes ({images.length})
@@ -565,25 +497,25 @@ const TitleSection: React.FC<TitleSectionProps> = ({
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             {images.map((imageUri, index) => (
               <View key={index} style={{ marginRight: 10, position: 'relative' }}>
-                <Image 
-                  source={{ 
+                <Image
+                  source={{
                     uri: imageUri.startsWith('file://') || imageUri.startsWith('content://')
                       ? imageUri
                       : imageUri.startsWith('http')
-                        ? imageUri 
+                        ? imageUri
                         : `https://centroesteticoedith.com/endpoint/images/activities/${imageUri}`
-                  }} 
-                  style={{ width: 100, height: 100, borderRadius: 5 }} 
-                  resizeMode="cover" 
+                  }}
+                  style={{ width: 100, height: 100, borderRadius: 5 }}
+                  resizeMode="cover"
                 />
-                <TouchableOpacity 
-                  style={{ 
-                    position: 'absolute', 
-                    top: 5, 
-                    right: 5, 
-                    backgroundColor: 'rgba(0,0,0,0.5)', 
-                    padding: 3, 
-                    borderRadius: 12 
+                <TouchableOpacity
+                  style={{
+                    position: 'absolute',
+                    top: 5,
+                    right: 5,
+                    backgroundColor: 'rgba(0,0,0,0.5)',
+                    padding: 3,
+                    borderRadius: 12
                   }}
                   onPress={() => onRemoveImage(index)}
                 >
@@ -594,28 +526,10 @@ const TitleSection: React.FC<TitleSectionProps> = ({
           </ScrollView>
         </View>
       )}
-      
-      <View style={styles.hr} />
-      <>
-      <View style={{ flexDirection: 'row', gap: 10 }}>
-        <TouchableOpacity
-          style={{
-            flex: 1,
-            justifyContent: "center",
-            alignItems: "center",
-            marginTop: 10,
-            backgroundColor: !isAdmin ? "#0a455e" : "#dedede",
-            borderRadius: 5,
-          }}
-          onPress={onFinishTask}
-          disabled={!isAdmin}
-        >
-          <Text style={{ fontSize: 14, color: !isAdmin ? "#fff" : "#0a455e", padding: 15 }}>
-            Finalizar
-          </Text>
-        </TouchableOpacity>
 
-        {/* Image options menu */}
+      <View style={styles.hr} />
+      <View style={{ flexDirection: 'row', gap: 10 }}>
+        {/* Menú de opciones de imagen - Ahora ocupa todo el ancho */}
         <View style={{ flex: 1 }}>
           <TouchableOpacity
             style={{
@@ -626,7 +540,6 @@ const TitleSection: React.FC<TitleSectionProps> = ({
               borderRadius: 5,
             }}
             onPress={() => {
-              // Show image options - can be implemented as a modal or action sheet
               Alert.alert(
                 "Subir Imágenes",
                 "Seleccione una opción",
@@ -647,7 +560,6 @@ const TitleSection: React.FC<TitleSectionProps> = ({
           </TouchableOpacity>
         </View>
       </View>
-      </>
     </View>
   );
 };
@@ -685,7 +597,6 @@ const FormFields = ({
       value: horas,
       field: "horas"
     },
-   
   ];
 
   return (
@@ -707,12 +618,12 @@ const FormFields = ({
 };
 
 // Componente selector de íconos
-const IconSelector = ({ 
-  selectedIcon, 
-  onIconSelect 
-}: { 
-  selectedIcon: string, 
-  onIconSelect: (icon: string) => void 
+const IconSelector = ({
+  selectedIcon,
+  onIconSelect
+}: {
+  selectedIcon: string,
+  onIconSelect: (icon: string) => void
 }) => {
   const recentIcons = iconsFiles.slice(0, 5);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -770,7 +681,7 @@ const IconSelector = ({
 
           <View style={[styles.section, { maxHeight: 600 }]}>
             <Text style={styles.sectionTitle}>Todos los íconos</Text>
-            <ScrollView 
+            <ScrollView
               showsVerticalScrollIndicator={true}
             >
               <View style={styles.iconGrid}>
@@ -833,7 +744,7 @@ const modalStyles = StyleSheet.create({
   },
 });
 
-// New loading overlay styles
+// Estilos para el overlay de carga
 const loadingStyles = StyleSheet.create({
   overlay: {
     flex: 1,
