@@ -6,7 +6,7 @@
  * horas, estado,  ícono e imágenes.
  */
 import React, { forwardRef, useImperativeHandle, useState, useEffect } from 'react';
-import { View, ScrollView } from 'react-native';
+import { View, ScrollView , Alert} from 'react-native';
 import { StatusBar as ExpoStatusBar } from 'expo-status-bar';
 import axios from 'axios';
 import { getSesion } from '../../hooks/localStorageUser';
@@ -267,6 +267,17 @@ const ActivityItemUpdate = forwardRef<ActivityItemUpdateRef, ActivityItemUpdateP
      */
     const handleSubmitFinish = async () => {
       try {
+        // Validate icon and image presence
+        if (!formData.selectedIcon) {
+          Alert.alert('Error', 'Por favor, seleccione un icono para la actividad.');
+          return false;
+        }
+
+        if (!formData.images || formData.images.length === 0) {
+          Alert.alert('Error', 'Por favor, agregue al menos una imagen antes de completar la actividad.');
+          return false;
+        }
+
         setIsLoading(true);
         
         console.log("COMPLETANDO ACTIVIDAD...");
