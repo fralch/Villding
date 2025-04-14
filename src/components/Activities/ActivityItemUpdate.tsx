@@ -323,6 +323,7 @@ const ActivityItemUpdate = forwardRef<ActivityItemUpdateRef, ActivityItemUpdateP
               location={formData.location}
               horas={formData.horas}
               onValueChange={handleFormChange}
+              status={formData.status}
             />
 
             {/* Selector de ícono */}

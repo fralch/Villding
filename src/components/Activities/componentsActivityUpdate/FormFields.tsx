@@ -11,13 +11,15 @@ interface FormFieldsProps {
   location: string;
   horas: string;
   onValueChange: (field: string, value: string) => void;
+  status: string;
 }
 
 const FormFields: React.FC<FormFieldsProps> = ({
   description,
   location,
   horas,
-  onValueChange
+  onValueChange, 
+  status
 }) => {
   const fields = [
     {
@@ -46,13 +48,17 @@ const FormFields: React.FC<FormFieldsProps> = ({
         <View key={index} style={styles.inputContainer}>
           {inputConfig.icon}
           <TextInput
-            style={styles.input}
+            style={[
+              styles.input,
+              status === 'completado' && { opacity: 0.7 }
+            ]}
             placeholder={inputConfig.placeholder}
             placeholderTextColor="#888"
             value={inputConfig.value}
             onChangeText={(text) => onValueChange(inputConfig.field, text)}
             multiline={inputConfig.field === 'description'}
             numberOfLines={inputConfig.field === 'description' ? 4 : 1}
+            editable={status !== 'completado'}
           />
         </View>
       ))}

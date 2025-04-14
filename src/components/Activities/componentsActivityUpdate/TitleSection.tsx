@@ -99,6 +99,9 @@ const TitleSection: React.FC<TitleSectionProps> = ({
     onImagesUpdate(updatedImages);
   };
 
+  // Add this helper function to check if task is completed
+  const isTaskCompleted = () => status === "completado";
+
   return (
     <View style={{ backgroundColor: "#0a3649", padding: 20 }}>
       {/* Slider de imágenes - solo se muestra cuando hay imágenes para mostrar */}
@@ -198,6 +201,7 @@ const TitleSection: React.FC<TitleSectionProps> = ({
         placeholderTextColor="#888"
         multiline={true}
         numberOfLines={4}
+        editable={status !== "completado"} // Disable editing if status is "completado"
       />
 
       {/* Mostrar galería de imágenes cuando hay imágenes y no hay itemData */}
@@ -242,13 +246,13 @@ const TitleSection: React.FC<TitleSectionProps> = ({
             justifyContent: "center",
             alignItems: "center",
             marginTop: 10,
-            backgroundColor: !isAdmin ? "#0a455e" : "#dedede",
+            backgroundColor: !isAdmin || isTaskCompleted() ? "#0a455e" : "#dedede",
             borderRadius: 5,
           }}
           onPress={onFinishTask}
-          disabled={!isAdmin}
+          disabled={!isAdmin || isTaskCompleted()}
         >
-          <Text style={{ fontSize: 14, color: !isAdmin ? "#fff" : "#0a455e", padding: 15 }}>
+          <Text style={{ fontSize: 14, color: !isAdmin || isTaskCompleted() ? "#fff" : "#0a455e", padding: 15 }}>
             Finalizar
           </Text>
         </TouchableOpacity>
@@ -260,9 +264,10 @@ const TitleSection: React.FC<TitleSectionProps> = ({
               justifyContent: "center",
               alignItems: "center",
               marginTop: 10,
-              backgroundColor: "#dedede",
+              backgroundColor: isTaskCompleted() ? "#0a455e" : "#dedede",
               borderRadius: 5,
             }}
+            disabled={isTaskCompleted()}
             onPress={() => {
               Alert.alert(
                 "Subir Imágenes",
@@ -276,8 +281,8 @@ const TitleSection: React.FC<TitleSectionProps> = ({
             }}
           >
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
-              <MaterialIcons name="photo-camera" size={20} color="#0a455e" />
-              <Text style={{ fontSize: 14, color: "#0a455e", padding: 15 }}>
+              <MaterialIcons name="photo-camera" size={20} color={isTaskCompleted() ? "#fff" : "#0a455e"} />
+              <Text style={{ fontSize: 14, color: isTaskCompleted() ? "#fff" : "#0a455e", padding: 15 }}>
                 Subir Imágenes
               </Text>
             </View>
