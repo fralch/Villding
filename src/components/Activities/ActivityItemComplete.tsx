@@ -339,12 +339,22 @@ const ActivityItemComplete = forwardRef<ActivityItemCompleteRef, ActivityItemCom
             />
 
             {/* Selector de ícono */}
-            <IconSelector
-              selectedIcon={formData.selectedIcon}
-              onIconSelect={(icon) => handleFormChange('selectedIcon', icon)}
-              iconImports={iconImports}
-              iconsFiles={iconsFiles}
-            />
+            {formData.status != 'completado' && 
+              <IconSelector
+                selectedIcon={formData.selectedIcon}
+                onIconSelect={(icon) => handleFormChange('selectedIcon', icon)}
+                iconImports={iconImports}
+                iconsFiles={iconsFiles}
+              />
+            }
+            {
+              formData.status == 'completado' && 
+              <>
+              <View style={{borderBottomColor: "#ccc", borderBottomWidth: 1, marginVertical: 10, }} />
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+              </View>
+              </>
+            }
           </View>
         </ScrollView>
         

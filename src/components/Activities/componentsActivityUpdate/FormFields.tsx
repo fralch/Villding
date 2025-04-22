@@ -1,8 +1,8 @@
 // components/FormFields.tsx
 /* Este componente es responsable de mostrar los inputs  de entrada de la actividad */
 
-import React from 'react';
-import { View, TextInput } from 'react-native';
+import React, {useState, useEffect} from 'react';
+import { View, TextInput, Text, StyleSheet } from 'react-native';
 import { Entypo, MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { styles } from '../styles/ActivityItemCreateStyles';
 
@@ -21,6 +21,7 @@ const FormFields: React.FC<FormFieldsProps> = ({
   onValueChange, 
   status
 }) => {
+  const [isEditable, setIsEditable] = useState(false);
   const fields = [
     {
       icon: <Entypo name="text" size={24} color="white" />,
@@ -44,7 +45,7 @@ const FormFields: React.FC<FormFieldsProps> = ({
 
   return (
     <View>
-      {fields.map((inputConfig, index) => (
+      {isEditable && fields.map((inputConfig, index) => (
         <View key={index} style={styles.inputContainer}>
           {inputConfig.icon}
           <TextInput
@@ -60,6 +61,21 @@ const FormFields: React.FC<FormFieldsProps> = ({
             numberOfLines={inputConfig.field === 'description' ? 4 : 1}
             editable={status !== 'completado'}
           />
+        </View>
+      ))}
+      {!isEditable && fields.map((inputConfig, index) => (
+        <View key={index} style={[styles.inputContainer, {   backgroundColor: "#0a3649",}]}>
+          {inputConfig.icon}
+          <Text
+            style={[
+              styles.input,
+              status === 'completado' && { opacity: 0.7 },
+              { color: '#fff' }
+            ]}
+            numberOfLines={inputConfig.field === 'description' ? 4 : 1}
+          >
+            {inputConfig.value || inputConfig.placeholder}
+          </Text>
         </View>
       ))}
     </View>

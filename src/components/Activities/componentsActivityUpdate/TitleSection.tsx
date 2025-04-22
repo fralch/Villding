@@ -33,6 +33,7 @@ const TitleSection: React.FC<TitleSectionProps> = ({
   // Estado para manejar la imagen activa en el slider
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [localImages, setLocalImages] = useState<string[]>(images);
+  const [isEditable, setIsEditable] = useState(false);
 
   // Actualizar las imágenes locales cuando cambien las props
   useEffect(() => {
@@ -192,6 +193,7 @@ const TitleSection: React.FC<TitleSectionProps> = ({
           width: "70%",
           color: "white",
           marginBottom: 10,
+          marginLeft: 20,
           textAlignVertical: "top",
         }}
         value={titulo}
@@ -237,8 +239,9 @@ const TitleSection: React.FC<TitleSectionProps> = ({
       )}
 
       <View style={styles.hr} />
-
-      <View style={{ flexDirection: 'row', gap: 10 }}>
+      
+      {isEditable && (
+        <><View style={{ flexDirection: 'row', gap: 10 }}>
         <TouchableOpacity
           style={{
             flex: 1,
@@ -287,9 +290,13 @@ const TitleSection: React.FC<TitleSectionProps> = ({
             </View>
           </TouchableOpacity>
         </View>
-      </View>
+      </View></>
+      )}
+
+      
     </View>
   );
 };
+
 
 export default TitleSection;
