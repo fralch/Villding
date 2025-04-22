@@ -103,10 +103,10 @@ const TitleSection: React.FC<TitleSectionProps> = ({
   const isTaskCompleted = () => status === "completado";
 
   return (
-    <View style={{ backgroundColor: "#0a3649", padding: 20 }}>
+    <View style={{ backgroundColor: "#0a3649" }}>
       {/* Slider de imágenes - solo se muestra cuando hay imágenes para mostrar */}
       {localImages.length > 0 && (
-        <View style={{ marginBottom: 20 }}>
+        <View style={{ marginBottom: -10, position: 'relative' }}>
           <View style={{ height: 200, width: '100%', marginBottom: 10, position: 'relative' }}>
             {/* Botones de navegación */}
             <TouchableOpacity
@@ -134,7 +134,6 @@ const TitleSection: React.FC<TitleSectionProps> = ({
               style={{
                 width: '100%',
                 height: '100%',
-                borderRadius: 10
               }}
               resizeMode="cover"
             />

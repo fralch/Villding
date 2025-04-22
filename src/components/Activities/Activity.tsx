@@ -1,3 +1,4 @@
+/* Este componente es el encargado de mostrar las actividades de un seguimiento */
 import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
@@ -17,6 +18,7 @@ import axios from "axios";
 import { MaterialIcons, MaterialCommunityIcons, Feather, Ionicons } from '@expo/vector-icons';
 import ActivityItemCreate, { ActivityItemCreateRef } from './ActivityItemCreate';
 import ActivityItemUpdate, { ActivityItemUpdateRef } from './ActivityItemUpdate';
+import ActivityItemComplete, { ActivityItemCompleteRef } from './ActivityItemComplete';
 import {iconMapping} from './icons';
 import { styles } from "./styles/ActivityStyles";
 
@@ -68,6 +70,7 @@ export default function Activity(props: any) {
   // Add a ref for the ActivityItemCreate component
   const activityItemCreateRef = useRef<ActivityItemCreateRef>(null);
   const activityItemUpdateRef = useRef<ActivityItemUpdateRef>(null);
+  const activityItemCompleteRef = useRef<ActivityItemCompleteRef>(null);
 
   const [modalVisible, setModalVisible] = useState(false);
 
@@ -408,14 +411,27 @@ const handleSaveActivity = async () => {
               </TouchableOpacity>
             </View>
             {isEditing ? (
-              <ActivityItemUpdate
-                ref={activityItemUpdateRef}
-                project_id={tracking.project_id}
-                tracking_id={tracking.id}
-                activity={selectedActivity as any}
-                date={selectedDate}
-                hideModal={hideModal}
-              />
+              selectedActivity?.status === 'completado' ? (
+                console.log('Activity status dentro:', selectedActivity?.status),
+                <ActivityItemComplete
+                  ref={activityItemCompleteRef}
+                  project_id={tracking.project_id}
+                  tracking_id={tracking.id}
+                  activity={selectedActivity as any}
+                  date={selectedDate}
+                  hideModal={hideModal}
+                />
+              ) : (
+                <ActivityItemUpdate
+                  ref={activityItemUpdateRef}
+                  project_id={tracking.project_id}
+                  tracking_id={tracking.id}
+                  activity={selectedActivity as any}
+                  date={selectedDate}
+                  hideModal={hideModal}
+                />
+              )
+              
             ) : (
               <ActivityItemCreate
                 ref={activityItemCreateRef}

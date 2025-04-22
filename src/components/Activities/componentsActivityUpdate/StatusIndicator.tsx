@@ -32,7 +32,7 @@ const StatusIndicator: React.FC<StatusIndicatorProps> = ({ tipoTask }) => {
         );
       case "completado":
         return (
-          <View style={{ flexDirection: "row", gap: 5 }}>
+          <View style={{ flexDirection: "row", }}>
             <MaterialIcons name="agriculture" size={24} color="#eee" />
             <MaterialCommunityIcons name="clock-check" size={24} color="#4ec291" />
           </View>
