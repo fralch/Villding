@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Image, ScrollView, Alert } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
+import { getActivity } from '../../../hooks/localStorageCurrentActvity';
 import { styles } from '../styles/ActivityItemCreateStyles';
 import StatusIndicator from './StatusIndicator';
 
@@ -33,12 +34,41 @@ const TitleSection: React.FC<TitleSectionProps> = ({
   // Estado para manejar la imagen activa en el slider
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [localImages, setLocalImages] = useState<string[]>(images);
+  const [esEditable, setEsEditable] = useState(false);
 
   // Actualizar las imágenes locales cuando cambien las props
   useEffect(() => {
     setLocalImages(images);
   }, [images]);
 
+  useEffect(() => {
+    const obteniendoActividad = async () => {
+      const actividad = await getActivity();
+      if (actividad) {
+        const puedeEditar = actividad.editMode;
+        setEsEditable(puedeEditar || false);
+      }
+    };
+    obteniendoActividad();
+  }, []); // Ejecutar solo al montar el componente
+
+  useEffect(() => {
+    const refreshEditableStatus = async () => {
+      const actividad = await getActivity();
+      if (actividad) {
+        const puedeEditar = actividad.editMode;
+        setEsEditable(puedeEditar || false);
+      }
+    };
+    
+    // Crear un intervalo para verificar periódicamente
+    const intervalId = setInterval(refreshEditableStatus, 1000);
+    
+    // Limpiar el intervalo cuando el componente se desmonte
+    return () => clearInterval(intervalId);
+  }, []);
+
+  
   // Función para obtener la fuente de la imagen
   const getImageSource = (imageUri: string) => {
     if (imageUri.startsWith('file://') || imageUri.startsWith('content://')) {
@@ -102,20 +132,6 @@ const TitleSection: React.FC<TitleSectionProps> = ({
   // Add this helper function to check if task is completed
   const isTaskCompleted = () => status === "completado";
 
-  const puedeEditarActividad = (estadoActividad :any, esAdmin:any) => {
-    // Caso 1: Si la actividad NO está completada, cualquier usuario puede editar
-    if (estadoActividad !== "completado") {
-      return true;
-    }
-
-    // Caso 2: Si la actividad está completada, SOLO los admin pueden editar
-    if (estadoActividad === "completado" && esAdmin) {
-      return true;
-    }
-
-    // En cualquier otro caso, no se puede editar
-    return false;   
-  }
 
   return (
     <View style={{ backgroundColor: "#0a3649" }}>
@@ -216,7 +232,7 @@ const TitleSection: React.FC<TitleSectionProps> = ({
         placeholderTextColor="#888"
         multiline={true}
         numberOfLines={4}
-        editable={status !== "completado"} // Disable editing if status is "completado"
+        editable={esEditable} // Disable editing if status is "completado"
       />
 
       {/* Mostrar galería de imágenes cuando hay imágenes y no hay itemData */}
@@ -254,7 +270,7 @@ const TitleSection: React.FC<TitleSectionProps> = ({
 
       <View style={styles.hr} />
       
-      { puedeEditarActividad(status, isAdmin) && (
+      { esEditable && (
         <><View style={{ flexDirection: 'row', gap: 10 }}>
         <TouchableOpacity
           style={{

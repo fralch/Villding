@@ -6,7 +6,7 @@ import React, { forwardRef, useImperativeHandle, useState, useEffect } from 'rea
 import { View, ScrollView, Alert, TouchableOpacity, Text } from 'react-native';
 import { StatusBar as ExpoStatusBar } from 'expo-status-bar';
 import axios from 'axios';
-import { getActivity } from '../../hooks/localStorageCurrentActvity';
+import { getActivity , storeActivity , removeActivity} from '../../hooks/localStorageCurrentActvity';
 import { iconImports, iconsFiles } from './icons';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 
@@ -39,7 +39,7 @@ const ActivityItemComplete = forwardRef<ActivityItemCompleteRef, ActivityItemCom
     description: '',
     location: '',
     horas: '',
-    status: 'Pendiente',
+    status: 'completado',
     comments: '',
     selectedIcon: '',
     images: [] as string[],
@@ -54,7 +54,7 @@ const ActivityItemComplete = forwardRef<ActivityItemCompleteRef, ActivityItemCom
   // Cargar datos al inicio
   useEffect(() => {
     loadStoredActivity();
-  }, []);
+  }, [ ]);
 
   // Función para cargar la actividad almacenada
   const loadStoredActivity = async () => {
@@ -67,7 +67,7 @@ const ActivityItemComplete = forwardRef<ActivityItemCompleteRef, ActivityItemCom
           description: activityData.activity?.description || '',
           location: activityData.activity?.location || '',
           horas: activityData.activity?.horas || '',
-          status: activityData.activity?.status || 'Pendiente',
+          status: activityData.activity?.status || 'pendiente',
           comments: activityData.activity?.comments || '',
           selectedIcon: activityData.activity?.icon || '',
           images: normalizeImages(activityData.activity?.image),
@@ -160,7 +160,7 @@ const ActivityItemComplete = forwardRef<ActivityItemCompleteRef, ActivityItemCom
             `https://centroesteticoedith.com/endpoint/activities/${storedData.activity?.id}`,
             activityData
           );
-
+        
       setIsLoading(false);
 
       if (response.status === 200) {
@@ -257,6 +257,23 @@ const ActivityItemComplete = forwardRef<ActivityItemCompleteRef, ActivityItemCom
     }
   };
 
+  const handleEditableChange = async() => {
+    // borrar actividad del localStorage
+    await removeActivity();
+    // guardar actividad en el localStorage con editMode en true
+    await storeActivity({
+      project_id: storedData.project_id,
+      tracking_id: storedData.tracking_id,
+      activity: storedData.activity,
+      date: formData.fecha_creacion,
+      isAdmin: isAdmin,
+      editMode: true
+    });
+    // Recargar la actividad
+    await loadStoredActivity();
+  };
+
+
   // Exponer método de actualización al componente padre
   useImperativeHandle(ref, () => ({
     handleUpdateActivity: () => updateActivity(),
@@ -321,7 +338,7 @@ const ActivityItemComplete = forwardRef<ActivityItemCompleteRef, ActivityItemCom
                     gap: 10,
                     paddingVertical: 10
                   }}
-                  onPress={handleSubmitFinish}
+                  onPress={() => handleEditableChange()}
                 >
                   <FontAwesome name="pencil" size={18} color="white" />
                   <Text style={{ fontSize: 18, color: "white"}}>

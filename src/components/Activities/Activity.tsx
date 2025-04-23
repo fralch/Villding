@@ -251,7 +251,8 @@ export default function Activity(props: any) {
       tracking_id: tracking.id,
       activity: null,
       date: date,
-      isAdmin: isAdmin
+      isAdmin: isAdmin, 
+      editMode: false
     });
     Animated.timing(slideAnim, {
       toValue: 0,
@@ -273,7 +274,8 @@ export default function Activity(props: any) {
       tracking_id: tracking.id,
       activity: activity as any,
       date: date,
-      isAdmin: isAdmin
+      isAdmin: isAdmin, 
+      editMode: false 
     });
     Animated.timing(slideAnim, {
       toValue: 0,

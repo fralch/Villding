@@ -1,3 +1,4 @@
+// localStorageCurrentActvity.ts
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface Activity {
@@ -6,6 +7,7 @@ interface Activity {
     activity: Activity | null;
     date: string;
     isAdmin?: boolean;
+    editMode?: boolean;
 }
 
 /**
