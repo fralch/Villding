@@ -60,15 +60,15 @@ const TitleSection: React.FC<TitleSectionProps> = ({
         setEsEditable(puedeEditar || false);
       }
     };
-    
+
     // Crear un intervalo para verificar periódicamente
     const intervalId = setInterval(refreshEditableStatus, 1000);
-    
+
     // Limpiar el intervalo cuando el componente se desmonte
     return () => clearInterval(intervalId);
   }, []);
 
-  
+
   // Función para obtener la fuente de la imagen
   const getImageSource = (imageUri: string) => {
     if (imageUri.startsWith('file://') || imageUri.startsWith('content://')) {
@@ -83,13 +83,13 @@ const TitleSection: React.FC<TitleSectionProps> = ({
   // Función para manejar la selección de imágenes de la galería
   const handlePickImages = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    
+
     if (status !== 'granted') {
       Alert.alert("Permiso denegado", "Se necesitan permisos para acceder a la galería");
       return;
     }
 
-    const result = await ImagePicker.launchImageLibraryAsync({ 
+    const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsMultipleSelection: true,
       quality: 0.8
@@ -106,7 +106,7 @@ const TitleSection: React.FC<TitleSectionProps> = ({
   // Función para manejar la toma de fotos con la cámara
   const handleTakePhoto = async () => {
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
-    
+
     if (status !== 'granted') {
       Alert.alert("Permiso denegado", "Se necesitan permisos para acceder a la cámara");
       return;
@@ -130,7 +130,6 @@ const TitleSection: React.FC<TitleSectionProps> = ({
   };
 
   // Add this helper function to check if task is completed
-  const isTaskCompleted = () => status === "completado";
 
 
   return (
@@ -269,61 +268,63 @@ const TitleSection: React.FC<TitleSectionProps> = ({
       )}
 
       <View style={styles.hr} />
-      
-      { esEditable && (
-        <><View style={{ flexDirection: 'row', gap: 10 }}>
-        <TouchableOpacity
-          style={{
-            flex: 1,
-            justifyContent: "center",
-            alignItems: "center",
-            marginTop: 10,
-            backgroundColor: !isAdmin || isTaskCompleted() ? "#0a455e" : "#dedede",
-            borderRadius: 5,
-          }}
-          onPress={onFinishTask}
-          disabled={!isAdmin || isTaskCompleted()}
-        >
-          <Text style={{ fontSize: 14, color: !isAdmin || isTaskCompleted() ? "#fff" : "#0a455e", padding: 15 }}>
-            Finalizar
-          </Text>
-        </TouchableOpacity>
 
-        {/* Menú de opciones para subir imágenes */}
-        <View style={{ flex: 1 }}>
-          <TouchableOpacity
-            style={{
-              justifyContent: "center",
-              alignItems: "center",
-              marginTop: 10,
-              backgroundColor: isTaskCompleted() ? "#0a455e" : "#dedede",
-              borderRadius: 5,
-            }}
-            disabled={isTaskCompleted()}
-            onPress={() => {
-              Alert.alert(
-                "Subir Imágenes",
-                "Seleccione una opción",
-                [
-                  { text: "Tomar Foto", onPress: handleTakePhoto },
-                  { text: "Elegir de Galería", onPress: handlePickImages },
-                  { text: "Cancelar", style: "cancel" }
-                ]
-              );
-            }}
-          >
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
-              <MaterialIcons name="photo-camera" size={20} color={isTaskCompleted() ? "#fff" : "#0a455e"} />
-              <Text style={{ fontSize: 14, color: isTaskCompleted() ? "#fff" : "#0a455e", padding: 15 }}>
-                Subir Imágenes
-              </Text>
+      {esEditable && (
+        <>
+          <View style={{ flexDirection: 'row', gap: 10, marginBottom: 20 }}>
+            {status !== "completado"  && ( 
+              <TouchableOpacity
+                style={{
+                  flex: 1,
+                  justifyContent: "center",
+                  alignItems: "center",
+                  marginTop: 10,
+                  backgroundColor: !isAdmin ? "#0a455e" : "#dedede",
+                  borderRadius: 5,
+                }}
+                onPress={onFinishTask}
+              >
+                <Text style={{ fontSize: 14, color: !isAdmin ? "#fff" : "#0a455e", padding: 15 }}>
+                  Finalizar
+                </Text>
+              </TouchableOpacity>
+            )}
+
+            {/* Menú de opciones para subir imágenes */}
+            <View style={{ flex: 1 }}>
+              <TouchableOpacity
+                style={{
+                  justifyContent: "center",
+                  alignItems: "center",
+                  marginTop: 10,
+                  backgroundColor: "#dedede",
+                  borderRadius: 5,
+                }}
+                onPress={() => {
+                  Alert.alert(
+                    "Subir Imágenes",
+                    "Seleccione una opción",
+                    [
+                      { text: "Tomar Foto", onPress: handleTakePhoto },
+                      { text: "Elegir de Galería", onPress: handlePickImages },
+                      { text: "Cancelar", style: "cancel" }
+                    ]
+                  );
+                }}
+              >
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                  <MaterialIcons name="photo-camera" size={20} color={"#0a455e"} />
+                  <Text style={{ fontSize: 14, color: "#0a455e", padding: 15 }}>
+                    Subir Imágenes
+                  </Text>
+                </View>
+              </TouchableOpacity>
             </View>
-          </TouchableOpacity>
-        </View>
-      </View></>
+          </View>
+        </>
       )}
 
-      
+
     </View>
   );
 };

@@ -3,10 +3,10 @@
  * Componente para actualizar actividades en un proyecto.
  */
 import React, { forwardRef, useImperativeHandle, useState, useEffect } from 'react';
-import { View, ScrollView, Alert, TouchableOpacity, Text } from 'react-native';
+import { View, ScrollView, Alert, TouchableOpacity, Text, ActivityIndicator } from 'react-native';
 import { StatusBar as ExpoStatusBar } from 'expo-status-bar';
 import axios from 'axios';
-import { getActivity , storeActivity , removeActivity} from '../../hooks/localStorageCurrentActvity';
+import { getActivity, storeActivity, removeActivity } from '../../hooks/localStorageCurrentActvity';
 import { iconImports, iconsFiles } from './icons';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 
@@ -32,6 +32,7 @@ const ActivityItemComplete = forwardRef<ActivityItemCompleteRef, ActivityItemCom
   // Estado para almacenar los datos del localStorage
   const [storedData, setStoredData] = useState<any>(null);
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
+  const [isEditing, setIsEditing] = useState<boolean>(false);
 
   // Estado para el formulario
   const [formData, setFormData] = useState({
@@ -50,11 +51,12 @@ const ActivityItemComplete = forwardRef<ActivityItemCompleteRef, ActivityItemCom
   const [showModal, setShowModal] = useState<boolean>(false);
   const [modalMessage, setModalMessage] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isEditLoading, setIsEditLoading] = useState<boolean>(false);
 
   // Cargar datos al inicio
   useEffect(() => {
     loadStoredActivity();
-  }, [ ]);
+  }, []);
 
   // Función para cargar la actividad almacenada
   const loadStoredActivity = async () => {
@@ -258,21 +260,27 @@ const ActivityItemComplete = forwardRef<ActivityItemCompleteRef, ActivityItemCom
   };
 
   const handleEditableChange = async() => {
-    // borrar actividad del localStorage
-    await removeActivity();
-    // guardar actividad en el localStorage con editMode en true
-    await storeActivity({
-      project_id: storedData.project_id,
-      tracking_id: storedData.tracking_id,
-      activity: storedData.activity,
-      date: formData.fecha_creacion,
-      isAdmin: isAdmin,
-      editMode: true
-    });
-    // Recargar la actividad
-    await loadStoredActivity();
+    setIsEditLoading(true);
+    
+    try {
+      await removeActivity();
+      await storeActivity({
+        project_id: storedData.project_id,
+        tracking_id: storedData.tracking_id,
+        activity: storedData.activity,
+        date: formData.fecha_creacion,
+        isAdmin: isAdmin,
+        editMode: true
+      });
+      await loadStoredActivity();
+      setIsEditing(true);
+    } catch (error) {
+      console.error('Error al cambiar a modo edición:', error);
+      showMessage('Error al cambiar a modo edición. Por favor intente de nuevo.');
+    } finally {
+      setIsEditLoading(false);
+    }
   };
-
 
   // Exponer método de actualización al componente padre
   useImperativeHandle(ref, () => ({
@@ -317,7 +325,7 @@ const ActivityItemComplete = forwardRef<ActivityItemCompleteRef, ActivityItemCom
             />
           )}
 
-          {formData.status === 'completado' && (
+          {  !isEditing && (
             <>
               <View style={{borderBottomColor: "#ccc", borderBottomWidth: 1, marginVertical: 10 }} />
               <View style={{
@@ -339,11 +347,23 @@ const ActivityItemComplete = forwardRef<ActivityItemCompleteRef, ActivityItemCom
                     paddingVertical: 10
                   }}
                   onPress={() => handleEditableChange()}
+                  disabled={isEditLoading}
                 >
-                  <FontAwesome name="pencil" size={18} color="white" />
-                  <Text style={{ fontSize: 18, color: "white"}}>
-                    Volver a editar
-                  </Text>
+                  {isEditLoading ? (
+                    <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+                      <ActivityIndicator size="small" color="white" />
+                      <Text style={{ fontSize: 18, color: "white"}}>
+                        Cambiando a modo edición...
+                      </Text>
+                    </View>
+                  ) : (
+                    <>
+                      <FontAwesome name="pencil" size={18} color="white" />
+                      <Text style={{ fontSize: 18, color: "white"}}>
+                        Volver a editar
+                      </Text>
+                    </>
+                  )}
                 </TouchableOpacity>
               </View>
             </>
