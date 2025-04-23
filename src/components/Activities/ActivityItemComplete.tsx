@@ -337,6 +337,7 @@ const ActivityItemComplete = forwardRef<ActivityItemCompleteRef, ActivityItemCom
               horas={formData.horas}
               onValueChange={handleFormChange}
               status={formData.status}
+              isAdmin={isAdmin}
             />
 
             {/* Selector de ícono */}

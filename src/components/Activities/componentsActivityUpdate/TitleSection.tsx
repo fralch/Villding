@@ -33,7 +33,6 @@ const TitleSection: React.FC<TitleSectionProps> = ({
   // Estado para manejar la imagen activa en el slider
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [localImages, setLocalImages] = useState<string[]>(images);
-  const [isEditable, setIsEditable] = useState(false);
 
   // Actualizar las imágenes locales cuando cambien las props
   useEffect(() => {
@@ -102,6 +101,21 @@ const TitleSection: React.FC<TitleSectionProps> = ({
 
   // Add this helper function to check if task is completed
   const isTaskCompleted = () => status === "completado";
+
+  const puedeEditarActividad = (estadoActividad :any, esAdmin:any) => {
+    // Caso 1: Si la actividad NO está completada, cualquier usuario puede editar
+    if (estadoActividad !== "completado") {
+      return true;
+    }
+
+    // Caso 2: Si la actividad está completada, SOLO los admin pueden editar
+    if (estadoActividad === "completado" && esAdmin) {
+      return true;
+    }
+
+    // En cualquier otro caso, no se puede editar
+    return false;   
+  }
 
   return (
     <View style={{ backgroundColor: "#0a3649" }}>
@@ -240,7 +254,7 @@ const TitleSection: React.FC<TitleSectionProps> = ({
 
       <View style={styles.hr} />
       
-      {isEditable && (
+      { puedeEditarActividad(status, isAdmin) && (
         <><View style={{ flexDirection: 'row', gap: 10 }}>
         <TouchableOpacity
           style={{

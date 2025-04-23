@@ -12,6 +12,7 @@ interface FormFieldsProps {
   horas: string;
   onValueChange: (field: string, value: string) => void;
   status: string;
+  isAdmin: boolean;
 }
 
 const FormFields: React.FC<FormFieldsProps> = ({
@@ -19,7 +20,8 @@ const FormFields: React.FC<FormFieldsProps> = ({
   location,
   horas,
   onValueChange, 
-  status
+  status,
+  isAdmin
 }) => {
   const [isEditable, setIsEditable] = useState(false);
   const fields = [
@@ -42,28 +44,44 @@ const FormFields: React.FC<FormFieldsProps> = ({
       field: "horas"
     }
   ];
+  
+  const puedeEditarActividad = (estadoActividad :any, esAdmin:any) => {
+    // Caso 1: Si la actividad NO está completada, cualquier usuario puede editar
+    if (estadoActividad !== "completado") {
+      return true;
+    }
 
+    // Caso 2: Si la actividad está completada, SOLO los admin pueden editar
+    if (estadoActividad === "completado" && esAdmin) {
+      return true;
+    }
+
+    // En cualquier otro caso, no se puede editar
+    return false;   
+  }
   return (
     <View>
-      {isEditable && fields.map((inputConfig, index) => (
-        <View key={index} style={styles.inputContainer}>
-          {inputConfig.icon}
-          <TextInput
-            style={[
-              styles.input,
-              status === 'completado' && { opacity: 0.7 }
-            ]}
-            placeholder={inputConfig.placeholder}
-            placeholderTextColor="#888"
-            value={inputConfig.value}
-            onChangeText={(text) => onValueChange(inputConfig.field, text)}
-            multiline={inputConfig.field === 'description'}
-            numberOfLines={inputConfig.field === 'description' ? 4 : 1}
-            editable={status !== 'completado'}
-          />
-        </View>
-      ))}
-      {!isEditable && fields.map((inputConfig, index) => (
+      {puedeEditarActividad(status, isAdmin) ? (
+        fields.map((inputConfig, index) => (
+          <View key={index} style={styles.inputContainer}>
+            {inputConfig.icon}
+            <TextInput
+              style={[
+                styles.input,
+                status === 'completado' && { opacity: 0.7 }
+              ]}
+              placeholder={inputConfig.placeholder}
+              placeholderTextColor="#888"
+              value={inputConfig.value}
+              onChangeText={(text) => onValueChange(inputConfig.field, text)}
+              multiline={inputConfig.field === 'description'}
+              numberOfLines={inputConfig.field === 'description' ? 4 : 1}
+              editable={status !== 'completado'}
+            />
+          </View>
+        ))
+      ) : (
+        fields.map((inputConfig, index) => (
         <View key={index} style={[styles.inputContainer, {   backgroundColor: "#0a3649",}]}>
           {inputConfig.icon}
           <Text
@@ -77,7 +95,9 @@ const FormFields: React.FC<FormFieldsProps> = ({
             {inputConfig.value || inputConfig.placeholder}
           </Text>
         </View>
-      ))}
+          ))
+      )}
+    
     </View>
   );
 };
