@@ -316,14 +316,12 @@ const ActivityItemComplete = forwardRef<ActivityItemCompleteRef, ActivityItemCom
           />
 
           {/* Selector de ícono */}
-          {formData.status !== 'completado' && (
-            <IconSelector
+          <IconSelector
               selectedIcon={formData.selectedIcon}
               onIconSelect={(icon: string) => handleFormChange('selectedIcon', icon)}
               iconImports={iconImports}
               iconsFiles={iconsFiles}
             />
-          )}
 
           {  !isEditing && (
             <>

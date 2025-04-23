@@ -1,9 +1,10 @@
 // components/IconSelector.tsx
 /* Este componente es responsable de mostrar los iconos disponibles para la actividad */
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, Image } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { styles } from '../styles/ActivityItemCreateStyles';
+import { getActivity } from '../../../hooks/localStorageCurrentActvity';
 
 interface IconSelectorProps {
   selectedIcon: string;
@@ -20,6 +21,41 @@ const IconSelector: React.FC<IconSelectorProps> = ({
 }) => {
   const recentIcons = iconsFiles.slice(0, 5);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [esEditable, setEsEditable] = useState(false);
+
+  // Verificar la editabilidad al cargar el componente
+  useEffect(() => {
+    const obteniendoActividad = async () => {
+      const actividad = await getActivity();
+      if (actividad) {
+        const puedeEditar = actividad.editMode;
+        setEsEditable(puedeEditar || false);
+      }
+    };
+    obteniendoActividad();
+  }, []);
+
+  // Refrescar periódicamente el estado de edición
+  useEffect(() => {
+    const refreshEditableStatus = async () => {
+      const actividad = await getActivity();
+      if (actividad) {
+        const puedeEditar = actividad.editMode;
+        setEsEditable(puedeEditar || false);
+      }
+    };
+
+    // Crear un intervalo para verificar periódicamente
+    const intervalId = setInterval(refreshEditableStatus, 1000);
+
+    // Limpiar el intervalo cuando el componente se desmonte
+    return () => clearInterval(intervalId);
+  }, []);
+
+  // Si no es editable, no mostrar nada
+  if (!esEditable) {
+    return null;
+  }
 
   return (
     <View style={{ backgroundColor: "#0a3649", marginBottom: 20 }}>
