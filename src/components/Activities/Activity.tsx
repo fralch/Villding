@@ -19,8 +19,10 @@ import { MaterialIcons, MaterialCommunityIcons, Feather, Ionicons } from '@expo/
 import ActivityItemCreate, { ActivityItemCreateRef } from './ActivityItemCreate';
 import ActivityItemUpdate, { ActivityItemUpdateRef } from './ActivityItemUpdate';
 import ActivityItemComplete, { ActivityItemCompleteRef } from './ActivityItemComplete';
+import { getSesion } from '../../hooks/localStorageUser';
 import {iconMapping} from './icons';
 import { styles } from "./styles/ActivityStyles";
+import { storeActivity, removeActivity } from '../../hooks/localStorageCurrentActvity';
 
 
 export interface Activity {
@@ -85,6 +87,8 @@ export default function Activity(props: any) {
   const [tracking, setTracking] = useState<Tracking>(props.route.params.tracking);
   const [weekDays, setWeekDays] = useState<WeekDay[]>([]);
   const [pendingActivitiesCount, setPendingActivitiesCount] = useState(0);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [idProject, setProject_id] = useState(props.route.params.tracking.project_id);
   
   // New state variables for editing
   const [isEditing, setIsEditing] = useState(false);
@@ -152,7 +156,7 @@ export default function Activity(props: any) {
             activities: dayActivities
           };
         });
-        console.log(weekDaysWithActivities);
+        // console.log(weekDaysWithActivities);
         setWeekDays(weekDaysWithActivities);
   
         // Calcular el número de actividades pendientes solo para los días mostrados
@@ -168,6 +172,31 @@ export default function Activity(props: any) {
   
     fetchActivities();
   }, [tracking.id]);
+
+  useEffect(() => {
+    const checkAdminStatus = async () => {
+      // Obtiene sesión del almacenamiento local
+      const session = JSON.parse(await getSesion() || "{}"); // Obtiene el objeto JSON de la sesión
+      
+      // Si el usuario es admin global, mantiene el estado
+      if (session?.is_admin === 1) {
+        setIsAdmin(true); // Actualiza el estado local
+        return;
+      }
+
+      try {
+        // Verifica si el usuario es admin del proyecto específico
+        const response = await axios.post("https://centroesteticoedith.com/endpoint/project/check-attachment",{ project_id: idProject } );
+        setIsAdmin(response.data.users.some((user: any) => 
+          user.id === session?.id && user.is_admin === 1 
+        ));
+      } catch (error) {
+        console.error("Error checking admin status:", error);
+      }
+    };
+
+    checkAdminStatus(); 
+  }, [idProject]);
 
   // Función para refrescar actividades después de crear una nueva
   const refreshActivities = async () => {
@@ -216,6 +245,14 @@ export default function Activity(props: any) {
     setIsEditing(false);
     setSelectedActivity(null);
     setIsVisible(true);
+    // Almacenar actividad vacía en localStorage
+    storeActivity({
+      project_id: tracking.project_id,
+      tracking_id: tracking.id,
+      activity: null,
+      date: date,
+      isAdmin: isAdmin
+    });
     Animated.timing(slideAnim, {
       toValue: 0,
       duration: 300,
@@ -230,6 +267,14 @@ export default function Activity(props: any) {
     setSelectedActivity(activity);
     setActivityItemCreateType('edit');
     setIsVisible(true);
+    // Almacenar actividad actual en localStorage
+    storeActivity({
+      project_id: tracking.project_id,
+      tracking_id: tracking.id,
+      activity: activity as any,
+      date: date,
+      isAdmin: isAdmin
+    });
     Animated.timing(slideAnim, {
       toValue: 0,
       duration: 300,
@@ -244,7 +289,9 @@ export default function Activity(props: any) {
       useNativeDriver: true,
     }).start(async () => {
       setIsVisible(false);
-      await refreshActivities(); // Refrescar las actividades después de cerrar el modal
+      // Eliminar actividad del localStorage al cerrar el modal
+      await removeActivity();
+      await refreshActivities();
     });
   };
 
@@ -415,10 +462,6 @@ const handleSaveActivity = async () => {
                 console.log('Activity status dentro:', selectedActivity?.status),
                 <ActivityItemComplete
                   ref={activityItemCompleteRef}
-                  project_id={tracking.project_id}
-                  tracking_id={tracking.id}
-                  activity={selectedActivity as any}
-                  date={selectedDate}
                   hideModal={hideModal}
                 />
               ) : (
