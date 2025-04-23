@@ -10,14 +10,14 @@ import { getActivity } from '../../hooks/localStorageCurrentActvity';
 import { iconImports, iconsFiles } from './icons';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 
-// Componentes
+// Importación de componentes
 import TitleSection from './componentsActivityUpdate/TitleSection';
 import FormFields from './componentsActivityUpdate/FormFields';
 import IconSelector from './componentsActivityUpdate/IconSelector';
 import MessageModal from './componentsActivityUpdate/MessageModal';
 import LoadingOverlay from './componentsActivityUpdate/LoadingOverlay';
 
-// Tipos e interfaces
+// Definición de tipos e interfaces
 export interface ActivityItemCompleteRef {
   handleUpdateActivity: () => Promise<boolean>;
 }
@@ -26,13 +26,13 @@ interface ActivityItemCompleteProps {
   hideModal: () => void;
 }
 
-type ActivityStatus = 'Programado' | 'Pendiente' | 'Completado';
+type ActivityStatus = 'programado' | 'pendiente' | 'completado';
 
 const ActivityItemComplete = forwardRef<ActivityItemCompleteRef, ActivityItemCompleteProps>(({ hideModal }, ref) => {
   // Estado para almacenar los datos del localStorage
   const [storedData, setStoredData] = useState<any>(null);
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
-  
+
   // Estado para el formulario
   const [formData, setFormData] = useState({
     titulo: '',
@@ -45,7 +45,7 @@ const ActivityItemComplete = forwardRef<ActivityItemCompleteRef, ActivityItemCom
     images: [] as string[],
     fecha_creacion: ''
   });
-  
+
   // Estados para UI
   const [showModal, setShowModal] = useState<boolean>(false);
   const [modalMessage, setModalMessage] = useState<string>('');
@@ -56,6 +56,7 @@ const ActivityItemComplete = forwardRef<ActivityItemCompleteRef, ActivityItemCom
     loadStoredActivity();
   }, []);
 
+  // Función para cargar la actividad almacenada
   const loadStoredActivity = async () => {
     try {
       const activityData: any = await getActivity();
@@ -84,11 +85,11 @@ const ActivityItemComplete = forwardRef<ActivityItemCompleteRef, ActivityItemCom
    */
   function normalizeImages(image: any): string[] {
     if (!image) return [];
-    
+
     if (typeof image === 'string') {
       return image.startsWith('[') ? JSON.parse(image) : [image];
     }
-    
+
     return Array.isArray(image) ? image : [image];
   }
 
@@ -117,24 +118,24 @@ const ActivityItemComplete = forwardRef<ActivityItemCompleteRef, ActivityItemCom
   const updateActivity = async (newStatus?: ActivityStatus): Promise<boolean> => {
     // Validación básica
     if (!storedData?.activity?.id) return false;
-    
+
     if (!formData.titulo.trim()) {
       showMessage('Por favor ingrese un título para la actividad.');
       return false;
     }
-    
+
     setIsLoading(true);
-    
+
     try {
       // Separar imágenes
-      const newImages = formData.images.filter(img => 
+      const newImages = formData.images.filter(img =>
         img.startsWith('file://') || img.startsWith('content://')
       );
-      
-      const existingImages = formData.images.filter(img => 
+
+      const existingImages = formData.images.filter(img =>
         !img.startsWith('file://') && !img.startsWith('content://')
       );
-    
+
       // Preparar datos
       const activityData = {
         project_id: storedData.project_id,
@@ -151,7 +152,7 @@ const ActivityItemComplete = forwardRef<ActivityItemCompleteRef, ActivityItemCom
         images: newImages,
         existing_images: existingImages
       };
-    
+
       // Enviar solicitud según el tipo
       const response = newImages.length > 0 || existingImages.length > 0
         ? await uploadWithImages(activityData)
@@ -159,9 +160,9 @@ const ActivityItemComplete = forwardRef<ActivityItemCompleteRef, ActivityItemCom
             `https://centroesteticoedith.com/endpoint/activities/${storedData.activity?.id}`,
             activityData
           );
-    
+
       setIsLoading(false);
-      
+
       if (response.status === 200) {
         showMessage('Actividad actualizada correctamente');
         setTimeout(hideModal, 2000);
@@ -181,14 +182,14 @@ const ActivityItemComplete = forwardRef<ActivityItemCompleteRef, ActivityItemCom
    */
   const uploadWithImages = async (activityData: any) => {
     const formDataObj = new FormData();
-    
+
     // Añadir campos al FormData
     Object.entries(activityData).forEach(([key, value]: [string, any]) => {
       if (key !== 'images') {
         formDataObj.append(key, String(value));
       }
     });
-    
+
     // Procesar imágenes nuevas
     if (activityData.images?.length > 0) {
       activityData.images.forEach((imageUri: string, index: number) => {
@@ -202,12 +203,12 @@ const ActivityItemComplete = forwardRef<ActivityItemCompleteRef, ActivityItemCom
         }
       });
     }
-    
+
     // Añadir imágenes existentes
     if (activityData.existing_images?.length) {
       formDataObj.append('existing_images', JSON.stringify(activityData.existing_images));
     }
-    
+
     // Enviar solicitud
     return await axios({
       method: 'post',
@@ -234,16 +235,16 @@ const ActivityItemComplete = forwardRef<ActivityItemCompleteRef, ActivityItemCom
       }
 
       setIsLoading(true);
-      
+
       await axios({
         method: 'post',
         url: 'https://centroesteticoedith.com/endpoint/activities_complete',
         data: { id: storedData.activity?.id },
         headers: { "Content-Type": "application/json" }
       });
-      
-      setFormData(prev => ({ ...prev, status: 'Completado' }));
-      
+
+      setFormData(prev => ({ ...prev, status: 'completado' }));
+
       setIsLoading(false);
       showMessage('Actividad marcada como completada.');
       setTimeout(hideModal, 2000);
@@ -264,7 +265,7 @@ const ActivityItemComplete = forwardRef<ActivityItemCompleteRef, ActivityItemCom
   return (
     <View style={{ backgroundColor: "#0a3649", flex: 1 }}>
       <ExpoStatusBar style="light" />
-      
+
       <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
         <View style={{ flex: 1 }}>
           {/* Sección del título, imágenes y botón de completar */}
@@ -278,7 +279,7 @@ const ActivityItemComplete = forwardRef<ActivityItemCompleteRef, ActivityItemCom
             itemData={storedData?.activity}
             status={formData.status}
           />
-          
+
           {/* Campos de formulario */}
           <FormFields
             description={formData.description}
@@ -298,16 +299,16 @@ const ActivityItemComplete = forwardRef<ActivityItemCompleteRef, ActivityItemCom
               iconsFiles={iconsFiles}
             />
           )}
-          
+
           {formData.status === 'completado' && (
             <>
               <View style={{borderBottomColor: "#ccc", borderBottomWidth: 1, marginVertical: 10 }} />
-              <View style={{ 
-                flexDirection: 'row', 
-                alignItems: 'center', 
+              <View style={{
+                flexDirection: 'row',
+                alignItems: 'center',
                 gap: 10,
                 justifyContent: 'center',
-                minHeight: 120 
+                minHeight: 120
               }}>
                 <TouchableOpacity
                   style={{
@@ -332,20 +333,20 @@ const ActivityItemComplete = forwardRef<ActivityItemCompleteRef, ActivityItemCom
           )}
         </View>
       </ScrollView>
-      
+
       {/* Modal para mensajes */}
-      <MessageModal 
-        visible={showModal} 
-        message={modalMessage} 
-        onClose={() => setShowModal(false)} 
+      <MessageModal
+        visible={showModal}
+        message={modalMessage}
+        onClose={() => setShowModal(false)}
       />
 
       {/* Overlay de carga */}
       {isLoading && (
         <LoadingOverlay
           visible={isLoading}
-          message={formData.images.length > 0 
-            ? `Subiendo ${formData.images.length} ${formData.images.length === 1 ? 'imagen' : 'imágenes'}...` 
+          message={formData.images.length > 0
+            ? `Subiendo ${formData.images.length} ${formData.images.length === 1 ? 'imagen' : 'imágenes'}...`
             : 'Procesando...'
           }
         />
