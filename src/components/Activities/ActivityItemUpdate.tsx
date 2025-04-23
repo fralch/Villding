@@ -6,12 +6,14 @@
  * horas, estado,  ícono e imágenes.
  */
 import React, { forwardRef, useImperativeHandle, useState, useEffect } from 'react';
-import { View, ScrollView , Alert} from 'react-native';
+import { View, ScrollView, Alert, TouchableOpacity, Text, ActivityIndicator } from 'react-native';
 import { StatusBar as ExpoStatusBar } from 'expo-status-bar';
 import axios from 'axios';
 import { getSesion } from '../../hooks/localStorageUser';
+import { getActivity, storeActivity, removeActivity } from '../../hooks/localStorageCurrentActvity';
 import { Activity } from './types/Activity_interface';
 import { iconImports, iconsFiles } from './icons';
+import FontAwesome from '@expo/vector-icons/FontAwesome';
 
 // Componentes
 import TitleSection from './componentsActivityUpdate/TitleSection';
@@ -61,6 +63,10 @@ const ActivityItemUpdate = forwardRef<ActivityItemUpdateRef, ActivityItemUpdateP
     const [showModal, setShowModal] = useState(false);
     const [modalMessage, setModalMessage] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    // Nuevos estados para modo edición
+    const [isEditing, setIsEditing] = useState(false);
+    const [isEditLoading, setIsEditLoading] = useState(false);
+    const [storedData, setStoredData] = useState<any>(null);
 
     /**
      * Normaliza el formato de las imágenes según su tipo
@@ -107,6 +113,44 @@ const ActivityItemUpdate = forwardRef<ActivityItemUpdateRef, ActivityItemUpdateP
 
       checkAdminStatus(); 
     }, [project_id]);
+
+    /**
+     * Cargar datos de actividad almacenada en localStorage
+     */
+    useEffect(() => {
+      loadStoredActivity();
+    }, []);
+
+    /**
+     * Función para cargar la actividad almacenada en localStorage
+     */
+    const loadStoredActivity = async () => {
+      try {
+        const activityData: any = await getActivity();
+        if (activityData) {
+          setStoredData(activityData);
+          // Si hay datos almacenados y estamos en modo edición, 
+          // actualizamos el formulario con esos datos
+          if (activityData.editMode) {
+            setFormData({
+              titulo: activityData.activity?.name || '',
+              description: activityData.activity?.description || '',
+              location: activityData.activity?.location || '',
+              horas: activityData.activity?.horas || '',
+              status: activityData.activity?.status || 'Pendiente',
+              comments: activityData.activity?.comments || '',
+              selectedIcon: activityData.activity?.icon || '',
+              images: normalizeImages(activityData.activity?.image),
+              fecha_creacion: activityData.activity?.fecha_creacion || activityData.date
+            });
+            setIsAdmin(activityData.isAdmin || false);
+            setIsEditing(true);
+          }
+        }
+      } catch (error) {
+        console.error('Error al cargar la actividad:', error);
+      }
+    };
 
     /**
      * Muestra un mensaje modal con el texto proporcionado
@@ -228,7 +272,7 @@ const ActivityItemUpdate = forwardRef<ActivityItemUpdateRef, ActivityItemUpdateP
       const formDataObj = new FormData();
       
       // Añade todos los campos al FormData excepto imágenes
-      Object.entries(activityData).forEach(([key, value]) => {
+      Object.entries(activityData).forEach(([key, value]: [string, any]) => {
         if (key !== 'images') {
           formDataObj.append(key, String(value));
         }
@@ -262,6 +306,7 @@ const ActivityItemUpdate = forwardRef<ActivityItemUpdateRef, ActivityItemUpdateP
         headers: { "Content-Type": "multipart/form-data" }
       });
     };
+
     /**
      * Función específica para marcar una actividad como completada
      */
@@ -304,6 +349,33 @@ const ActivityItemUpdate = forwardRef<ActivityItemUpdateRef, ActivityItemUpdateP
       }
     };
 
+    /**
+     * Cambia al modo de edición
+     * Guarda la actividad en localStorage con la bandera editMode
+     */
+    const handleEditableChange = async () => {
+      setIsEditLoading(true);
+      
+      try {
+        await removeActivity();
+        await storeActivity({
+          project_id,
+          tracking_id,
+          activity,
+          date: formData.fecha_creacion,
+          isAdmin,
+          editMode: true
+        });
+        await loadStoredActivity();
+        setIsEditing(true);
+      } catch (error) {
+        console.error('Error al cambiar a modo edición:', error);
+        showMessage('Error al cambiar a modo edición. Por favor intente de nuevo.');
+      } finally {
+        setIsEditLoading(false);
+      }
+    };
+
     // Expone el método de actualización al componente padre
     useImperativeHandle(ref, () => ({
       handleUpdateActivity: () => updateActivity(),
@@ -335,6 +407,7 @@ const ActivityItemUpdate = forwardRef<ActivityItemUpdateRef, ActivityItemUpdateP
               horas={formData.horas}
               onValueChange={handleFormChange}
               status={formData.status}
+              isAdmin={isAdmin}
             />
 
             {/* Selector de ícono */}
@@ -344,6 +417,51 @@ const ActivityItemUpdate = forwardRef<ActivityItemUpdateRef, ActivityItemUpdateP
               iconImports={iconImports}
               iconsFiles={iconsFiles}
             />
+
+            {/* Sección para el botón "Volver a editar" */}
+            {!isEditing && (
+              <>
+                <View style={{borderBottomColor: "#ccc", borderBottomWidth: 1, marginVertical: 10 }} />
+                <View style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 10,
+                  justifyContent: 'center',
+                  minHeight: 120
+                }}>
+                  <TouchableOpacity
+                    style={{
+                      flex: 1,
+                      flexDirection: "row",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      marginTop: 10,
+                      borderRadius: 5,
+                      gap: 10,
+                      paddingVertical: 10
+                    }}
+                    onPress={() => handleEditableChange()}
+                    disabled={isEditLoading}
+                  >
+                    {isEditLoading ? (
+                      <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+                        <ActivityIndicator size="small" color="white" />
+                        <Text style={{ fontSize: 18, color: "white"}}>
+                          Cambiando a modo edición...
+                        </Text>
+                      </View>
+                    ) : (
+                      <>
+                        <FontAwesome name="pencil" size={18} color="white" />
+                        <Text style={{ fontSize: 18, color: "white"}}>
+                          Volver a editar
+                        </Text>
+                      </>
+                    )}
+                  </TouchableOpacity>
+                </View>
+              </>
+            )}
           </View>
         </ScrollView>
         
