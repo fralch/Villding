@@ -6,12 +6,13 @@
  * horas, estado,  ícono e imágenes.
  */
 import React, { forwardRef, useImperativeHandle, useState, useEffect } from 'react';
-import { View, ScrollView , Alert} from 'react-native';
+import { View, ScrollView , Alert, TouchableOpacity, Text } from 'react-native';
 import { StatusBar as ExpoStatusBar } from 'expo-status-bar';
 import axios from 'axios';
 import { getSesion } from '../../hooks/localStorageUser';
 import { Activity } from './types/Activity_interface';
 import { iconImports, iconsFiles } from './icons';
+import FontAwesome from '@expo/vector-icons/FontAwesome';
 
 // Componentes
 import TitleSection from './componentsActivityUpdate/TitleSection';
@@ -350,9 +351,33 @@ const ActivityItemComplete = forwardRef<ActivityItemCompleteRef, ActivityItemCom
             {
               formData.status == 'completado' && 
               <>
-              <View style={{borderBottomColor: "#ccc", borderBottomWidth: 1, marginVertical: 10, }} />
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-              </View>
+                <View style={{borderBottomColor: "#ccc", borderBottomWidth: 1, marginVertical: 10, }} />
+                <View style={{ 
+                  flexDirection: 'row', 
+                  alignItems: 'center', 
+                  gap: 10,
+                  justifyContent: 'center', // Centra horizontalmente en el contenedor
+                  minHeight: 120 // Proporciona altura mínima para mejor visualización
+                }}>
+                    <TouchableOpacity
+                      style={{
+                        flex: 1,
+                        flexDirection: "row",
+                        justifyContent: "center",
+                        alignItems: "center", // Centra verticalmente los elementos internos
+                        marginTop: 10,
+                        borderRadius: 5,
+                        gap: 10,
+                        paddingVertical: 10 // Añade padding vertical para mejor apariencia
+                      }}
+                      onPress={() => handleSubmitFinish()}
+                    >
+                      <FontAwesome name="pencil" size={18} color="white" />
+                      <Text style={{ fontSize: 18, color: "white"}}>
+                        Volver a editar
+                      </Text>
+                    </TouchableOpacity>
+                </View>
               </>
             }
           </View>
