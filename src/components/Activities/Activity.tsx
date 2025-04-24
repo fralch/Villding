@@ -404,10 +404,20 @@ const handleSaveActivity = async () => {
                 />
               ))
             ) : (
+              <View style={{ 
+                flex: 1, 
+                justifyContent: 'center', 
+                alignItems: 'center', 
+                backgroundColor: day.dayLabel === todayFormatted ? '#034757' : 'transparent' 
+              }}>
               <Text style={{ color: '#aaa', textAlign: 'center', marginVertical: 10 }}>No hay actividades para este día</Text> 
+              </View>
             )}
             <TouchableOpacity 
-              style={styles.addNewTaskButton} 
+              style={[
+                styles.addNewTaskButton,
+                { backgroundColor: day.dayLabel === todayFormatted ? '#034757' : 'transparent' }
+              ]} 
               onPress={() => showCreateModal(day.dayLabel)}
             >
               <Text style={styles.addNewTaskText}>+ Nuevo</Text>
