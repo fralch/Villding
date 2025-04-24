@@ -391,7 +391,7 @@ const ActivityItemComplete = forwardRef<ActivityItemCompleteRef, ActivityItemCom
               iconsFiles={iconsFiles}
             />
 
-          {  !isEditing && (
+          {  !isEditing && isAdmin && (
             <>
               <View style={{borderBottomColor: "#ccc", borderBottomWidth: 1, marginVertical: 10 }} />
               <View style={{
