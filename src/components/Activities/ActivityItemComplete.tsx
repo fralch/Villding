@@ -1,11 +1,13 @@
 /**
  * ActivityItemComplete.tsx
  * Componente para actualizar actividades en un proyecto.
+ * Permite visualizar y editar actividades completadas.
  */
 import React, { forwardRef, useImperativeHandle, useState, useEffect } from 'react';
 import { View, ScrollView, Alert, TouchableOpacity, Text, ActivityIndicator } from 'react-native';
 import { StatusBar as ExpoStatusBar } from 'expo-status-bar';
 import axios from 'axios';
+import { getSesion } from '../../hooks/localStorageUser';
 import { getActivity, storeActivity, removeActivity } from '../../hooks/localStorageCurrentActvity';
 import { iconImports, iconsFiles } from './icons';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
@@ -58,6 +60,40 @@ const ActivityItemComplete = forwardRef<ActivityItemCompleteRef, ActivityItemCom
     loadStoredActivity();
   }, []);
 
+  // Verificar permisos de administrador
+  useEffect(() => {
+    const checkAdminStatus = async () => {
+      // Obtiene sesión del almacenamiento local
+      const session = JSON.parse(await getSesion() || "{}");
+      
+      // Si el usuario es admin global, mantiene el estado
+      if (session?.is_admin === 1) {
+        setIsAdmin(true);
+        return;
+      }
+
+      try {
+        // Verifica si el usuario es admin del proyecto específico
+        if (storedData?.project_id) {
+          const response = await axios.post(
+            "https://centroesteticoedith.com/endpoint/project/check-attachment",
+            { project_id: storedData.project_id }
+          );
+          
+          setIsAdmin(response.data.users.some((user: any) => 
+            user.id === session?.id && user.is_admin === 1 
+          ));
+        }
+      } catch (error) {
+        console.error("Error checking admin status:", error);
+      }
+    };
+
+    if (storedData) {
+      checkAdminStatus();
+    }
+  }, [storedData]);
+
   // Función para cargar la actividad almacenada
   const loadStoredActivity = async () => {
     try {
@@ -76,6 +112,11 @@ const ActivityItemComplete = forwardRef<ActivityItemCompleteRef, ActivityItemCom
           fecha_creacion: activityData.activity?.fecha_creacion || activityData.date
         });
         setIsAdmin(activityData.isAdmin || false);
+        
+        // Si hay datos almacenados y estamos en modo edición, actualizamos el estado
+        if (activityData.editMode) {
+          setIsEditing(true);
+        }
       }
     } catch (error) {
       console.error('Error al cargar la actividad:', error);
@@ -155,6 +196,8 @@ const ActivityItemComplete = forwardRef<ActivityItemCompleteRef, ActivityItemCom
         existing_images: existingImages
       };
 
+      console.log("Actualizando actividad completada:", activityData);
+
       // Enviar solicitud según el tipo
       const response = newImages.length > 0 || existingImages.length > 0
         ? await uploadWithImages(activityData)
@@ -167,6 +210,27 @@ const ActivityItemComplete = forwardRef<ActivityItemCompleteRef, ActivityItemCom
 
       if (response.status === 200) {
         showMessage('Actividad actualizada correctamente');
+        
+        // Si estamos en modo edición, actualizamos el localStorage
+        if (isEditing) {
+          await removeActivity();
+          await storeActivity({
+            ...storedData,
+            activity: {
+              ...storedData.activity,
+              name: formData.titulo,
+              description: formData.description,
+              location: formData.location,
+              horas: formData.horas,
+              status: newStatus || formData.status,
+              comments: formData.comments,
+              icon: formData.selectedIcon,
+              image: [...newImages, ...existingImages]
+            },
+            editMode: true
+          });
+        }
+        
         setTimeout(hideModal, 2000);
         return true;
       }
@@ -259,6 +323,10 @@ const ActivityItemComplete = forwardRef<ActivityItemCompleteRef, ActivityItemCom
     }
   };
 
+  /**
+   * Cambia al modo de edición
+   * Guarda la actividad en localStorage con la bandera editMode
+   */
   const handleEditableChange = async() => {
     setIsEditLoading(true);
     

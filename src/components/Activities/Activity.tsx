@@ -307,11 +307,17 @@ const handleSaveActivity = async () => {
       console.log('Attempting to update activity...');
       success = await activityItemUpdateRef.current.handleUpdateActivity();
       console.log('Update result:', success);
-    } else if (activityItemCreateRef.current) {
+    }else if(isEditing && activityItemCompleteRef.current) {
+      console.log('Attempting to complete activity...');
+      success = await activityItemCompleteRef.current.handleUpdateActivity();
+      console.log('Complete result:', success);
+
+    }else if (activityItemCreateRef.current) {
       console.log('Attempting to create activity...');
       success = await activityItemCreateRef.current.handleCreateActivity();
       console.log('Create result:', success);
     }
+    
 
     if (success) {
       console.log('Operation successful, refreshing activities...');
