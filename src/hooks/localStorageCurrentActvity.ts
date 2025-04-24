@@ -4,7 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 interface Activity {
     project_id: number;
     tracking_id: number;
-    activity: Activity | null;
+    activity: string| JSON | object | null;
     date: string;
     isAdmin?: boolean;
     editMode?: boolean;
