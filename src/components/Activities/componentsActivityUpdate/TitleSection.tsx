@@ -1,5 +1,4 @@
 // components/TitleSection.tsx
-/*  Este componente es responsable de mostrar la sección de título de la actividad */
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Image, ScrollView, Alert } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -7,6 +6,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { getActivity } from '../../../hooks/localStorageCurrentActvity';
 import { styles } from '../styles/ActivityItemCreateStyles';
 import StatusIndicator from './StatusIndicator';
+import FullScreenImageViewer from './FullScreenImageViewer';
 
 // Definición de las propiedades que recibe el componente
 interface TitleSectionProps {
@@ -35,6 +35,9 @@ const TitleSection: React.FC<TitleSectionProps> = ({
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [localImages, setLocalImages] = useState<string[]>(images);
   const [esEditable, setEsEditable] = useState(false);
+  
+  // Estado para el visor de imágenes a pantalla completa
+  const [fullScreenVisible, setFullScreenVisible] = useState(false);
 
   // Actualizar las imágenes locales cuando cambien las props
   useEffect(() => {
@@ -67,7 +70,6 @@ const TitleSection: React.FC<TitleSectionProps> = ({
     // Limpiar el intervalo cuando el componente se desmonte
     return () => clearInterval(intervalId);
   }, []);
-
 
   // Función para obtener la fuente de la imagen
   const getImageSource = (imageUri: string) => {
@@ -129,15 +131,26 @@ const TitleSection: React.FC<TitleSectionProps> = ({
     onImagesUpdate(updatedImages);
   };
 
-  // Add this helper function to check if task is completed
-
+  // Función para abrir el visor de pantalla completa
+  const handleOpenFullScreen = () => {
+    // Solo abrir el visor si hay imágenes válidas
+    const validImages = localImages.filter(img => !!img);
+    if (validImages.length > 0) {
+      setFullScreenVisible(true);
+    }
+  };
+  
 
   return (
     <View style={{ backgroundColor: "#0a3649" }}>
       {/* Slider de imágenes - solo se muestra cuando hay imágenes para mostrar */}
       {localImages.length > 0 && (
         <View style={{ marginBottom: -10, position: 'relative' }}>
-          <View style={{ height: 200, width: '100%', marginBottom: 10, position: 'relative' }}>
+          <TouchableOpacity 
+            activeOpacity={0.9}
+            onPress={handleOpenFullScreen}
+            style={{ height: 200, width: '100%', marginBottom: 10, position: 'relative' }}
+          >
             {/* Botones de navegación */}
             <TouchableOpacity
               style={{
@@ -152,9 +165,12 @@ const TitleSection: React.FC<TitleSectionProps> = ({
                 justifyContent: 'center',
                 alignItems: 'center'
               }}
-              onPress={() => setActiveImageIndex((prev) =>
-                prev === 0 ? localImages.length - 1 : prev - 1
-              )}
+              onPress={(e) => {
+                e.stopPropagation(); // Prevenir que el tap llegue al slider
+                setActiveImageIndex((prev) =>
+                  prev === 0 ? localImages.length - 1 : prev - 1
+                );
+              }}
             >
               <MaterialIcons name="chevron-left" size={30} color="white" />
             </TouchableOpacity>
@@ -181,9 +197,12 @@ const TitleSection: React.FC<TitleSectionProps> = ({
                 justifyContent: 'center',
                 alignItems: 'center'
               }}
-              onPress={() => setActiveImageIndex((prev) =>
-                prev === localImages.length - 1 ? 0 : prev + 1
-              )}
+              onPress={(e) => {
+                e.stopPropagation(); // Prevenir que el tap llegue al slider
+                setActiveImageIndex((prev) =>
+                  prev === localImages.length - 1 ? 0 : prev + 1
+                );
+              }}
             >
               <MaterialIcons name="chevron-right" size={30} color="white" />
             </TouchableOpacity>
@@ -209,10 +228,18 @@ const TitleSection: React.FC<TitleSectionProps> = ({
                 />
               ))}
             </View>
-          </View>
+          </TouchableOpacity>
         </View>
       )}
 
+      {/* Visor de imágenes a pantalla completa */}
+      <FullScreenImageViewer 
+        images={localImages.filter(img => !!img)}
+        initialIndex={activeImageIndex}
+        visible={fullScreenVisible}
+        onClose={() => setFullScreenVisible(false)}
+      />
+      
       <StatusIndicator tipoTask={status} />
 
       {/* Entrada de texto para el título */}
@@ -242,26 +269,38 @@ const TitleSection: React.FC<TitleSectionProps> = ({
           </Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             {localImages.map((imageUri, index) => (
-              <View key={index} style={{ marginRight: 10, position: 'relative' }}>
+              <TouchableOpacity 
+                key={index} 
+                style={{ marginRight: 10, position: 'relative' }}
+                onPress={() => {
+                  setActiveImageIndex(index);
+                  setFullScreenVisible(true);
+                }}
+              >
                 <Image
                   source={getImageSource(imageUri)}
                   style={{ width: 100, height: 100, borderRadius: 5 }}
                   resizeMode="cover"
                 />
-                <TouchableOpacity
-                  style={{
-                    position: 'absolute',
-                    top: 5,
-                    right: 5,
-                    backgroundColor: 'rgba(0,0,0,0.5)',
-                    padding: 3,
-                    borderRadius: 12
-                  }}
-                  onPress={() => handleRemoveImage(index)}
-                >
-                  <MaterialIcons name="close" size={18} color="white" />
-                </TouchableOpacity>
-              </View>
+                {esEditable && (
+                  <TouchableOpacity
+                    style={{
+                      position: 'absolute',
+                      top: 5,
+                      right: 5,
+                      backgroundColor: 'rgba(0,0,0,0.5)',
+                      padding: 3,
+                      borderRadius: 12
+                    }}
+                    onPress={(e) => {
+                      e.stopPropagation();
+                      handleRemoveImage(index);
+                    }}
+                  >
+                    <MaterialIcons name="close" size={18} color="white" />
+                  </TouchableOpacity>
+                )}
+              </TouchableOpacity>
             ))}
           </ScrollView>
         </View>
@@ -324,10 +363,8 @@ const TitleSection: React.FC<TitleSectionProps> = ({
         </>
       )}
 
-
     </View>
   );
 };
-
 
 export default TitleSection;
