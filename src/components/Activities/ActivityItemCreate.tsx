@@ -144,13 +144,17 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
       return;
     }
 
-    const result = await (useCamera ?
-      ImagePicker.launchCameraAsync({ quality: 0.8 }) :
-      ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsMultipleSelection: true,
-        quality: 0.8
-      }));
+    // In your handleImagePicker function:
+const result = await (useCamera
+  ? ImagePicker.launchCameraAsync({ quality: 0.8 })
+  : ImagePicker.launchImageLibraryAsync({
+      // Instead of using MediaTypeOptions enum
+      // Try using the string value directly
+      mediaTypes: ["images"],  // or ["image"] depending on the expected format
+      allowsMultipleSelection: true,
+      quality: 0.5
+    })
+);
 
     if (!result.canceled && result.assets) {
       // Calcular cuántas imágenes podemos agregar sin exceder el límite
@@ -215,12 +219,16 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
           } as any);
         });
 
-        await axios({
+        const response = await axios({
           method: 'post',
           url,
           data: formDataObj,
           headers: { "Content-Type": "multipart/form-data" }
         });
+
+        console.log('Respuesta del servidor:'); 
+        console.log(response.data);
+
       } else {
         await axios({
           method: 'post',
