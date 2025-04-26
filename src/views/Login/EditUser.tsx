@@ -119,7 +119,7 @@ const EditUser = () => {
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [1, 1], // Aspecto de la imagen
-      quality: 1, // Calidad original
+      quality: 0.3, // Calidad original
     });
   
     // Verificar si el usuario seleccionó una imagen

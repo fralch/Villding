@@ -141,7 +141,7 @@ const NewProject: React.FC = () => {
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [4, 3],
-      quality: 1, // Calidad original
+      quality: 0.5, // Calidad original
     });
   
     if (!pickerResult.canceled && pickerResult.assets && pickerResult.assets.length > 0) {

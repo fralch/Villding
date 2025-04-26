@@ -92,10 +92,12 @@ const TitleSection: React.FC<TitleSectionProps> = ({
     }
 
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      // Instead of using MediaTypeOptions enum
+      // Try using the string value directly
+      mediaTypes: ["images"],  // or ["image"] depending on the expected format
       allowsMultipleSelection: true,
-      quality: 0.8
-    });
+      quality: 0.5
+    })
 
     if (!result.canceled && result.assets) {
       const newImages = result.assets.map(asset => asset.uri);

@@ -145,16 +145,16 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
     }
 
     // In your handleImagePicker function:
-const result = await (useCamera
-  ? ImagePicker.launchCameraAsync({ quality: 0.8 })
-  : ImagePicker.launchImageLibraryAsync({
-      // Instead of using MediaTypeOptions enum
-      // Try using the string value directly
-      mediaTypes: ["images"],  // or ["image"] depending on the expected format
-      allowsMultipleSelection: true,
-      quality: 0.5
-    })
-);
+    const result = await (useCamera
+      ? ImagePicker.launchCameraAsync({ quality: 0.8 })
+      : ImagePicker.launchImageLibraryAsync({
+          // Instead of using MediaTypeOptions enum
+          // Try using the string value directly
+          mediaTypes: ["images"],  // or ["image"] depending on the expected format
+          allowsMultipleSelection: true,
+          quality: 0.5
+        })
+      );
 
     if (!result.canceled && result.assets) {
       // Calcular cuántas imágenes podemos agregar sin exceder el límite

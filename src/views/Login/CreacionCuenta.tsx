@@ -60,7 +60,7 @@ function CreacionCuenta(): JSX.Element {
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [1, 1],
-      quality: 1,
+      quality: 0.3,
     });
   
     // Verificar si el usuario seleccionó una imagen
