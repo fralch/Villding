@@ -15,6 +15,7 @@ import {
   MaterialIcons,
 } from "@expo/vector-icons"; // Importa el ícono
 import MemberModal from "./MemberModal";
+import { useNavigation, NavigationProp } from "@react-navigation/native";
 import { getSesion, removeSesion , updateSesion } from '../../hooks/localStorageUser';
 import axios from "axios";
 
@@ -44,6 +45,7 @@ type ApiResponse = {
 };
 
 const VistaMiembros: React.FC<any> = (project) => {
+  const navigation = useNavigation<NavigationProp<any>>();
   const [isModalVisible, setModalVisible] = useState(false);
   const [isModalVisibleInsertUser, setModalVisibleInsertUser] = useState(false);
   const [admin, setAdmin] = useState(false);
@@ -161,7 +163,7 @@ const VistaMiembros: React.FC<any> = (project) => {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity>
+      <TouchableOpacity onPress={() => navigation.goBack()}>
           <Ionicons name="chevron-back-outline" size={24} color="white" />
         </TouchableOpacity>
         <Text style={{ color: "white", fontSize: 18 }}>
