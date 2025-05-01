@@ -170,13 +170,7 @@ const VistaMiembros: React.FC<any> = (project) => {
           Administrar accesos
         </Text>
         <View style={{ flexDirection: "row", alignItems: "center" }}>
-          <TouchableOpacity>
-            <MaterialCommunityIcons
-              name="dots-vertical"
-              size={24}
-              color="white"
-            />
-          </TouchableOpacity>
+     
         </View>
       </View>
       <View style={styles.list}>
