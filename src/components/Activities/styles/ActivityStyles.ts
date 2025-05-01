@@ -56,7 +56,7 @@ export const styles = StyleSheet.create({
   },
   scrollContainer: {
     flex: 1,
-    backgroundColor: '#034757',
+    backgroundColor: '#0D5A73',
   },
   dayContainer: {
     backgroundColor: '#053648',
@@ -75,7 +75,7 @@ export const styles = StyleSheet.create({
     borderRadius: 8,
     marginBottom: 8,
     borderBottomWidth: 2,
-    borderBottomColor: '#034757',
+    borderBottomColor: '#0D5A73',
   },
   taskHeader: {
     flexDirection: 'row',

@@ -378,7 +378,7 @@ const handleSaveActivity = async () => {
       </View>
       
       <ScrollView style={styles.scrollContainer}>
-        <View style={{ backgroundColor: '#034757' }}>
+        <View style={{ backgroundColor: '#0D5A73' }}>
           <View style={styles.weekContainer}>
             <Text style={{ fontSize: 40, color: 'white', width: '80%', fontWeight: 'bold', alignSelf: 'flex-start' }}>
               {titleTracking}
@@ -408,7 +408,7 @@ const handleSaveActivity = async () => {
                 flex: 1, 
                 justifyContent: 'center', 
                 alignItems: 'center', 
-                backgroundColor: day.dayLabel === todayFormatted ? '#034757' : 'transparent' 
+                backgroundColor: day.dayLabel === todayFormatted ? '#0D5A73' : 'transparent' 
               }}>
               <Text style={{ color: '#aaa', textAlign: 'center', marginVertical: 10 }}>No hay actividades para este día</Text> 
               </View>
@@ -416,7 +416,7 @@ const handleSaveActivity = async () => {
             <TouchableOpacity 
               style={[
                 styles.addNewTaskButton,
-                { backgroundColor: day.dayLabel === todayFormatted ? '#034757' : 'transparent' }
+                { backgroundColor: day.dayLabel === todayFormatted ? '#0D5A73' : 'transparent' }
               ]} 
               onPress={() => showCreateModal(day.dayLabel)}
             >
@@ -544,7 +544,7 @@ const ActivityCard: React.FC<{
         <Text style={[styles.taskStatus, {
           backgroundColor: statusLabel === 'Pendiente' ? '#F4C724'
                           : statusLabel === 'Completado' ? '#4ec291'
-                          : '#034757',
+                          : '#0D5A73',
           color: statusLabel === 'Programado' ? '#F4C724' : '#0D465E',
           borderColor: statusLabel === 'Programado' ? '#F4C724' : 'white',
           borderWidth: statusLabel === 'Programado' ? 1 : 0,
