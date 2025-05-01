@@ -454,7 +454,7 @@ const ActivityItemUpdate = forwardRef<ActivityItemUpdateRef, ActivityItemUpdateP
                       <>
                         <FontAwesome name="pencil" size={18} color="white" />
                         <Text style={{ fontSize: 18, color: "white"}}>
-                          Volver a editar
+                          Editar
                         </Text>
                       </>
                     )}
