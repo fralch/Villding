@@ -90,7 +90,7 @@ export const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     marginTop: 20,
-    padding: 15,
+    paddingBottom: 20,
     backgroundColor: "#07374a",
     borderRadius: 8,
   },
