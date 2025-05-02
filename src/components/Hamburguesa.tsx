@@ -139,6 +139,22 @@ export default function Hamburguesa(props: any) {
       </View>
       {/* Opciones de administración */}
       <List.Item
+        title='Editar proyecto'
+        titleStyle={{ color: '#FFF' }}
+        right={(props) => (
+          <List.Icon
+            {...props}
+            icon='pencil'
+            color='#FFF'
+          />
+        )}
+        onPress={() => {
+          navigate('EditProject', {
+            project: recibiendoProyecto,
+          });
+        }}
+      />
+      <List.Item
         title='Administrar accesos'
         titleStyle={{ color: '#FFF' }}
         right={(props) => (
@@ -155,33 +171,18 @@ export default function Hamburguesa(props: any) {
         }}
       />
       <List.Item
-        title='Configurar proyecto'
+        title='Ver tutorial'
         titleStyle={{ color: '#FFF' }}
         right={(props) => (
           <List.Icon
             {...props}
-            icon='cog'
+            icon='video'
             color='#FFF'
           />
         )}
         onPress={() => {}}
       />
-      <List.Item
-        title='Editar proyecto'
-        titleStyle={{ color: '#FFF' }}
-        right={(props) => (
-          <List.Icon
-            {...props}
-            icon='pencil'
-            color='#FFF'
-          />
-        )}
-        onPress={() => {
-          navigate('EditProject', {
-            project: recibiendoProyecto,
-          });
-        }}
-      />
+     
       <Divider style={{ backgroundColor: '#0A455E' }} />
       {/* Ver proyectos */}
       <View style={{ marginTop: 'auto' }}>
