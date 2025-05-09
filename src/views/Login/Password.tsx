@@ -22,7 +22,7 @@ import LoadingModal from "../../components/Alerta/LoadingModal";
 
 const { width, height } = Dimensions.get("window");
 
-function Password(): JSX.Element {
+function Password():any {
   const navigation = useNavigation<NavigationProp<any>>();
   const route = useRoute();
   const { email } = route.params as { email: any };

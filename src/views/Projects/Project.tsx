@@ -107,6 +107,18 @@ export default function Project(props: any) {
   }, [props.route?.params, route.params]);
 
 
+  useEffect(() => {
+    if (ProyectoActual) {
+      console.log(ProyectoActual.id);
+      axios.post(`https://centroesteticoedith.com/endpoint/activities_check/${ProyectoActual.id}`)
+        .then(response => {
+        })
+        .catch(error => {
+          console.error(error);
+        });
+
+    }
+  }, [ProyectoActual]);
 
 
 

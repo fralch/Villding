@@ -20,7 +20,7 @@ import axios from "axios";
 
 const { width, height } = Dimensions.get('window');
 
-function Login(): JSX.Element {
+function Login(): any {
   const { navigate } = useNavigation<NavigationProp<any>>();
   const [showModal, setShowModal] = useState(false);
   const [showModalLoading, setShowModalLoading] = useState(false);

@@ -31,7 +31,7 @@ interface User {
   tamano_img : number;
 }
 
-function Verificacion(props: any): JSX.Element {
+function Verificacion(props: any): any {
   const navigation = useNavigation<NavigationProp<any>>();
   const [propsUser, setPropsUser] = useState(props.route.params as User);
   const [codigo, setCodigo] = useState("");
