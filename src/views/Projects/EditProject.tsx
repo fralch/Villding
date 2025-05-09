@@ -6,6 +6,9 @@ import {
   TouchableOpacity,
   Image,
   ScrollView,
+  Modal,
+  ActivityIndicator,
+  StyleSheet,
 } from "react-native";
 import { DateTimePickerAndroid } from "@react-native-community/datetimepicker";
 import { useNavigation, NavigationProp } from "@react-navigation/native";
@@ -17,7 +20,7 @@ import axios from 'axios';
 import { saveProject, deleteProject } from "../../hooks/localStorageProject";
 import { getSesion } from '../../hooks/localStorageUser';
 import { useRoute, RouteProp } from "@react-navigation/native";
-import { styles } from "./styles/NewProject";
+import { styles as baseStyles } from "./styles/NewProject";
 
 import ConfirmModal from '../../components/Alerta/ConfirmationModal';
 import LoadingModal from '../../components/Alerta/LoadingModal';
@@ -54,10 +57,67 @@ const EditProject: React.FC = () => {
   const { navigate } = useNavigation<NavigationProp<any>>();
   const route = useRoute<RouteProp<RouteParams, "params">>();
 
+  // Combinar los estilos base con los nuevos estilos para los modales
+  const styles = StyleSheet.create({
+    ...baseStyles,
+    modalContainer: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    },
+    modalContent: {
+      width: 300,
+      padding: 20,
+      backgroundColor: '#0A3649',
+      borderRadius: 10,
+      alignItems: 'center',
+    },
+    modalText: {
+      fontSize: 18,
+      marginBottom: 20,
+      color: 'white',
+      textAlign: 'center',
+    },
+    buttonContainer: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      width: '100%',
+    },
+    button: {
+      paddingVertical: 10,
+      paddingHorizontal: 20,
+      borderRadius: 5,
+      backgroundColor: '#33baba',
+    },
+    buttonText: {
+      color: 'white',
+      fontWeight: 'bold',
+    },
+    cancelButton: {
+      backgroundColor: '#888',
+      marginRight: 10,
+    },
+    deleteButton: {
+      backgroundColor: '#d9534f',
+    },
+    loadingText: {
+      color: 'white',
+      marginTop: 10,
+    },
+    endDate: {
+      color: '#33baba',
+      fontSize: 16,
+      marginBottom: 15,
+    }
+  });
+
   // Estados para los modales
   const [showModalConfirm, setShowModalConfirm] = useState(false);
   const [showModalLoading, setShowModalLoading] = useState(false);
   const [msjeModal, setMsjeModal] = useState('');
+
+  const [ModalDelete, setModalDelete] = useState(false);
 
   // Estados para los datos del formulario
   const [formData, setFormData] = useState({
@@ -576,6 +636,11 @@ useEffect(() => {
     }
   };
 
+  // Función para mostrar el modal de confirmación antes de eliminar
+  const confirmDeleteProject = () => {
+    setErrorBoolean(true);
+  };
+
   // Función para manejar la eliminación de un proyecto
   const handleDeleteProject = async () => {
     setShowModalLoading(true);
@@ -812,7 +877,7 @@ useEffect(() => {
             marginHorizontal: 20,
             marginBottom: 20,
           }}
-          onPress={handleDeleteProject}
+          onPress={confirmDeleteProject}
         >
           <Text
             style={{
@@ -835,6 +900,59 @@ useEffect(() => {
           }
         }}
       />
+      <Modal
+        visible={showModalLoading}
+        transparent={true}
+        animationType="fade">
+        <View style={styles.modalContainer}>
+          <ActivityIndicator size="large" color="#33baba" />
+          <Text style={styles.loadingText}>Cargando...</Text>
+        </View>
+      </Modal>
+
+      {/* Modal de confirmación para eliminar proyecto */}
+      <Modal
+        visible={ModalDelete}
+        transparent={true}
+        animationType="fade">
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalText}>{msjeModal}</Text>
+            <TouchableOpacity style={styles.button} onPress={() =>  setModalDelete(false)}>
+              <Text style={styles.buttonText}>OK</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Modal de confirmación para eliminar proyecto */}
+      <Modal
+        visible={errorBoolean}
+        transparent={true}
+        animationType="fade">
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalText}>¿Estás seguro que deseas eliminar este proyecto?</Text>
+            <View style={styles.buttonContainer}>
+              <TouchableOpacity 
+                style={[styles.button, styles.cancelButton]} 
+                onPress={() => setErrorBoolean(false)}
+              >
+                <Text style={styles.buttonText}>Cancelar</Text>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={[styles.button, styles.deleteButton]} 
+                onPress={() => {
+                  setErrorBoolean(false);
+                  handleDeleteProject();
+                }}
+              >
+                <Text style={styles.buttonText}>Eliminar</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
       <LoadingModal visible={showModalLoading} />
     </ScrollView>
   );
