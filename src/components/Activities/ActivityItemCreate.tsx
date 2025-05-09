@@ -277,6 +277,7 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
               ...prev,
               images: prev.images.filter((_: string, i: number) => i !== index)
             }))}
+            handleSubmit={(status: string) => handleSubmit(status as ActivityStatus)}
             status={formData.status}
           />
 
@@ -393,6 +394,7 @@ interface TitleSectionProps {
   onTakePhoto: () => void;
   onPickImages: () => void;
   onRemoveImage: (index: number) => void;
+  handleSubmit: (status: string) => void;
   status: string;
 }
 
@@ -404,6 +406,7 @@ const TitleSection: React.FC<TitleSectionProps> = ({
   onTakePhoto,
   onPickImages,
   onRemoveImage,
+  handleSubmit,
   status
 }) => {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
@@ -556,8 +559,26 @@ const TitleSection: React.FC<TitleSectionProps> = ({
 
       <View style={styles.hr} />
       <View style={{ flexDirection: 'row', gap: 10 }}>
+
         {/* Menú de opciones de imagen - Ahora ocupa todo el ancho */}
         <View style={{ flex: 1 }}>
+          <TouchableOpacity 
+           onPress={() => handleSubmit('completado')}
+           style={{
+            justifyContent: "center",
+            alignItems: "center",
+            marginTop: 10,
+            backgroundColor: "#0a455e",
+            borderRadius: 5,
+            opacity: 1,
+          }}> 
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+              <MaterialIcons name="check" size={20} color="#dedede" />
+              <Text style={{ fontSize: 14, color: "#dedede", padding: 15 }}>
+                Crear  y finalizar
+              </Text>
+            </View>
+          </TouchableOpacity>
           <TouchableOpacity
             style={{
               justifyContent: "center",
