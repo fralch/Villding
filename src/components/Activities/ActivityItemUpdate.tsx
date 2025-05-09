@@ -309,6 +309,7 @@ const ActivityItemUpdate = forwardRef<ActivityItemUpdateRef, ActivityItemUpdateP
 
     /**
      * Función específica para marcar una actividad como completada
+     * También sube las imágenes asociadas a la actividad
      */
     const handleSubmitFinish = async () => {
       try {
@@ -325,8 +326,43 @@ const ActivityItemUpdate = forwardRef<ActivityItemUpdateRef, ActivityItemUpdateP
 
         setIsLoading(true);
         
-        console.log("COMPLETANDO ACTIVIDAD...");
+        console.log("COMPLETANDO ACTIVIDAD CON IMÁGENES...");
         console.log(activity?.id);
+        
+        // Primero actualizamos la actividad con las imágenes
+        // Separar imágenes nuevas de las existentes
+        const newImages = formData.images.filter(img =>  
+          img.startsWith('file://') || img.startsWith('content://')
+        );
+        
+        const existingImages = formData.images.filter(img => 
+          !img.startsWith('file://') && !img.startsWith('content://')
+        );
+        
+        // Si hay imágenes nuevas, primero las subimos
+        if (newImages.length > 0 || existingImages.length > 0) {
+          // Preparar datos para la actualización con imágenes
+          const activityData = {
+            project_id,
+            tracking_id,
+            name: formData.titulo,
+            description: formData.description,
+            location: formData.location,
+            horas: formData.horas,
+            status: 'Completado',
+            comments: formData.comments,
+            icon: formData.selectedIcon,
+            fecha_creacion: formData.fecha_creacion,
+            id: activity?.id,
+            images: newImages,
+            existing_images: existingImages
+          };
+          
+          // Subir actividad con imágenes
+          await uploadWithImages(activityData);
+        }
+        
+        // Luego marcamos la actividad como completada
         await axios({
           method: 'post',
           url: `https://centroesteticoedith.com/endpoint/activities_complete`,
@@ -338,7 +374,7 @@ const ActivityItemUpdate = forwardRef<ActivityItemUpdateRef, ActivityItemUpdateP
         setFormData(prev => ({ ...prev, status: 'Completado' }));
         
         setIsLoading(false);
-        showMessage('Actividad marcada como completada.');
+        showMessage('Actividad marcada como completada con imágenes.');
         setTimeout(hideModal, 2000);
         return true;
       } catch (error) {
