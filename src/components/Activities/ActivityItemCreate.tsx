@@ -646,6 +646,8 @@ const FormFields = ({
             placeholderTextColor="#888"
             value={inputConfig.value}
             onChangeText={(text) => onValueChange(inputConfig.field, text)}
+            multiline={true}
+            numberOfLines={4} 
           />
         </View>
       ))}
