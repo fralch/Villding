@@ -2,7 +2,7 @@ import React, { useMemo, useEffect, useCallback } from 'react';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import { useRoute, RouteProp } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
-import { TouchableOpacity, Image, StyleSheet } from 'react-native';
+import { TouchableOpacity, Image, StyleSheet, Dimensions, StatusBar } from 'react-native';
 import Hamburguesa from '../../components/Hamburguesa';
 import TrackingCurrent from '../../components/Activities/TrackingCurrent';
 import { storeProject } from '../../hooks/localStorageCurrentProject';
@@ -108,46 +108,49 @@ export default function Project(props: any) {
 
 
 
-  
+
 
   return (
-    <Drawer.Navigator
-      drawerContent={(drawerContentProps) => (
-        <Hamburguesa
-          {...drawerContentProps}
-          project={ProyectoActual}
-        />
-      )}
-      screenOptions={{
-        drawerType: 'front',
-        swipeEnabled: true,
-        drawerStyle: {
-          backgroundColor: '#333',
-        },
-        headerStyle: {
-          backgroundColor: '#05222F',
-          height: 90, // Ajusta la altura de la barra de encabezado
-        },
-        headerTintColor: '#fff',
-        headerRight: () => (
-          <TouchableOpacity onPress={() => navigate("EditUser")}>
-            <Image
-              source={
-                imageUserSesion
-                  ? { uri: imageUserSesion }
-                  : require("../../assets/images/user.png")
-              }
-              style={styles.avatar}
-            />
-          </TouchableOpacity>
-        ),
-      }}
-    >
-      <Drawer.Screen
-        name={ProyectoActual?.title || 'Project'}
-        component={TrackingCurrent}
-      /> 
-    </Drawer.Navigator>
+    <>
+      <StatusBar barStyle="light-content" backgroundColor="#05222F" translucent />
+      <Drawer.Navigator
+        drawerContent={(drawerContentProps) => (
+          <Hamburguesa
+            {...drawerContentProps}
+            project={ProyectoActual}
+          />
+        )}
+        screenOptions={{
+          drawerType: 'front',
+          swipeEnabled: true,
+          drawerStyle: {
+            backgroundColor: '#333', // Cambia el color de fondo del drawer
+          },
+          headerStyle: {
+            backgroundColor: '#05222F',
+            height: Dimensions.get('window').height * 0.12, // Altura proporcional al 11% de la altura del dispositivo
+          },
+          headerTintColor: '#fff',
+          headerRight: () => (
+            <TouchableOpacity onPress={() => navigate("EditUser")}>
+              <Image
+                source={
+                  imageUserSesion
+                    ? { uri: imageUserSesion }
+                    : require("../../assets/images/user.png")
+                }
+                style={styles.avatar}
+              />
+            </TouchableOpacity>
+          ),
+        }}
+      >
+        <Drawer.Screen
+          name={ProyectoActual?.title || 'Project'}
+          component={TrackingCurrent}
+        /> 
+      </Drawer.Navigator>
+    </>
   );
 }
 
