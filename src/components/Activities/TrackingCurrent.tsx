@@ -368,7 +368,7 @@ const checkAndAdjustCurrentWeek = (startDateStr: string, weekIndex: number, isIn
             section={item}
             onPress={navigateToTracking}
             weekDates={weekDates}
-            onLongPress={() => setAccessDeniedModalVisible(true)}
+            onLongPress={() => setAccessDeniedModalVisible(false)} // TODO: cambiar a true para que funcione
           />
         )}
         ListEmptyComponent={() => (
