@@ -2,8 +2,9 @@
 /* Este componente es responsable de mostrar los inputs de entrada de la actividad */
 
 import React, { useState, useEffect } from 'react';
-import { View, TextInput, Text } from 'react-native';
+import { View, TextInput, Text, TouchableOpacity } from 'react-native';
 import { Entypo, MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
+import DateTimePicker, { DateTimePickerEvent } from "@react-native-community/datetimepicker";
 import { styles } from '../styles/ActivityItemCreateStyles';
 import { getActivity } from '../../../hooks/localStorageCurrentActvity';
 
@@ -25,6 +26,12 @@ const FormFields: React.FC<FormFieldsProps> = ({
   isAdmin
 }) => {
   const [esEditable, setEsEditable] = useState(false);
+  const [showTimePickerInicio, setShowTimePickerInicio] = useState(false);
+  const [showTimePickerFin, setShowTimePickerFin] = useState(false);
+  const [selectedTimeInicio, setSelectedTimeInicio] = useState(new Date());
+  const [selectedTimeFin, setSelectedTimeFin] = useState(new Date());
+  const [horaInicio, setHoraInicio] = useState("");
+  const [horaFin, setHoraFin] = useState("");
 
   // Verificar la editabilidad al cargar el componente
   useEffect(() => {
@@ -54,6 +61,51 @@ const FormFields: React.FC<FormFieldsProps> = ({
     // Limpiar el intervalo cuando el componente se desmonte
     return () => clearInterval(intervalId);
   }, []);
+  
+  // Inicializar las horas desde el formato "HH:MM - HH:MM"
+  useEffect(() => {
+    if (horas) {
+      const partes = horas.split(' - ');
+      if (partes.length === 2) {
+        setHoraInicio(partes[0]);
+        setHoraFin(partes[1]);
+      }
+    }
+  }, [horas]);
+  
+  // Función para manejar el cambio de hora de inicio en el DateTimePicker
+  const onChangeTimeInicio = (event: DateTimePickerEvent, selectedDate?: Date) => {
+    setShowTimePickerInicio(false); // Ocultar el selector independientemente de la acción
+    if (event.type === 'set' && selectedDate) { // 'set' significa que el usuario seleccionó una hora
+      setSelectedTimeInicio(selectedDate);
+      // Formatear la hora seleccionada (HH:MM)
+      const hours = selectedDate.getHours().toString().padStart(2, '0');
+      const minutes = selectedDate.getMinutes().toString().padStart(2, '0');
+      const formattedTime = `${hours}:${minutes}`;
+      setHoraInicio(formattedTime);
+      
+      // Actualizar el valor combinado de horas
+      const horasCombinadas = horaFin ? `${formattedTime} - ${horaFin}` : formattedTime;
+      onValueChange("horas", horasCombinadas);
+    }
+  };
+
+  // Función para manejar el cambio de hora de fin en el DateTimePicker
+  const onChangeTimeFin = (event: DateTimePickerEvent, selectedDate?: Date) => {
+    setShowTimePickerFin(false); // Ocultar el selector independientemente de la acción
+    if (event.type === 'set' && selectedDate) { // 'set' significa que el usuario seleccionó una hora
+      setSelectedTimeFin(selectedDate);
+      // Formatear la hora seleccionada (HH:MM)
+      const hours = selectedDate.getHours().toString().padStart(2, '0');
+      const minutes = selectedDate.getMinutes().toString().padStart(2, '0');
+      const formattedTime = `${hours}:${minutes}`;
+      setHoraFin(formattedTime);
+      
+      // Actualizar el valor combinado de horas
+      const horasCombinadas = horaInicio ? `${horaInicio} - ${formattedTime}` : formattedTime;
+      onValueChange("horas", horasCombinadas);
+    }
+  };
 
   const fields = [
     {
@@ -67,17 +119,12 @@ const FormFields: React.FC<FormFieldsProps> = ({
       placeholder: "Ubicación",
       value: location,
       field: "location"
-    },
-    {
-      icon: <MaterialCommunityIcons name="clock-outline" size={24} color="white" />,
-      placeholder: "Horario",
-      value: horas,
-      field: "horas"
     }
   ];
 
   return (
     <View>
+      {/* Campos de texto normales */}
       {esEditable ? (
         fields.map((inputConfig, index) => (
           <View key={index} style={styles.inputContainer}>
@@ -113,6 +160,71 @@ const FormFields: React.FC<FormFieldsProps> = ({
             </Text>
           </View>
         ))
+      )}
+
+      {/* Campo de horario */}
+      {esEditable ? (
+        <View style={styles.inputContainer}>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <MaterialCommunityIcons name="clock" size={24} color="white" style={{ marginRight: 10 }} />
+          </View>
+          <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'space-between' }}>
+            <TouchableOpacity 
+              style={[styles.input, { flex: 0.48, justifyContent: 'center' }]} 
+              onPress={() => setShowTimePickerInicio(true)}
+              disabled={status === 'completado' && !isAdmin}
+            >
+              <Text style={{ color: horaInicio ? 'white' : '#888' }}>
+                {horaInicio || "Hora de inicio"}
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={[styles.input, { flex: 0.48, justifyContent: 'center' }]} 
+              onPress={() => setShowTimePickerFin(true)}
+              disabled={status === 'completado' && !isAdmin}
+            >
+              <Text style={{ color: horaFin ? 'white' : '#888' }}>
+                {horaFin || "Hora de fin"}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      ) : (
+        <View style={[styles.inputContainer, { backgroundColor: "#0a3649" }]}>
+          <MaterialCommunityIcons name="clock-outline" size={24} color="white" />
+          <Text
+            style={[
+              styles.input,
+              status === 'completado' && { opacity: 0.7 },
+              { color: '#fff' }
+            ]}
+            numberOfLines={1}
+          >
+            {horas || "Horario"}
+          </Text>
+        </View>
+      )}
+      
+      {/* DateTimePicker para seleccionar la hora de inicio */}
+      {showTimePickerInicio && (
+        <DateTimePicker
+          value={selectedTimeInicio}
+          mode="time"
+          is24Hour={true}
+          display="default"
+          onChange={onChangeTimeInicio}
+        />
+      )}
+
+      {/* DateTimePicker para seleccionar la hora de fin */}
+      {showTimePickerFin && (
+        <DateTimePicker
+          value={selectedTimeFin}
+          mode="time"
+          is24Hour={true}
+          display="default"
+          onChange={onChangeTimeFin}
+        />
       )}
     </View>
   );
