@@ -1,12 +1,5 @@
-/**
- * ActivityItemUpdate.tsx
- * Componente para actualizar actividades en un proyecto.
- * Permite a usuarios administradores y autorizados modificar detalles
- * de actividades existentes, incluyendo título, descripción, ubicación,
- * horas, estado,  ícono e imágenes.
- */
 import React, { forwardRef, useImperativeHandle, useState, useEffect } from 'react';
-import { View, ScrollView, Alert, TouchableOpacity, Text, ActivityIndicator } from 'react-native';
+import { View, ScrollView, Alert, TouchableOpacity, Text, ActivityIndicator, Modal, StyleSheet } from 'react-native';
 import { StatusBar as ExpoStatusBar } from 'expo-status-bar';
 import axios from 'axios';
 import { getSesion } from '../../hooks/localStorageUser';
@@ -67,6 +60,8 @@ const ActivityItemUpdate = forwardRef<ActivityItemUpdateRef, ActivityItemUpdateP
     const [isEditing, setIsEditing] = useState(false);
     const [isEditLoading, setIsEditLoading] = useState(false);
     const [storedData, setStoredData] = useState<any>(null);
+    // Nuevo estado para el modal de confirmación de eliminación
+    const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
 
     /**
      * Normaliza el formato de las imágenes según su tipo
@@ -417,6 +412,75 @@ const ActivityItemUpdate = forwardRef<ActivityItemUpdateRef, ActivityItemUpdateP
       handleUpdateActivity: () => updateActivity(),
     }));
 
+    // Función que muestra el modal de confirmación
+    const confirmDeleteActivity = () => {
+      setShowDeleteConfirmation(true);
+    };
+
+    // Función que realiza la eliminación después de confirmar
+    const handleDeleteActivity = async () => {
+      try {
+        setIsLoading(true);
+        await removeActivity();
+        const activityId = storedData?.activity?.id || activity?.id;
+        await axios.post(`https://centroesteticoedith.com/endpoint/activities_delete/${activityId}`);
+        setIsLoading(false);
+        setShowDeleteConfirmation(false);
+        showMessage('Actividad eliminada correctamente');
+        setTimeout(hideModal, 2000);
+      } catch (error) {
+        setIsLoading(false);
+        console.error('Error al eliminar la actividad:', error);
+        showMessage('Error al eliminar la actividad. Por favor intente de nuevo.');
+      }
+    };
+
+    // Estilos para el modal de confirmación
+    const styles = StyleSheet.create({
+      modalContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      },
+      modalContent: {
+        backgroundColor: '#fff',
+        borderRadius: 10,
+        padding: 20,
+        width: '80%',
+        alignItems: 'center',
+      },
+      modalText: {
+        fontSize: 18,
+        textAlign: 'center',
+        marginBottom: 20,
+        color: '#333',
+      },
+      buttonContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-around',
+        width: '100%',
+      },
+      button: {
+        paddingVertical: 10,
+        paddingHorizontal: 20,
+        borderRadius: 5,
+        minWidth: 100,
+        alignItems: 'center',
+      },
+      cancelButton: {
+        backgroundColor: '#878787',
+      },
+      deleteButton: {
+        backgroundColor: '#ff3b30',
+      },
+      buttonText: {
+        color: '#fff',
+        fontSize: 16,
+        fontWeight: 'bold',
+      },
+    });
+
     // Renderizado del componente
     return (
       <View style={{ backgroundColor: "#0a3649", flex: 1 }}>
@@ -459,7 +523,7 @@ const ActivityItemUpdate = forwardRef<ActivityItemUpdateRef, ActivityItemUpdateP
               <>
                 <View style={{borderBottomColor: "#ccc", borderBottomWidth: 1, marginVertical: 10 }} />
                 <View style={{
-                  flexDirection: 'row',
+                  flexDirection: 'column',
                   alignItems: 'center',
                   gap: 10,
                   justifyContent: 'center',
@@ -495,6 +559,23 @@ const ActivityItemUpdate = forwardRef<ActivityItemUpdateRef, ActivityItemUpdateP
                       </>
                     )}
                   </TouchableOpacity>
+                  <TouchableOpacity 
+                    onPress={confirmDeleteActivity}
+                    style={{
+                      flex: 1,
+                      flexDirection: "row",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      borderRadius: 5,
+                      gap: 10,
+                      paddingVertical: 10,
+                    }}
+                  >
+                    <FontAwesome name="trash" size={18} color="red" />
+                    <Text style={{ fontSize: 18, color: "red"}}>
+                      Eliminar
+                    </Text>
+                  </TouchableOpacity>
                 </View>
               </>
             )}
@@ -507,6 +588,33 @@ const ActivityItemUpdate = forwardRef<ActivityItemUpdateRef, ActivityItemUpdateP
           message={modalMessage} 
           onClose={() => setShowModal(false)} 
         />
+
+        {/* Modal de confirmación para eliminar actividad */}
+        <Modal
+          visible={showDeleteConfirmation}
+          transparent={true}
+          animationType="fade"
+        >
+          <View style={styles.modalContainer}>
+            <View style={[styles.modalContent, { backgroundColor: '#05334b' }]}>
+              <Text style={[styles.modalText, { color: '#fff' }]}>¿Estás seguro que deseas eliminar esta actividad?</Text>
+              <View style={styles.buttonContainer}>
+                <TouchableOpacity 
+                  style={[styles.button, styles.cancelButton]} 
+                  onPress={() => setShowDeleteConfirmation(false)}
+                >
+                  <Text style={[styles.buttonText,]}>Cancelar</Text>
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  style={[styles.button, styles.deleteButton]} 
+                  onPress={handleDeleteActivity}
+                >
+                  <Text style={styles.buttonText}>Eliminar</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
 
         {/* Overlay de carga durante operaciones asíncronas */}
         {isLoading && (
