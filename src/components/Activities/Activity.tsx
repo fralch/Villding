@@ -533,28 +533,43 @@ const ActivityCard: React.FC<{
     <TouchableOpacity
       style={[
         styles.taskCard,
-        { backgroundColor: backgroundColor } // Aplicamos el color de fondo según la fecha
+        { backgroundColor: backgroundColor,
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+         } 
       ]}
       onPress={() => {
         setActivityItemCreateType(statusLabel);
         showModal();
       }}
     >
-      <View style={styles.taskHeader}>
-        <Text style={[styles.taskStatus, {
-          backgroundColor: statusLabel === 'Pendiente' ? '#F4C724'
-                          : statusLabel === 'Completado' ? '#4ec291'
-                          : '#0D5A73',
-          color: statusLabel === 'Programado' ? '#F4C724' : '#0D465E',
-          borderColor: statusLabel === 'Programado' ? '#F4C724' : 'white',
-          borderWidth: statusLabel === 'Programado' ? 1 : 0,
-        }]}>
-          {statusLabel}
-        </Text>
-        <Image source={iconMapping[activity.icon] || iconMapping['otras-actividades.png']} style={{ width: 24, height: 24, marginRight: 10, resizeMode: 'contain'}} />
+      <View>
+        <View style={styles.taskHeader}>
+          <Text style={[styles.taskStatus, {
+            backgroundColor: statusLabel === 'Pendiente' ? '#F4C724'
+                            : statusLabel === 'Completado' ? '#4ec291'
+                            : '#0D5A73',
+            color: statusLabel === 'Programado' ? '#F4C724' : '#0D465E',
+            borderColor: statusLabel === 'Programado' ? '#F4C724' : 'white',
+            borderWidth: statusLabel === 'Programado' ? 1 : 0,
+          }]}>
+            {statusLabel}
+          </Text>
+        
+        </View>
+        <Text style={styles.taskTitle}>{activity.name}</Text>
+        <Text style={styles.taskTime}>{activity.horas} horas</Text>
       </View>
-      <Text style={styles.taskTitle}>{activity.name}</Text>
-      <Text style={styles.taskTime}>{activity.horas} horas</Text>
+      <Image 
+          source={iconMapping[activity.icon] || iconMapping['otras-actividades.png']} 
+          style={{ 
+            width: 36, 
+            height: 36, 
+            marginRight: 10, 
+            resizeMode: 'contain',
+            alignSelf: 'center'
+          }} 
+        />
     </TouchableOpacity>
   );
 };
