@@ -12,6 +12,7 @@ import {
   StyleSheet,
 } from "react-native";
 import { StatusBar as ExpoStatusBar } from "expo-status-bar";
+import DateTimePicker, { DateTimePickerEvent } from "@react-native-community/datetimepicker";
 import { getSesion } from '../../hooks/localStorageUser';
 import {
   MaterialCommunityIcons,
@@ -58,7 +59,8 @@ interface FormDataState {
   titulo: string;
   description: string;
   location: string;
-  horas: string;
+  horaInicio: string;
+  horaFin: string;
   comments: string;
   selectedIcon: string;
   fecha_creacion: string;
@@ -82,7 +84,8 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
     titulo: "",
     description: "",
     location: "",
-    horas: "",
+    horaInicio: "",
+    horaFin: "",
     comments: "",
     selectedIcon: "local-shipping.svg",
     fecha_creacion: "",
@@ -189,7 +192,7 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
       name: formData.titulo,
       description: formData.description,
       location: formData.location,
-      horas: formData.horas,
+      horas: formData.horaInicio && formData.horaFin ? `${formData.horaInicio} - ${formData.horaFin}` : "",
       status,
       icon: formData.selectedIcon,
       comments: formData.comments || "",
@@ -284,7 +287,8 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
           <FormFields
             description={formData.description}
             location={formData.location}
-            horas={formData.horas}
+            horaInicio={formData.horaInicio}
+            horaFin={formData.horaFin}
             comments={formData.comments}
             onValueChange={(field, value) => setFormData(prev => ({ ...prev, [field]: value }))}
           />
@@ -625,16 +629,49 @@ const TitleSection: React.FC<TitleSectionProps> = ({
 const FormFields = ({
   description,
   location,
-  horas,
+  horaInicio,
+  horaFin,
   comments,
   onValueChange
 }: {
   description: string,
   location: string,
-  horas: string,
+  horaInicio: string,
+  horaFin: string,
   comments: string,
   onValueChange: (field: string, value: string) => void
 }) => {
+  const [showTimePickerInicio, setShowTimePickerInicio] = useState(false);
+  const [showTimePickerFin, setShowTimePickerFin] = useState(false);
+  const [selectedTimeInicio, setSelectedTimeInicio] = useState(new Date());
+  const [selectedTimeFin, setSelectedTimeFin] = useState(new Date());
+
+  // Función para manejar el cambio de hora de inicio en el DateTimePicker
+  const onChangeTimeInicio = (event: DateTimePickerEvent, selectedDate?: Date) => {
+    setShowTimePickerInicio(false); // Ocultar el selector independientemente de la acción
+    if (event.type === 'set' && selectedDate) { // 'set' significa que el usuario seleccionó una hora
+      setSelectedTimeInicio(selectedDate);
+      // Formatear la hora seleccionada (HH:MM)
+      const hours = selectedDate.getHours().toString().padStart(2, '0');
+      const minutes = selectedDate.getMinutes().toString().padStart(2, '0');
+      const formattedTime = `${hours}:${minutes}`;
+      onValueChange("horaInicio", formattedTime);
+    }
+  };
+
+  // Función para manejar el cambio de hora de fin en el DateTimePicker
+  const onChangeTimeFin = (event: DateTimePickerEvent, selectedDate?: Date) => {
+    setShowTimePickerFin(false); // Ocultar el selector independientemente de la acción
+    if (event.type === 'set' && selectedDate) { // 'set' significa que el usuario seleccionó una hora
+      setSelectedTimeFin(selectedDate);
+      // Formatear la hora seleccionada (HH:MM)
+      const hours = selectedDate.getHours().toString().padStart(2, '0');
+      const minutes = selectedDate.getMinutes().toString().padStart(2, '0');
+      const formattedTime = `${hours}:${minutes}`;
+      onValueChange("horaFin", formattedTime);
+    }
+  };
+
   const fields = [
     {
       icon: <Entypo name="text" size={24} color="white" />,
@@ -647,13 +684,7 @@ const FormFields = ({
       placeholder: "Ubicación",
       value: location,
       field: "location"
-    },
-    {
-      icon: <MaterialCommunityIcons name="clock-outline" size={24} color="white" />,
-      placeholder: "Horario",
-      value: horas,
-      field: "horas"
-    },
+    }
   ];
 
   return (
@@ -672,6 +703,53 @@ const FormFields = ({
           />
         </View>
       ))}
+
+      {/* Campos de hora combinados en un solo contenedor */}
+      <View style={styles.inputContainer}>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <MaterialCommunityIcons name="clock" size={24} color="white" style={{ marginRight: 10 }} />
+        </View>
+        <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'space-between' }}>
+          <TouchableOpacity 
+            style={[styles.input, { flex: 0.48, justifyContent: 'center' }]} 
+            onPress={() => setShowTimePickerInicio(true)}
+          >
+            <Text style={{ color: horaInicio ? 'white' : '#888' }}>
+              {horaInicio || "Hora de inicio"}
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={[styles.input, { flex: 0.48, justifyContent: 'center' }]} 
+            onPress={() => setShowTimePickerFin(true)}
+          >
+            <Text style={{ color: horaFin ? 'white' : '#888' }}>
+              {horaFin || "Hora de fin"}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+      
+      {/* DateTimePicker para seleccionar la hora de inicio */}
+      {showTimePickerInicio && (
+        <DateTimePicker
+          value={selectedTimeInicio}
+          mode="time"
+          is24Hour={true}
+          display="default"
+          onChange={onChangeTimeInicio}
+        />
+      )}
+
+      {/* DateTimePicker para seleccionar la hora de fin */}
+      {showTimePickerFin && (
+        <DateTimePicker
+          value={selectedTimeFin}
+          mode="time"
+          is24Hour={true}
+          display="default"
+          onChange={onChangeTimeFin}
+        />
+      )}
     </View>
   );
 };
