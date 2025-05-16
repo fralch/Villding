@@ -460,7 +460,7 @@ const handleSaveActivity = async () => {
             <Text style={styles.modalTitle}>Editar Seguimiento</Text>
             <TextInput
               style={styles.modalInput}
-              placeholder="Título del seguimiento"
+              placeholder="Renombrar seguimiento"
               placeholderTextColor="#666"
               value={trackingTitle}
               onChangeText={setTrackingTitle}
