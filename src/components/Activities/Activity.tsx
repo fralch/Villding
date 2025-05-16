@@ -11,6 +11,7 @@ import {
   Pressable,
   PanResponder,
   Image,
+  TextInput
 } from 'react-native';
 import { StatusBar as ExpoStatusBar } from 'expo-status-bar';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
@@ -78,6 +79,19 @@ export default function Activity(props: any) {
 
   
   const [modalOptionsVisible, setModalOptionsVisible] = useState(false);
+  const [trackingTitle, setTrackingTitle] = useState('');
+
+  const handleSaveTitle = () => {
+    // Aquí implementaremos la lógica para guardar el título
+    console.log('Guardando nuevo título:', trackingTitle);
+    setModalOptionsVisible(false);
+  };
+
+  const handleDeleteTracking = () => {
+    // Aquí implementaremos la lógica para eliminar el seguimiento
+    console.log('Eliminando seguimiento');
+    setModalOptionsVisible(false);
+  };
   const [activityItemCreateType, setActivityItemCreateType] = useState('Pendiente');
   const [selectedDate, setSelectedDate] = useState('');
   const [isVisible, setIsVisible] = useState(false);
@@ -373,7 +387,7 @@ const handleSaveActivity = async () => {
         </TouchableOpacity>
         <Text style={styles.headerTitle}>{titleTracking}</Text>
         <TouchableOpacity onPress={() => setModalOptionsVisible(true)}>
-          <MaterialIcons name='more-vert' size={24} color='white' />
+          <Ionicons name='settings' size={24} color='white' />
         </TouchableOpacity>
       </View>
       
@@ -427,25 +441,59 @@ const handleSaveActivity = async () => {
       </ScrollView>
 
       <Modal visible={modalOptionsVisible} animationType='fade' transparent={true} onRequestClose={() => setModalOptionsVisible(false)}>
-        <View style={styles.modalContainer}>
-          <Pressable style={styles.modalContainerOptions} onPressOut={() => setModalOptionsVisible(false)}>
-            <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 10, color: 'white' }}>Seguimiento</Text>
-            <View style={{ marginLeft: 0 }}>
-              <TouchableOpacity style={{ flexDirection: 'row', height: 40, alignItems: 'center' }}>
-                <Ionicons name="share-social-sharp" size={18} color="white" />
-                <Text style={{ marginLeft: 10, color: 'white' }}>Compartir enlace</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={{ flexDirection: 'row', height: 40, alignItems: 'center' }}>
-                <MaterialCommunityIcons name="pencil" size={18} color="white" />
-                <Text style={{ marginLeft: 10, color: 'white' }}>Renombrar</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={{ flexDirection: 'row', height: 40, alignItems: 'center' }}>
-                <Ionicons name="settings" size={18} color="white" />
-                <Text style={{ marginLeft: 10, color: 'white' }}>Configurar seguimiento</Text>
+        <TouchableOpacity 
+          style={styles.modalContainer} 
+          activeOpacity={1} 
+          onPress={() => setModalOptionsVisible(false)}
+        >
+          <TouchableOpacity 
+            style={styles.modalContainerOptions} 
+            activeOpacity={1} 
+            onPress={(e) => e.stopPropagation()}
+          >
+            <TouchableOpacity 
+              style={styles.modalCloseButton}
+              onPress={() => setModalOptionsVisible(false)}
+            >
+              <Text style={styles.modalCloseButtonText}>×</Text>
+            </TouchableOpacity>
+            <Text style={styles.modalTitle}>Editar Seguimiento</Text>
+            <TextInput
+              style={styles.modalInput}
+              placeholder="Título del seguimiento"
+              placeholderTextColor="#666"
+              value={trackingTitle}
+              onChangeText={setTrackingTitle}
+            />
+            <View style={styles.modalButtonContainer}>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                <TouchableOpacity 
+                  style={[styles.modalSaveButton, !trackingTitle.trim() && styles.modalButtonDisabled]}
+                  disabled={!trackingTitle.trim()}
+                  onPress={() => {
+                    handleSaveTitle();
+                  }}
+                >
+                  <Text style={[styles.modalButtonText, !trackingTitle.trim() && styles.modalButtonTextDisabled]}>Guardar</Text>
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  style={styles.modalDeleteButton}
+                  onPress={() => {
+                    handleDeleteTracking();
+                  }}
+                >
+                  <Text style={styles.modalButtonText}>Eliminar</Text>
+                </TouchableOpacity>
+              </View>
+              <TouchableOpacity 
+                style={styles.modalCancelButton}
+                onPress={() => setModalOptionsVisible(false)}
+              >
+                <Text style={styles.modalButtonText}>Cancelar</Text>
               </TouchableOpacity>
             </View>
-          </Pressable>
-        </View>
+          </TouchableOpacity>
+        </TouchableOpacity>
       </Modal>
 
       <Modal 
