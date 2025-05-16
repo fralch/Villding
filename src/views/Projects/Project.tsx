@@ -109,12 +109,12 @@ export default function Project(props: any) {
 
   useEffect(() => {
     if (ProyectoActual) {
-      console.log(ProyectoActual.id);
+      // Sirve para actulizar las actividades pendientes o programadas 
       axios.post(`https://centroesteticoedith.com/endpoint/activities_check/${ProyectoActual.id}`)
         .then(response => {
         })
         .catch(error => {
-          console.error(error);
+          // console.error(error);
         });
 
     }
