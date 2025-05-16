@@ -143,7 +143,7 @@ export const styles = StyleSheet.create({
     gap: 10,
   },
   modalSaveButton: {
-    backgroundColor: '#F4C724',
+    backgroundColor: '#056375',
     padding: 12,
     borderRadius: 8,
     width: '48%',
@@ -157,7 +157,7 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
   },
   modalButtonText: {
-    color: '#05222F',
+    color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
   },
