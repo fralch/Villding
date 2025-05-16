@@ -11,7 +11,8 @@ import {
   Pressable,
   PanResponder,
   Image,
-  TextInput
+  TextInput,
+  Alert
 } from 'react-native';
 import { StatusBar as ExpoStatusBar } from 'expo-status-bar';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
@@ -81,16 +82,27 @@ export default function Activity(props: any) {
   const [modalOptionsVisible, setModalOptionsVisible] = useState(false);
   const [trackingTitle, setTrackingTitle] = useState('');
 
-  const handleSaveTitle = () => {
-    // Aquí implementaremos la lógica para guardar el título
-    console.log('Guardando nuevo título:', trackingTitle);
-    setModalOptionsVisible(false);
+  const handleSaveTitle = async () => {
+    try {
+      await axios.post(`https://centroesteticoedith.com/endpoint/tracking/update-title/${tracking.id}`, {
+        title: trackingTitle
+      });
+      setTitleTracking(trackingTitle);
+      setModalOptionsVisible(false);
+    } catch (error) {
+      console.error('Error al actualizar el título:', error);
+      Alert.alert('Error', 'No se pudo actualizar el título del seguimiento');
+    }
   };
 
-  const handleDeleteTracking = () => {
-    // Aquí implementaremos la lógica para eliminar el seguimiento
-    console.log('Eliminando seguimiento');
-    setModalOptionsVisible(false);
+  const handleDeleteTracking = async () => {
+    try {
+      await axios.post(`https://centroesteticoedith.com/endpoint/tracking/delete/${tracking.id}`);
+      navigation.goBack();
+    } catch (error) {
+      console.error('Error al eliminar el seguimiento:', error);
+      Alert.alert('Error', 'No se pudo eliminar el seguimiento');
+    }
   };
   const [activityItemCreateType, setActivityItemCreateType] = useState('Pendiente');
   const [selectedDate, setSelectedDate] = useState('');
