@@ -20,7 +20,7 @@ import ActivityItemCreate, { ActivityItemCreateRef } from './ActivityItemCreate'
 import ActivityItemUpdate, { ActivityItemUpdateRef } from './ActivityItemUpdate';
 import ActivityItemComplete, { ActivityItemCompleteRef } from './ActivityItemComplete';
 import { getSesion } from '../../hooks/localStorageUser';
-import {iconMapping} from './icons';
+import {iconImports} from './icons';
 import { styles } from "./styles/ActivityStyles";
 import { storeActivity, removeActivity } from '../../hooks/localStorageCurrentActvity';
 
@@ -561,7 +561,7 @@ const ActivityCard: React.FC<{
         <Text style={styles.taskTime}>{activity.horas} horas</Text>
       </View>
       <Image 
-          source={iconMapping[activity.icon] || iconMapping['otras-actividades.png']} 
+          source={iconImports[activity.icon as keyof typeof iconImports] || iconImports['casco.png']}
           style={{ 
             width: 36, 
             height: 36, 
