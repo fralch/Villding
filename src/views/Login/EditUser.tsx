@@ -36,6 +36,7 @@ const EditUser = () => {
   const [editBool, setEditBool] = useState(false);
   const [showModalConfirm, setShowModalConfirm] = useState(false);
   const [showModalLoading, setShowModalLoading] = useState(false);
+  const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
   const [msjeModal, setMsjeModal] = useState('');
   const [modalEdit, setModalEdit] = useState(false);
   const [modalData, setModalData] = useState({
@@ -368,7 +369,7 @@ const EditUser = () => {
                 <Ionicons name="power" size={25} color="#fff" />
                 <Text style={styles.logoutText}>Cerrar sesión</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.deleteButton} onPress={logout}>
+              <TouchableOpacity style={styles.deleteButton} onPress={() => setShowDeleteConfirmModal(true)}>
                 <Feather name="trash" size={24} color="#c92a42" />
                 <Text style={styles.deleteText}>Eliminar cuenta</Text>
               </TouchableOpacity>
@@ -412,6 +413,37 @@ const EditUser = () => {
       </Modal>
       <ConfirmModal visible={showModalConfirm} message={msjeModal} onClose={() => setShowModalConfirm(false)} />
       <LoadingModal visible={showModalLoading} />
+      
+      {/* Modal de confirmación para eliminar cuenta */}
+      <Modal
+        visible={showDeleteConfirmModal}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setShowDeleteConfirmModal(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalText}>¿Estás seguro que deseas eliminar tu cuenta?</Text>
+            <Text style={[styles.modalText, {fontSize: 14, marginTop: -10}]}>Esta acción no se puede deshacer.</Text>
+            <View
+              style={{ flexDirection: "row", justifyContent: "space-between", gap: 30 }}
+            >
+              <TouchableOpacity
+                style={[styles.button, { backgroundColor: "#05222F" }]}
+                onPress={() => setShowDeleteConfirmModal(false)}
+              >
+                <Text style={styles.buttonText}>Cancelar</Text>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={[styles.button, { backgroundColor: "#c92a42" }]} 
+                onPress={logout}
+              >
+                <Text style={styles.buttonText}>Eliminar</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
