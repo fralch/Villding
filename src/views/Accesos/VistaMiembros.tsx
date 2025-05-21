@@ -189,7 +189,7 @@ const VistaMiembros: React.FC<any> = (project) => {
         >
           <MaterialIcons name="save-alt" size={24} color="gray" />
           <Text style={[styles.inviteText, { marginLeft: 10 }]}>
-            Ingresar usuario
+            Agregar usuario
           </Text>
         </TouchableOpacity>
       </View>
