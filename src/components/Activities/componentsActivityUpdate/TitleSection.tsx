@@ -142,6 +142,11 @@ const TitleSection: React.FC<TitleSectionProps> = ({
     }
   };
   
+  // Función para eliminar una imagen desde el visor de pantalla completa
+  const handleDeleteImageFromFullScreen = (index: number) => {
+    handleRemoveImage(index);
+  };
+  
 
   return (
     <View style={{ backgroundColor: "#0a3649" }}>
@@ -240,6 +245,8 @@ const TitleSection: React.FC<TitleSectionProps> = ({
         initialIndex={activeImageIndex}
         visible={fullScreenVisible}
         onClose={() => setFullScreenVisible(false)}
+        onDeleteImage={handleDeleteImageFromFullScreen}
+        canDelete={esEditable}
       />
       
       <StatusIndicator tipoTask={status} />

@@ -18,13 +18,17 @@ interface FullScreenImageViewerProps {
   initialIndex: number;
   visible: boolean;
   onClose: () => void;
+  onDeleteImage?: (index: number) => void;
+  canDelete?: boolean;
 }
 
 const FullScreenImageViewer: React.FC<FullScreenImageViewerProps> = ({
   images,
   initialIndex,
   visible,
-  onClose
+  onClose,
+  onDeleteImage,
+  canDelete = false
 }) => {
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   
@@ -122,6 +126,26 @@ const FullScreenImageViewer: React.FC<FullScreenImageViewerProps> = ({
         <TouchableOpacity style={styles.closeButton} onPress={onClose}>
           <MaterialIcons name="close" size={30} color="white" />
         </TouchableOpacity>
+
+        {/* Botón de eliminación - solo se muestra si canDelete es true */}
+        {canDelete && onDeleteImage && (
+          <TouchableOpacity 
+            style={styles.deleteButton} 
+            onPress={() => {
+              onDeleteImage(safeIndex);
+              // Si es la última imagen, cerrar el visor
+              if (validImages.length <= 1) {
+                onClose();
+              } else if (safeIndex === validImages.length - 1) {
+                // Si es la última imagen en el array, ir a la anterior
+                setCurrentIndex(safeIndex - 1);
+              }
+              // Si no es la última, el índice se mantiene y mostrará la siguiente imagen
+            }}
+          >
+            <MaterialIcons name="delete" size={26} color="white" />
+          </TouchableOpacity>
+        )}
       </View>
     </Modal>
   );
@@ -149,6 +173,17 @@ const styles = StyleSheet.create({
     top: Platform.OS === 'ios' ? 50 : 20,
     right: 20,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    borderRadius: 20,
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  deleteButton: {
+    position: 'absolute',
+    top: Platform.OS === 'ios' ? 50 : 20,
+    right: 70, // Posicionado a la izquierda del botón de cierre
+    backgroundColor: 'rgba(255, 59, 48, 0.7)', // Color rojo para indicar eliminación
     borderRadius: 20,
     width: 40,
     height: 40,
