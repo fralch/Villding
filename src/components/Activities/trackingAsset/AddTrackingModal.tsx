@@ -33,16 +33,17 @@ const AddTrackingModal: React.FC<AddTrackingModalProps> = ({ visible, onClose, o
         />
         <View style={{ flexDirection: "row", justifyContent: "space-between", gap: 8, marginTop: 16 }}>
           <TouchableOpacity
-            style={[styles.modalButton, { backgroundColor: "#004e66", borderColor: "white", borderWidth: 1 }]}
+             style={styles.modalButton}
             onPress={onClose}
           >
-            <Text style={[styles.modalButtonText, { color: "white", paddingHorizontal: 10 }]}>Cerrar</Text>
+            <Text style={[styles.modalButtonText, { paddingHorizontal: 10 }]} >Cerrar</Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={styles.modalButton}
+           style={[styles.modalButton, { backgroundColor: "#004e66", borderColor: "white", borderWidth: 1 }]}
+            
             onPress={onSave}
           >
-            <Text style={[styles.modalButtonText, { paddingHorizontal: 10 }]}>Guardar</Text>
+            <Text style={[styles.modalButtonText, { color: "white", paddingHorizontal: 10 }]}>Guardar</Text>
           </TouchableOpacity>
         </View>
       </View>
