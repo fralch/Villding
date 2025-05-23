@@ -71,6 +71,20 @@ const FullScreenImageViewer: React.FC<FullScreenImageViewerProps> = ({
     }
   };
 
+  const handleDeleteImage = () => {
+    if (onDeleteImage) {
+      onDeleteImage(safeIndex);
+      // Si es la última imagen, cerrar el visor
+      if (validImages.length <= 1) {
+        onClose();
+      } else if (safeIndex === validImages.length - 1) {
+        // Si es la última imagen en el array, ir a la anterior
+        setCurrentIndex(safeIndex - 1);
+      }
+      // Si no es la última, el índice se mantiene y mostrará la siguiente imagen
+    }
+  };
+
   return (
     <Modal visible={visible} transparent={true} animationType="fade">
       <StatusBar hidden={true} />
@@ -127,24 +141,18 @@ const FullScreenImageViewer: React.FC<FullScreenImageViewerProps> = ({
           <MaterialIcons name="close" size={30} color="white" />
         </TouchableOpacity>
 
-        {/* Botón de eliminación - solo se muestra si canDelete es true */}
+        {/* Botón de eliminación mejorado - centrado en la parte inferior */}
         {canDelete && onDeleteImage && (
-          <TouchableOpacity 
-            style={styles.deleteButton} 
-            onPress={() => {
-              onDeleteImage(safeIndex);
-              // Si es la última imagen, cerrar el visor
-              if (validImages.length <= 1) {
-                onClose();
-              } else if (safeIndex === validImages.length - 1) {
-                // Si es la última imagen en el array, ir a la anterior
-                setCurrentIndex(safeIndex - 1);
-              }
-              // Si no es la última, el índice se mantiene y mostrará la siguiente imagen
-            }}
-          >
-            <MaterialIcons name="delete" size={26} color="white" />
-          </TouchableOpacity>
+          <View style={styles.bottomActions}>
+            <TouchableOpacity 
+              style={styles.deleteButton} 
+              onPress={handleDeleteImage}
+              activeOpacity={0.8}
+            >
+              <MaterialIcons name="delete" size={24} color="white" />
+              <Text style={styles.deleteButtonText}>Eliminar</Text>
+            </TouchableOpacity>
+          </View>
         )}
       </View>
     </Modal>
@@ -179,16 +187,37 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  deleteButton: {
+  bottomActions: {
     position: 'absolute',
-    top: Platform.OS === 'ios' ? 50 : 20,
-    right: 70, // Posicionado a la izquierda del botón de cierre
-    backgroundColor: 'rgba(255, 59, 48, 0.7)', // Color rojo para indicar eliminación
-    borderRadius: 20,
-    width: 40,
-    height: 40,
-    justifyContent: 'center',
+    bottom: 80, // Espaciado desde abajo, por encima de la paginación
+    left: 0,
+    right: 0,
     alignItems: 'center',
+    justifyContent: 'center',
+  },
+  deleteButton: {
+    backgroundColor: 'rgba(255, 59, 48, 0.9)',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 25,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: 120,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  deleteButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '600',
+    marginLeft: 8,
   },
   navButton: {
     position: 'absolute',
