@@ -31,25 +31,33 @@ const FullScreenImageViewer: React.FC<FullScreenImageViewerProps> = ({
   canDelete = false
 }) => {
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   
   // Función para obtener la fuente de la imagen - agregando verificación para undefined
   const getImageSource = (imageUri: string | undefined) => {
-    // Si imageUri es undefined o vacío, devolver una imagen placeholder o un objeto vacío
-    if (!imageUri) {
+    // Si imageUri es undefined, null, vacío o no es string, devolver una imagen placeholder
+    if (!imageUri || typeof imageUri !== 'string' || imageUri.trim() === '') {
       return { uri: 'https://via.placeholder.com/400' };
     }
     
-    if (imageUri.startsWith('file://') || imageUri.startsWith('content://')) {
-      return { uri: imageUri };
+    // Limpiar espacios en blanco
+    const cleanUri = imageUri.trim();
+    
+    if (cleanUri.startsWith('file://') || cleanUri.startsWith('content://')) {
+      return { uri: cleanUri };
     }
-    if (imageUri.startsWith('http')) {
-      return { uri: imageUri };
+    if (cleanUri.startsWith('http')) {
+      return { uri: cleanUri };
     }
-    return { uri: `https://centroesteticoedith.com/endpoint/images/activities/${imageUri}` };
+    return { uri: `https://centroesteticoedith.com/endpoint/images/activities/${cleanUri}` };
   };
 
   // Filtrando imágenes vacías o undefined antes de usarlas
-  const validImages = images.filter(img => !!img);
+  const validImages = images.filter(img => 
+    img && 
+    typeof img === 'string' && 
+    img.trim() !== ''
+  );
 
   // Verificar si hay imágenes válidas para mostrar
   if (validImages.length === 0) {
@@ -57,7 +65,7 @@ const FullScreenImageViewer: React.FC<FullScreenImageViewerProps> = ({
   }
 
   // Asegurar que el índice actual es válido
-  const safeIndex = Math.min(currentIndex, validImages.length - 1);
+  const safeIndex = Math.max(0, Math.min(currentIndex, validImages.length - 1));
   
   const navigateToNext = () => {
     if (currentIndex < validImages.length - 1) {
@@ -72,6 +80,10 @@ const FullScreenImageViewer: React.FC<FullScreenImageViewerProps> = ({
   };
 
   const handleDeleteImage = () => {
+    setShowDeleteModal(true);
+  };
+
+  const confirmDeleteImage = () => {
     if (onDeleteImage) {
       onDeleteImage(safeIndex);
       // Si es la última imagen, cerrar el visor
@@ -83,6 +95,11 @@ const FullScreenImageViewer: React.FC<FullScreenImageViewerProps> = ({
       }
       // Si no es la última, el índice se mantiene y mostrará la siguiente imagen
     }
+    setShowDeleteModal(false);
+  };
+
+  const cancelDelete = () => {
+    setShowDeleteModal(false);
   };
 
   return (
@@ -154,6 +171,47 @@ const FullScreenImageViewer: React.FC<FullScreenImageViewerProps> = ({
             </TouchableOpacity>
           </View>
         )}
+
+        {/* Modal de confirmación para eliminar */}
+        <Modal
+          visible={showDeleteModal}
+          transparent={true}
+          animationType="fade"
+          onRequestClose={cancelDelete}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.confirmModal}>
+              <MaterialIcons 
+                name="warning" 
+                size={48} 
+                color="#e67e22" 
+                style={styles.warningIcon}
+              />
+              <Text style={styles.modalTitle}>¿Eliminar imagen?</Text>
+              <Text style={styles.modalMessage}>
+                Esta acción no se puede deshacer. La imagen será eliminada permanentemente.
+              </Text>
+              
+              <View style={styles.modalButtons}>
+                <TouchableOpacity 
+                  style={[styles.modalButton, styles.cancelButton]} 
+                  onPress={cancelDelete}
+                  activeOpacity={0.8}
+                >
+                  <Text style={styles.cancelButtonText}>Cancelar</Text>
+                </TouchableOpacity>
+                
+                <TouchableOpacity 
+                  style={[styles.modalButton, styles.confirmButton]} 
+                  onPress={confirmDeleteImage}
+                  activeOpacity={0.8}
+                >
+                  <Text style={styles.confirmButtonText}>Eliminar</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
       </View>
     </Modal>
   );
@@ -266,6 +324,78 @@ const styles = StyleSheet.create({
   counterText: {
     color: 'white',
     fontSize: 14,
+  },
+  // Estilos para el modal de confirmación
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  confirmModal: {
+    backgroundColor: '#0A3649',
+    borderRadius: 20,
+    padding: 24,
+    alignItems: 'center',
+    maxWidth: 320,
+    width: '100%',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 10,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
+    elevation: 10,
+  },
+  warningIcon: {
+    marginBottom: 16,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#fff',
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  modalMessage: {
+    fontSize: 16,
+    color: '#fff',
+    textAlign: 'center',
+    lineHeight: 22,
+    marginBottom: 24,
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    width: '100%',
+    gap: 12,
+  },
+  modalButton: {
+    flex: 1,
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cancelButton: {
+    backgroundColor: '#f5f5f5',
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+  },
+  confirmButton: {
+    backgroundColor: '#ff3b30',
+  },
+  cancelButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+  },
+  confirmButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: 'white',
   },
 });
 
