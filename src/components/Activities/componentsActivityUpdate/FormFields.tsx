@@ -146,19 +146,22 @@ const FormFields: React.FC<FormFieldsProps> = ({
         ))
       ) : (
         fields.map((inputConfig, index) => (
-          <View key={index} style={[styles.inputContainer, { backgroundColor: "#0a3649" }]}>
-            {inputConfig.icon}
-            <Text
-              style={[
-                styles.input,
-                status === 'completado' && { opacity: 0.7 },
-                { color: '#fff' }
-              ]}
-              numberOfLines={inputConfig.field === 'description' ? 4 : 1}
-            >
-              {inputConfig.value || inputConfig.placeholder}
-            </Text>
-          </View>
+          // Solo mostrar el campo si tiene un valor
+          inputConfig.value ? (
+            <View key={index} style={[styles.inputContainer, { backgroundColor: "#0a3649" }]}>
+              {inputConfig.icon}
+              <Text
+                style={[
+                  styles.input,
+                  status === 'completado' && { opacity: 0.7 },
+                  { color: '#fff' }
+                ]}
+                numberOfLines={inputConfig.field === 'description' ? 4 : 1}
+              >
+                {inputConfig.value}
+              </Text>
+            </View>
+          ) : null
         ))
       )}
 
@@ -190,19 +193,22 @@ const FormFields: React.FC<FormFieldsProps> = ({
           </View>
         </View>
       ) : (
-        <View style={[styles.inputContainer, { backgroundColor: "#0a3649" }]}>
-          <MaterialCommunityIcons name="clock-outline" size={24} color="white" />
-          <Text
-            style={[
-              styles.input,
-              status === 'completado' && { opacity: 0.7 },
-              { color: '#fff' }
-            ]}
-            numberOfLines={1}
-          >
-            {horas || "Horario"}
-          </Text>
-        </View>
+        // Solo mostrar el horario si tiene un valor
+        horas ? (
+          <View style={[styles.inputContainer, { backgroundColor: "#0a3649" }]}>
+            <MaterialCommunityIcons name="clock-outline" size={24} color="white" />
+            <Text
+              style={[
+                styles.input,
+                status === 'completado' && { opacity: 0.7 },
+                { color: '#fff' }
+              ]}
+              numberOfLines={1}
+            >
+              {horas}
+            </Text>
+          </View>
+        ) : null
       )}
       
       {/* DateTimePicker para seleccionar la hora de inicio */}
