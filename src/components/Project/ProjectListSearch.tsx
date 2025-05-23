@@ -1,6 +1,7 @@
 // src/components/ProjectList.tsx
 import React from 'react';
 import { View, FlatList, StyleSheet } from 'react-native';
+import { useNavigation, NavigationProp } from '@react-navigation/native';
 import ProjectListItem from './ProjectListItemSearch';
 
 interface Project {
@@ -20,12 +21,15 @@ interface ProjectListProps {
 }
 
 const ProjectListSearch: React.FC<ProjectListProps> = ({ projects }) => {
+  const { navigate } = useNavigation<NavigationProp<any>>();
+  
   return (
     <View style={styles.container}>
       <FlatList
         data={projects}
         renderItem={({ item }) => (
           <ProjectListItem
+            id={item.id}
             image={item.image}
             title={item.title}
             location={item.subtitle}

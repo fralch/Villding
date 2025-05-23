@@ -13,6 +13,7 @@ interface ProjectListItemProps {
   end_date: string;
   week: number;
   week_current: number;
+  id?: string;
 }
 
 const ProjectListItem: React.FC<ProjectListItemProps> = ({
@@ -21,15 +22,32 @@ const ProjectListItem: React.FC<ProjectListItemProps> = ({
   location,
   company,
   week,
+  week_current,
+  start_date,
+  end_date,
+  id,
 }) => {
   const { navigate } = useNavigation<NavigationProp<any>>();
+  
+  // Crear el objeto proyecto completo para pasar a la navegación
+  const project = {
+    id: id || '',
+    image,
+    title,
+    subtitle: location,
+    company,
+    start_date,
+    end_date,
+    week,
+    week_current
+  };
 
   return (
     <TouchableOpacity
       style={styles.container}
-      onPress={() => navigate('Project')}
+      onPress={() => navigate('Project', { project })}
       activeOpacity={0.7}
-      onLongPress={() => navigate('Project')}
+      onLongPress={() => navigate('Project', { project })}
     >
       <Image
         source={{ uri: image }}
