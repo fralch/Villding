@@ -116,6 +116,8 @@ const EditProject: React.FC = () => {
   const [showModalConfirm, setShowModalConfirm] = useState(false);
   const [showModalLoading, setShowModalLoading] = useState(false);
   const [msjeModal, setMsjeModal] = useState('');
+  const [tipoProyecto, setTipoProyecto] = useState<{ name: string; id: string }[]>([]);
+  const [subtypeProyecto, setSubtypeProyecto] = useState<{ name: string; id: string; project_type_id: string }[]>([]);
 
   const [ModalDelete, setModalDelete] = useState(false);
 
@@ -169,12 +171,12 @@ const EditProject: React.FC = () => {
 
   // Obtener los tipos y subtipos de proyecto al montar el componente
   useEffect(() => {
-    fetch(`${API_BASE_URL}/project/types`)
-      .then(response => response.json())
+    axios.get(`${API_BASE_URL}/project/types`)
+      .then(response => response.data)
       .then(data => setTiposProyectos(data));
 
-    fetch(`${API_BASE_URL}/project/subtypes`)
-      .then(response => response.json())
+    axios.get(`${API_BASE_URL}/project/subtypes`)
+      .then(response => response.data)
       .then(data => setSubtiposProyecto(data));
   }, []);
 
@@ -240,6 +242,33 @@ useEffect(() => {
       subtipoProyecto: project.project_subtype_id || "",
       endDate: project.end_date
     });
+
+    // Obtener el tipo y subtipo específico del proyecto
+    if (project.id) {
+      // Obtener el tipo de proyecto específico
+      axios.get(`${API_BASE_URL}/project/types/${project.id}`)
+        .then(response => response.data)
+        .then(data => {
+          console.log('Tipo de proyecto:', data);
+          if (data.type) {
+            setTipoProyecto([data.type]);
+            setFormData(prev => ({
+              ...prev,
+              tipoProyecto: data.type.id
+            }));
+          }
+          if (data.subtype) {
+            setSubtypeProyecto([data.subtype]);
+            setFormData(prev => ({
+              ...prev,
+              subtipoProyecto: data.subtype.id
+            }));
+          }
+        })
+        .catch(error => console.error("Error al obtener tipos de proyecto específicos:", error));
+
+    
+    }
   } else {
     // Redirect if no project to edit
     navigate('HomeProject');
@@ -774,8 +803,7 @@ useEffect(() => {
           ))}
         </Picker>
 
-        {subtipoProyectoFilter.length > 0 && (
-          <View>
+        <View>
             <Text style={styles.label}>Subtipo de proyecto</Text>
             <Picker
               selectedValue={formData.subtipoProyecto}
@@ -798,7 +826,6 @@ useEffect(() => {
               ))}
             </Picker>
           </View>
-        )}
 
         <Text style={styles.label}>Fecha de inicio</Text>
         <TouchableOpacity style={styles.input} onPress={showDateTimePicker}>
