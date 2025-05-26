@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   StyleSheet,
@@ -28,13 +28,33 @@ interface ProjectListProps {
 
 const ProjectList: React.FC<ProjectListProps> = ({ projects }) => {
   const { navigate } = useNavigation<NavigationProp<any>>();
+  const [projectsWithCurrentWeek, setProjectsWithCurrentWeek] = useState<Project[]>([]);
+
+  const calculateCurrentWeek = (startDateStr: string) => {
+    const [year, month, day] = startDateStr.split('/').map(Number);
+    const startDate = new Date(year, month - 1, day);
+    const currentDate = new Date();
+    
+    const differenceInMs = currentDate.getTime() - startDate.getTime();
+    const differenceInDays = Math.floor(differenceInMs / (1000 * 60 * 60 * 24));
+    return Math.floor(differenceInDays / 7) + 1;
+  };
+
+  useEffect(() => {
+    const updatedProjects = projects.map(project => ({
+      ...project,
+      week_current: calculateCurrentWeek(project.start_date)
+    }));
+    setProjectsWithCurrentWeek(updatedProjects);
+  }, [projects]);
 
   const handleNewProject = () => {
     navigate('NewProject');
   };
+
   return (
     <ScrollView contentContainerStyle={styles.scrollContent}>
-      {projects.map((project, index) => (
+      {projectsWithCurrentWeek.map((project, index) => (
         <TouchableOpacity
           key={index}
           onPress={() => navigate('Project', { project })}

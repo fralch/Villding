@@ -1,5 +1,5 @@
 // src/components/ProjectList.tsx
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, FlatList, StyleSheet } from 'react-native';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 import ProjectListItem from './ProjectListItemSearch';
@@ -22,11 +22,30 @@ interface ProjectListProps {
 
 const ProjectListSearch: React.FC<ProjectListProps> = ({ projects }) => {
   const { navigate } = useNavigation<NavigationProp<any>>();
+  const [projectsWithCurrentWeek, setProjectsWithCurrentWeek] = useState<Project[]>([]);
+
+  const calculateCurrentWeek = (startDateStr: string) => {
+    const [year, month, day] = startDateStr.split('/').map(Number);
+    const startDate = new Date(year, month - 1, day);
+    const currentDate = new Date();
+    
+    const differenceInMs = currentDate.getTime() - startDate.getTime();
+    const differenceInDays = Math.floor(differenceInMs / (1000 * 60 * 60 * 24));
+    return Math.floor(differenceInDays / 7) + 1;
+  };
+
+  useEffect(() => {
+    const updatedProjects = projects.map(project => ({
+      ...project,
+      week_current: calculateCurrentWeek(project.start_date)
+    }));
+    setProjectsWithCurrentWeek(updatedProjects);
+  }, [projects]);
   
   return (
     <View style={styles.container}>
       <FlatList
-        data={projects}
+        data={projectsWithCurrentWeek}
         renderItem={({ item }) => (
           <ProjectListItem
             id={item.id}
@@ -34,7 +53,7 @@ const ProjectListSearch: React.FC<ProjectListProps> = ({ projects }) => {
             title={item.title}
             location={item.subtitle}
             company={item.company}
-            week={item.week}
+            week={item.week_current}
             week_current={item.week_current}
             start_date={item.start_date}
             end_date={item.end_date}

@@ -80,7 +80,7 @@ export default function Project(props: any) {
 
   // El useMemo ser utiliza 
   const ProyectoActual = useMemo(() => { 
-    console.log(route.params?.project);
+    // console.log(route.params?.project);
     if (
       hasExactProjectStructure(route.params?.project) &&
       Object.entries(route.params?.project).length > 0

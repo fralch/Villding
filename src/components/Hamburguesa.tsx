@@ -54,21 +54,21 @@ export default function Hamburguesa(props: any) {
       hasExactProjectStructure(route.params?.project) &&
       Object.entries(route.params?.project).length > 0
     ) {
-      console.log("Returning from route.params.project:", route.params?.project);
+      // console.log("Returning from route.params.project:", route.params?.project);
       return route.params?.project;
     }
     if (
       hasExactProjectStructure(route?.params) &&
       Object.entries(route?.params).length > 0
     ) {
-      console.log("Returning from route.params:", route.params);
+      // console.log("Returning from route.params:", route.params);
       return route.params;
     }
     if (
       hasExactProjectStructure(props.route?.params) &&
       Object.entries(props.route?.params).length > 0
     ) {
-      console.log("Returning from props.route.params:", props.route.params);
+      // console.log("Returning from props.route.params:", props.route.params);
       return props.route.params;
     }
     
