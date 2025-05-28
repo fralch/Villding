@@ -30,14 +30,28 @@ const ProjectList: React.FC<ProjectListProps> = ({ projects }) => {
   const { navigate } = useNavigation<NavigationProp<any>>();
   const [projectsWithCurrentWeek, setProjectsWithCurrentWeek] = useState<Project[]>([]);
 
+  // Obtener el lunes de una semana dada una fecha
+  const getMonday = (date: Date) => {
+    const day = date.getDay();
+    const diff = date.getDate() - day + (day === 0 ? -6 : 1); // Ajustar cuando es domingo
+    return new Date(date.setDate(diff));
+  };
+
   const calculateCurrentWeek = (startDateStr: string) => {
     const [year, month, day] = startDateStr.split('/').map(Number);
     const startDate = new Date(year, month - 1, day);
     const currentDate = new Date();
     
-    const differenceInMs = currentDate.getTime() - startDate.getTime();
-    const differenceInDays = Math.floor(differenceInMs / (1000 * 60 * 60 * 24));
-    return Math.floor(differenceInDays / 7) + 1;
+    // Encontrar el primer lunes desde la fecha de inicio
+    const firstMonday = getMonday(startDate);
+    
+    // Encontrar el lunes de la semana actual
+    const currentMonday = getMonday(currentDate);
+    
+    // Calcular la diferencia en semanas entre los dos lunes
+    const weeksDiff = Math.floor((currentMonday.getTime() - firstMonday.getTime()) / (7 * 24 * 60 * 60 * 1000));
+    
+    return weeksDiff + 1; // Sumamos 1 porque la primera semana es la semana 1
   };
 
   useEffect(() => {
