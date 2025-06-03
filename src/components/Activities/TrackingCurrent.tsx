@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, FlatList, TouchableOpacity, Text, Modal, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation, NavigationProp } from '@react-navigation/native';
+import { useNavigation, NavigationProp, useRoute } from '@react-navigation/native';
 import { getProject } from '../../hooks/localStorageCurrentProject';
 import ConfirmModal from '../Alerta/ConfirmationModal';
 import axios from 'axios';
@@ -17,6 +17,7 @@ const API_BASE_URL = 'https://centroesteticoedith.com/endpoint';
 
 const TrackingCurrent = () => {
   const navigation = useNavigation<NavigationProp<any>>();
+  const route = useRoute();
 
   // Estados principales para manejar el proyecto, seguimientos y fechas
   const [project, setProject] = useState<Project | null>(null); // Almacena el proyecto actual
@@ -37,11 +38,11 @@ const TrackingCurrent = () => {
     loadProject(); // Carga el proyecto al iniciar el componente
   }, []); // Se ejecuta una vez al montar el componente
 
-  // Cargar los seguimientos cuando el proyecto cambia
-  // Replace or add this effect
+  // Cargar los seguimientos cuando el proyecto cambia o cuando se navega de vuelta con refresh=true
   useFocusEffect(
     React.useCallback(() => {
       if (project?.id) {
+        // Cargar los seguimientos cada vez que la pantalla gana foco
         fetchTrackings();
       }
     }, [project])

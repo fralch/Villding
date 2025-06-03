@@ -105,7 +105,8 @@ export default function Activity(props: any) {
     
     try {
       await axios.post(`https://centroesteticoedith.com/endpoint/tracking/delete/${tracking.id}`);
-      navigation.goBack();
+      // Navigate back to the Project screen instead of directly to TrackingCurrent
+      navigation.navigate('Project');
     } catch (error) {
       console.error('Error al eliminar el seguimiento:', error);
       Alert.alert('Error', 'No se pudo eliminar el seguimiento');
