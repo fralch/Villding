@@ -25,6 +25,7 @@ import { getSesion } from '../../hooks/localStorageUser';
 import {iconImports} from './icons';
 import { styles } from "./styles/ActivityStyles";
 import { storeActivity, removeActivity } from '../../hooks/localStorageCurrentActvity';
+import MessageModal from './componentsActivityUpdate/MessageModal';
 
 
 export interface Activity {
@@ -81,6 +82,7 @@ export default function Activity(props: any) {
   
   const [modalOptionsVisible, setModalOptionsVisible] = useState(false);
   const [trackingTitle, setTrackingTitle] = useState('');
+  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
 
   const handleSaveTitle = async () => {
     try {
@@ -96,12 +98,19 @@ export default function Activity(props: any) {
   };
 
   const handleDeleteTracking = async () => {
+    if (!showDeleteConfirmation) {
+      setShowDeleteConfirmation(true);
+      return;
+    }
+    
     try {
       await axios.post(`https://centroesteticoedith.com/endpoint/tracking/delete/${tracking.id}`);
       navigation.goBack();
     } catch (error) {
       console.error('Error al eliminar el seguimiento:', error);
       Alert.alert('Error', 'No se pudo eliminar el seguimiento');
+    } finally {
+      setShowDeleteConfirmation(false);
     }
   };
   const [activityItemCreateType, setActivityItemCreateType] = useState('Pendiente');
@@ -566,6 +575,14 @@ const handleSaveActivity = async () => {
           </Animated.View>
         </View>
       </Modal>
+
+      <MessageModal
+        visible={showDeleteConfirmation}
+        message="¿Estás seguro que deseas eliminar este seguimiento? Esta acción no se puede deshacer."
+        onClose={() => setShowDeleteConfirmation(false)}
+        showConfirmButton={true}
+        onConfirm={handleDeleteTracking}
+      />
     </View>
   );
 }

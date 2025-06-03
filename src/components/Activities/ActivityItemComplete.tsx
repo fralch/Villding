@@ -416,7 +416,7 @@ const ActivityItemComplete = forwardRef<ActivityItemCompleteRef, ActivityItemCom
             <>
               <View style={{borderBottomColor: "#ccc", borderBottomWidth: 1, marginVertical: 10 }} />
               <View style={{
-                flexDirection: 'row',
+                flexDirection: 'column',
                 alignItems: 'center',
                 gap: 10,
                 justifyContent: 'center',
