@@ -54,6 +54,7 @@ const ActivityItemComplete = forwardRef<ActivityItemCompleteRef, ActivityItemCom
   const [modalMessage, setModalMessage] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isEditLoading, setIsEditLoading] = useState<boolean>(false);
+  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState<boolean>(false);
 
   // Cargar datos al inicio
   useEffect(() => {
@@ -350,7 +351,27 @@ const ActivityItemComplete = forwardRef<ActivityItemCompleteRef, ActivityItemCom
     }
   };
 
-  // Exponer método de actualización al componente padre
+  /**
+   * Función que realiza la eliminación después de confirmar
+   */
+  const handleDeleteActivity = async () => {
+    try {
+      setIsLoading(true);
+      await removeActivity();
+      const activityId = storedData?.activity?.id;
+      await axios.post(`https://centroesteticoedith.com/endpoint/activities_delete/${activityId}`);
+      setIsLoading(false);
+      setShowDeleteConfirmation(false);
+      showMessage('Actividad eliminada correctamente');
+      setTimeout(hideModal, 2000);
+    } catch (error) {
+      setIsLoading(false);
+      console.error('Error al eliminar la actividad:', error);
+      showMessage('Error al eliminar la actividad. Por favor intente de nuevo.');
+    }
+  };
+
+  // Exponer método de actualización al componente
   useImperativeHandle(ref, () => ({
     handleUpdateActivity: () => updateActivity(),
   }));
@@ -431,6 +452,24 @@ const ActivityItemComplete = forwardRef<ActivityItemCompleteRef, ActivityItemCom
                     </>
                   )}
                 </TouchableOpacity>
+                <TouchableOpacity
+                  style={{
+                    flex: 1,
+                    flexDirection: "row",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    marginTop: 10,
+                    borderRadius: 5,
+                    gap: 10,
+                    paddingVertical: 10
+                  }}
+                  onPress={() => setShowDeleteConfirmation(true)}
+                >
+                  <FontAwesome name="trash" size={18} color="#ff6b6b" />
+                  <Text style={{ fontSize: 18, color: "#ff6b6b"}}>
+                    Eliminar
+                  </Text>
+                </TouchableOpacity>
               </View>
             </>
           )}
@@ -442,6 +481,15 @@ const ActivityItemComplete = forwardRef<ActivityItemCompleteRef, ActivityItemCom
         visible={showModal}
         message={modalMessage}
         onClose={() => setShowModal(false)}
+      />
+
+      {/* Modal de confirmación para eliminar */}
+      <MessageModal
+        visible={showDeleteConfirmation}
+        message="¿Está seguro que desea eliminar esta actividad?"
+        onClose={() => setShowDeleteConfirmation(false)}
+        showConfirmButton={true}
+        onConfirm={handleDeleteActivity}
       />
 
       {/* Overlay de carga */}
