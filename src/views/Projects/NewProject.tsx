@@ -224,9 +224,11 @@ const NewProject: React.FC = () => {
       projectName === "" ||
       location === "" ||
       company === "" ||
-      ImagePicker === null
+      !projectImage ||
+      tipoProyecto === "0"
     ) {
       setErrorBoolean(true);
+      setShowModalLoading(false);
       return;
     }
 
@@ -361,10 +363,10 @@ const NewProject: React.FC = () => {
         />
         {errorBoolean && projectName === "" ? (
           <Text style={{ color: "#ff7979", marginTop: -20, marginBottom: 10 }}>
-            Ingresa un correo
+            Este campo es obligatorio
           </Text>
         ) : null}
-        <Text style={styles.label}>Ubicación</Text>
+        <Text style={styles.label}>Ubicación*</Text>
         <TextInput
           style={styles.input}
           value={location}
@@ -374,11 +376,11 @@ const NewProject: React.FC = () => {
         />
         {errorBoolean && location === "" ? (
           <Text style={{ color: "#ff7979", marginTop: -20, marginBottom: 10 }}>
-            Ingresa una ubicación
+            Este campo es obligatorio
           </Text>
         ) : null}
 
-        <Text style={styles.label}>Empresa ejecutora</Text>
+        <Text style={styles.label}>Empresa ejecutora*</Text>
         <TextInput
           style={styles.input}
           value={company}
@@ -388,10 +390,10 @@ const NewProject: React.FC = () => {
         />
         {errorBoolean && company === "" ? (
           <Text style={{ color: "#ff7979", marginTop: -20, marginBottom: 10 }}>
-            Ingresa una empresa
+            Este campo es obligatorio
           </Text>
         ) : null}
-        <Text style={styles.label}>Tipo de proyecto</Text>
+        <Text style={styles.label}>Tipo de proyecto*</Text>
         <Picker
           selectedValue={tipoProyecto}
           style={{
@@ -408,6 +410,11 @@ const NewProject: React.FC = () => {
             <Picker.Item key={index} label={capitalizarPrimeraLetra(item.name)} value={item.id} />
           ))}
         </Picker>
+        {errorBoolean && tipoProyecto === "0" ? (
+          <Text style={{ color: "#ff7979", marginBottom: 10 }}>
+            Seleccione un tipo de proyecto
+          </Text>
+        ) : null}
         {subtipoProyectoFilter.length > 0 ? (
           <View>
             <Text style={styles.label}>Subtipo de proyecto</Text>
@@ -479,7 +486,7 @@ const NewProject: React.FC = () => {
 
         <Text style={styles.label}>Fecha estimada de entrega:</Text>
         <Text style={styles.endDate}>{calculateEndDate()}</Text>
-        <Text style={styles.label}>Foto de proyecto</Text>
+        <Text style={styles.label}>Foto de proyecto*</Text>
 
         <TouchableOpacity style={styles.imagePicker} onPress={handlePickImage}>
           {projectImage ? (
@@ -490,7 +497,7 @@ const NewProject: React.FC = () => {
         </TouchableOpacity>
         {errorBoolean && !projectImage ? (
           <Text style={{ color: "#ff7979", marginTop: -20, marginBottom: 10 }}>
-            Ingresa una imagen
+            Este campo es obligatorio
           </Text>
         ) : null}
         {route.params.project ? (
