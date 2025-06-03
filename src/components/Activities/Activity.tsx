@@ -638,11 +638,12 @@ const ActivityCard: React.FC<{
         <Text style={styles.taskTitle}>{activity.name}</Text>
         <Text style={styles.taskTime}>{activity.horas} horas</Text>
       </View>
+      {/* Icono de la actividad 👇 */}
       <Image 
           source={iconImports[activity.icon as keyof typeof iconImports] || iconImports['casco.png']}
           style={{ 
-            width: 36, 
-            height: 36, 
+            width: 44, 
+            height: 44, 
             marginRight: 10, 
             resizeMode: 'contain',
             alignSelf: 'center'
