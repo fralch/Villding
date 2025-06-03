@@ -224,7 +224,6 @@ const NewProject: React.FC = () => {
       projectName === "" ||
       location === "" ||
       company === "" ||
-      !projectImage ||
       tipoProyecto === "0"
     ) {
       setErrorBoolean(true);
@@ -486,7 +485,7 @@ const NewProject: React.FC = () => {
 
         <Text style={styles.label}>Fecha estimada de entrega:</Text>
         <Text style={styles.endDate}>{calculateEndDate()}</Text>
-        <Text style={styles.label}>Foto de proyecto*</Text>
+        <Text style={styles.label}>Foto de proyecto</Text>
 
         <TouchableOpacity style={styles.imagePicker} onPress={handlePickImage}>
           {projectImage ? (
@@ -495,11 +494,6 @@ const NewProject: React.FC = () => {
             <Text style={styles.imageText}>Subir foto del proyecto</Text>
           )}
         </TouchableOpacity>
-        {errorBoolean && !projectImage ? (
-          <Text style={{ color: "#ff7979", marginTop: -20, marginBottom: 10 }}>
-            Este campo es obligatorio
-          </Text>
-        ) : null}
         {route.params.project ? (
           <TouchableOpacity
             style={{
