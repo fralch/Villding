@@ -327,7 +327,8 @@ const checkAndAdjustCurrentWeek = (startDateStr: string, weekIndex: number, isIn
 
     try {
       // Llamada al API para finalizar el seguimiento
-      await axios.put(`${API_BASE_URL}/trackings/${selectedTracking.id}/finish`);
+      console.log(`${API_BASE_URL}/tracking/delete/${selectedTracking.id}`);
+      await axios.post(`${API_BASE_URL}/tracking/delete/${selectedTracking.id}`);
       
       // Actualizar la lista de seguimientos
       fetchTrackings();
@@ -364,6 +365,8 @@ const checkAndAdjustCurrentWeek = (startDateStr: string, weekIndex: number, isIn
       month: '2-digit'
     }) === date;
   };
+  
+
 
   return (
     <View style={styles.container}>
@@ -472,10 +475,11 @@ const checkAndAdjustCurrentWeek = (startDateStr: string, weekIndex: number, isIn
               justifyContent: "space-between",
               gap: 15
             }}>
+              {/* Botón Cancelar */}
               <TouchableOpacity
                 style={{
                   flex: 1,
-                  backgroundColor: "#f0f0f0",
+                  backgroundColor: "#6c757d",
                   paddingVertical: 12,
                   borderRadius: 8,
                   alignItems: "center"
@@ -485,11 +489,12 @@ const checkAndAdjustCurrentWeek = (startDateStr: string, weekIndex: number, isIn
                   setSelectedTracking(null);
                 }}
               >
-                <Text style={{ color: "#666", fontSize: 16, fontWeight: "500" }}>
+                <Text style={{ color: "#fff", fontSize: 16, fontWeight: "500" }}>
                   Cancelar
                 </Text>
               </TouchableOpacity>
               
+              {/* Botón Finalizar */}
               <TouchableOpacity
                 style={{
                   flex: 1,
