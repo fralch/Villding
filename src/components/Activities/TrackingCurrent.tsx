@@ -184,7 +184,7 @@ const checkAndAdjustCurrentWeek = (startDateStr: string, weekIndex: number, isIn
     if (!project?.id) return;
 
     try {
-      const response = await axios.get(`${API_BASE_URL}/trackings_project/${project.id}`);
+      const response = await axios.get(`${API_BASE_URL}/trackings_project_with_finish/${project.id}`);
       const trackings = response.data;
       // console.log(trackings);
       // Organizar los seguimientos por secciones
@@ -243,8 +243,18 @@ const checkAndAdjustCurrentWeek = (startDateStr: string, weekIndex: number, isIn
         ...section,                                                           // Mantiene los datos originales de la sección
         trackings: section.trackings.filter(tracking => {                     // Filtra los seguimientos dentro de la sección
           if (!tracking.date_start) return false;                            // Excluye seguimientos sin fecha de inicio
-          const trackingDate = new Date(tracking.date_start);                // Convierte la fecha del seguimiento a objeto Date
-          return trackingDate <= weekEnd;                                    // Incluye solo seguimientos hasta el fin de semana
+          
+          const trackingStartDate = new Date(tracking.date_start);           // Convierte la fecha de inicio del seguimiento a objeto Date
+          
+          // Si el tracking tiene deleted_at (soft delete), calcular su fecha de finalización
+          if (tracking.deleted_at) {
+            const deletedDate = new Date(tracking.deleted_at);               // Fecha cuando fue eliminado (soft delete)
+            // El tracking se muestra desde su fecha de inicio hasta la semana donde fue eliminado
+            return trackingStartDate <= weekEnd && deletedDate >= weekStart;
+          }
+          
+          // Si el tracking está activo (sin deleted_at), se muestra hasta el fin de semana actual
+          return trackingStartDate <= weekEnd;                              // Incluye solo seguimientos hasta el fin de semana
         })
       }))
       .filter(section => section.trackings.length > 0);                      // Elimina secciones que quedaron sin seguimientos
@@ -326,9 +336,22 @@ const checkAndAdjustCurrentWeek = (startDateStr: string, weekIndex: number, isIn
     if (!selectedTracking?.id) return;
 
     try {
-      // Llamada al API para finalizar el seguimiento
-      console.log(`${API_BASE_URL}/tracking/delete/${selectedTracking.id}`);
-      await axios.post(`${API_BASE_URL}/tracking/delete/${selectedTracking.id}`);
+      // Calcular la fecha media de la semana actual (día central - jueves)
+      const year = new Date().getFullYear();
+      const centralDay = weekDates[3]; // Jueves (día central de la semana)
+      const [day, month] = centralDay.split("/").map(Number);
+      
+      // Crear la fecha completa con el año actual
+      const deletedAtDate = new Date(year, month - 1, day);
+      const deletedAt = deletedAtDate.toISOString().split('T')[0];
+      
+      // Preparar los datos para enviar
+      const finishData = {
+        deleted_at: deletedAt, // Fecha media de la semana actual en formato ISO
+      };
+
+      // Llamada al API para finalizar el seguimiento enviando la fecha de deleted_at
+      await axios.post(`${API_BASE_URL}/tracking/delete/${selectedTracking.id}`, finishData);
       
       // Actualizar la lista de seguimientos
       fetchTrackings();
