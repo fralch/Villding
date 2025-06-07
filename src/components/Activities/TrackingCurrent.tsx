@@ -29,7 +29,8 @@ const TrackingCurrent = () => {
 
   // Estados para controlar la visibilidad de los modales
   const [addTrackingModalVisible, setAddTrackingModalVisible] = useState(false); // Modal para añadir seguimiento 
-  const [accessDeniedModalVisible, setAccessDeniedModalVisible] = useState(false); // Modal de acceso denegado
+  const [finishTrackingModalVisible, setFinishTrackingModalVisible] = useState(false); // Modal para finalizar seguimiento
+  const [selectedTracking, setSelectedTracking] = useState<Tracking | null>(null); // Tracking seleccionado para finalizar
   const [confirmModalVisible, setConfirmModalVisible] = useState(false); // Modal de confirmación 
   const [confirmModalMessage, setConfirmModalMessage] = useState(""); // Mensaje del modal de confirmación
 
@@ -320,6 +321,31 @@ const checkAndAdjustCurrentWeek = (startDateStr: string, weekIndex: number, isIn
     }
   };
 
+  // Finalizar un seguimiento
+  const finishTracking = async () => {
+    if (!selectedTracking?.id) return;
+
+    try {
+      // Llamada al API para finalizar el seguimiento
+      await axios.put(`${API_BASE_URL}/trackings/${selectedTracking.id}/finish`);
+      
+      // Actualizar la lista de seguimientos
+      fetchTrackings();
+      
+      // Mostrar confirmación
+      setConfirmModalMessage("Seguimiento finalizado correctamente");
+      setConfirmModalVisible(true);
+      
+      // Cerrar el modal
+      setFinishTrackingModalVisible(false);
+      setSelectedTracking(null);
+    } catch (error) {
+      console.error("Error finishing tracking:", error);
+      setConfirmModalMessage("Error al finalizar el seguimiento");
+      setConfirmModalVisible(true);
+    }
+  };
+
   // Navegar a la vista de detalles de un seguimiento
   const navigateToTracking = (tracking: Tracking) => {
     const trackingWithContext = {
@@ -369,7 +395,13 @@ const checkAndAdjustCurrentWeek = (startDateStr: string, weekIndex: number, isIn
             section={item}
             onPress={navigateToTracking}
             weekDates={weekDates}
-            onLongPress={() => setAccessDeniedModalVisible(false)} // TODO: cambiar a true para que funcione
+            onLongPress={() => {
+              // Buscar el primer tracking de la sección para usar como ejemplo
+              // Idealmente deberías modificar TrackingSectionComponent para pasar el tracking específico
+              const firstTracking = item.trackings[0];
+              setSelectedTracking(firstTracking);
+              setFinishTrackingModalVisible(true);
+            }}
           />
         )}
         ListEmptyComponent={() => (
@@ -399,27 +431,84 @@ const checkAndAdjustCurrentWeek = (startDateStr: string, weekIndex: number, isIn
         onChangeText={setTitleTracking}
       />
 
-      {/* Modal de acceso denegado */}
+      {/* Modal para finalizar seguimiento */}
       <Modal
-        visible={accessDeniedModalVisible}
+        visible={finishTrackingModalVisible}
         animationType="slide"
         transparent={true}
-        onRequestClose={() => setAccessDeniedModalVisible(false)}
+        onRequestClose={() => setFinishTrackingModalVisible(false)}
       >
         <Pressable
-          style={[styles.modalContainer, { justifyContent: "flex-end" }]}
-          onPress={() => setAccessDeniedModalVisible(false)}
+          style={[styles.modalContainer, { justifyContent: "center" }]}
+          onPress={() => setFinishTrackingModalVisible(false)}
         >
-          <View style={[styles.modalContent, { backgroundColor: "#CFA54A" }]}>
+          <Pressable
+            style={[styles.modalContent, { 
+              backgroundColor: "#0A3649", 
+              marginHorizontal: 20,
+              borderRadius: 12,
+              padding: 20
+            }]}
+            onPress={(e) => e.stopPropagation()}
+          >
             <View style={styles.titleContainer}>
-              <Text style={[styles.modalTitle, { color: "#07374a", marginBottom: 0 }]}>
-                No tienes acceso
+              <Text style={[styles.modalTitle, { 
+                color: "#fff", 
+                marginBottom: 10,
+                textAlign: "center"
+              }]}>
+                Finalizar Seguimiento
               </Text>
             </View>
-            <Text style={{ color: "#07374a", fontSize: 16 }}>
-              Pídele al administrador que te comparta esta actividad
+            
+            <Text style={{ 
+              color: "#fff", 
+              fontSize: 16, 
+              textAlign: "center",
+              marginBottom: 20
+            }}>
+              ¿Estás seguro que deseas finalizar el seguimiento "{selectedTracking?.title}"?
             </Text>
-          </View>
+            
+            <View style={{
+              flexDirection: "row",
+              justifyContent: "space-between",
+              gap: 15
+            }}>
+              <TouchableOpacity
+                style={{
+                  flex: 1,
+                  backgroundColor: "#eee",
+                  paddingVertical: 12,
+                  borderRadius: 8,
+                  alignItems: "center"
+                }}
+                onPress={() => {
+                  setFinishTrackingModalVisible(false);
+                  setSelectedTracking(null);
+                }}
+              >
+                <Text style={{ color: "#666", fontSize: 16, fontWeight: "500" }}>
+                  Cancelar
+                </Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity
+                style={{
+                  flex: 1,
+                  backgroundColor: "#e74c3c",
+                  paddingVertical: 12,
+                  borderRadius: 8,
+                  alignItems: "center"
+                }}
+                onPress={finishTracking}
+              >
+                <Text style={{ color: "#fff", fontSize: 16, fontWeight: "500" }}>
+                  Finalizar
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </Pressable>
         </Pressable>
       </Modal>
 
