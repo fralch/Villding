@@ -395,11 +395,8 @@ const checkAndAdjustCurrentWeek = (startDateStr: string, weekIndex: number, isIn
             section={item}
             onPress={navigateToTracking}
             weekDates={weekDates}
-            onLongPress={() => {
-              // Buscar el primer tracking de la sección para usar como ejemplo
-              // Idealmente deberías modificar TrackingSectionComponent para pasar el tracking específico
-              const firstTracking = item.trackings[0];
-              setSelectedTracking(firstTracking);
+            onLongPress={(tracking) => {
+              setSelectedTracking(tracking);
               setFinishTrackingModalVisible(true);
             }}
           />
@@ -444,7 +441,7 @@ const checkAndAdjustCurrentWeek = (startDateStr: string, weekIndex: number, isIn
         >
           <Pressable
             style={[styles.modalContent, { 
-              backgroundColor: "#0A3649", 
+              backgroundColor: "#07374a", 
               marginHorizontal: 20,
               borderRadius: 12,
               padding: 20
@@ -478,7 +475,7 @@ const checkAndAdjustCurrentWeek = (startDateStr: string, weekIndex: number, isIn
               <TouchableOpacity
                 style={{
                   flex: 1,
-                  backgroundColor: "#eee",
+                  backgroundColor: "#f0f0f0",
                   paddingVertical: 12,
                   borderRadius: 8,
                   alignItems: "center"

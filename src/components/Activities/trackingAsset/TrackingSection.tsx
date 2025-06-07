@@ -10,7 +10,7 @@ type TrackingSectionProps = {
     trackings: Tracking[];
   };
   onPress: (tracking: Tracking) => void;
-  onLongPress: () => void;
+  onLongPress: (tracking: Tracking) => void;
   weekDates: string[]; // Formato ["17/3", "18/3", etc.]
 };
 
@@ -92,7 +92,7 @@ const TrackingSection: React.FC<TrackingSectionProps> = ({ section, onPress, onL
         <TouchableOpacity
           key={tracking.id}
           style={styles.taskRow}
-          onLongPress={onLongPress}
+          onLongPress={() => onLongPress(tracking)} // CAMBIO: Pasar el tracking específico
           onPress={() => onPress(tracking)}
         >
           <Text style={styles.taskTitle}>{tracking.title}</Text>
