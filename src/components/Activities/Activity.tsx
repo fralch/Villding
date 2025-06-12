@@ -362,11 +362,11 @@ const handleSaveActivity = async () => {
     } else {
       console.log('Operation failed');
       // Optionally show error message to user
-      alert('Failed to save activity. Please try again.');
+      // alert('Failed to save activity. Please try again.');
     }
   } catch (error) {
     console.error('Error in handleSaveActivity:', error);
-    alert('An error occurred while saving the activity.');
+    // alert('An error occurred while saving the activity.');
   }
 };
 
