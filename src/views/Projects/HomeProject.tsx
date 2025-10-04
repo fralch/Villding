@@ -112,7 +112,7 @@ export default function HomeProject() {
   async function fetchProjectsFromServer(userId: string): Promise<Project[]> {
     try {
         const response = await axios.post(
-            "https://centroesteticoedith.com/endpoint/user/check-attachment",
+            "http://127.0.0.1:8000/endpoint/user/check-attachment",
             { user_id: userId }, // Envía el ID del usuario en el cuerpo de la solicitud
             {
                 headers: {
@@ -146,7 +146,7 @@ export default function HomeProject() {
             company: project.company,
             image: project.uri.startsWith('http')
                 ? project.uri
-                : `https://centroesteticoedith.com/endpoint/images/projects/${project.uri}`,
+                : `http://127.0.0.1:8000/endpoint/images/projects/${project.uri}`,
             start_date: formatDate(project.start_date),
             end_date: formatDate(project.end_date),
             nearest_monday: formatDate(project.nearest_monday),

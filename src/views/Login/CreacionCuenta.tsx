@@ -166,7 +166,7 @@ function CreacionCuenta(): JSX.Element {
         }
 
         let reqOptions = {
-          url: "https://centroesteticoedith.com/endpoint/user/create",
+          url: "http://127.0.0.1:8000/endpoint/user/create",
           method: "POST",
           data: formData, // Enviar el FormData
           headers: {
@@ -183,7 +183,7 @@ function CreacionCuenta(): JSX.Element {
               user_id: response.data.user.id,
             };
             let reqOptions2 = {
-              url: "https://centroesteticoedith.com/endpoint/user/generate-code",
+              url: "http://127.0.0.1:8000/endpoint/user/generate-code",
               method: "POST",
               data: JsonCode,
             };
@@ -200,7 +200,7 @@ function CreacionCuenta(): JSX.Element {
                   };
                   console.log("Ingresa este código: " + response2.data.code);
                   let reqOptions3 = {
-                    url: "https://centroesteticoedith.com:3000/api/whatsapp/text",
+                    url: "http://127.0.0.1:8000:3000/api/whatsapp/text",
                     method: "POST",
                     data: JsonCodeWhatsapp,
                   };

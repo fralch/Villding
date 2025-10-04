@@ -110,7 +110,7 @@ export default function Project(props: any) {
   useEffect(() => {
     if (ProyectoActual) {
       // Sirve para actulizar las actividades pendientes o programadas 
-      axios.post(`https://centroesteticoedith.com/endpoint/activities_check/${ProyectoActual.id}`)
+      axios.post(`http://127.0.0.1:8000/endpoint/activities_check/${ProyectoActual.id}`)
         .then(response => {
         })
         .catch(error => {

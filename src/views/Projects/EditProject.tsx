@@ -27,7 +27,7 @@ import LoadingModal from '../../components/Alerta/LoadingModal';
 
 // Constante para el tamaño máximo de archivo en bytes (500 KB)
 const MAX_FILE_SIZE = 500 * 1024;
-const API_BASE_URL = "https://centroesteticoedith.com/endpoint";
+const API_BASE_URL = "http://127.0.0.1:8000/endpoint";
 
 // Interfaz para la estructura de un proyecto
 interface Project {

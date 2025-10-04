@@ -58,7 +58,7 @@ function Verificacion(props: any): any {
       };
 
       // let reqOptions = {
-      //   url: "https://centroesteticoedith.com/endpoint/user/verify-code",
+      //   url: "http://127.0.0.1:8000/endpoint/user/verify-code",
       //   method: "POST",
       //   data: JsonCodeWhatsapp,
       // };

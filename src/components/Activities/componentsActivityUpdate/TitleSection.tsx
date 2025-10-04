@@ -79,7 +79,7 @@ const TitleSection: React.FC<TitleSectionProps> = ({
     if (imageUri.startsWith('http')) {
       return { uri: imageUri };
     }
-    return { uri: `https://centroesteticoedith.com/endpoint/images/activities/${imageUri}` };
+    return { uri: `http://127.0.0.1:8000/endpoint/images/activities/${imageUri}` };
   };
 
   // Función para manejar la selección de imágenes de la galería

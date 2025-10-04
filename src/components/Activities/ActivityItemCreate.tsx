@@ -109,7 +109,7 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
 
       try {
         const response = await axios.post(
-          "https://centroesteticoedith.com/endpoint/project/check-attachment",
+          "http://127.0.0.1:8000/endpoint/project/check-attachment",
           { project_id }
         );
         setIsAdmin(response.data.users.some((user: any) =>
@@ -203,7 +203,7 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
     try {
       setIsLoading(true);
 
-      const url = 'https://centroesteticoedith.com/endpoint/activities/create';
+      const url = 'http://127.0.0.1:8000/endpoint/activities/create';
 
       if (formData.images.length > 0) {
         const formDataObj = new FormData();
@@ -450,7 +450,7 @@ const TitleSection: React.FC<TitleSectionProps> = ({
                   ? images[activeImageIndex]
                   : images[activeImageIndex].startsWith('http')
                     ? images[activeImageIndex]
-                    : `https://centroesteticoedith.com/endpoint/images/activities/${images[activeImageIndex]}`
+                    : `http://127.0.0.1:8000/endpoint/images/activities/${images[activeImageIndex]}`
               }}
               style={{
                 width: '100%',
@@ -537,7 +537,7 @@ const TitleSection: React.FC<TitleSectionProps> = ({
                       ? imageUri
                       : imageUri.startsWith('http')
                         ? imageUri
-                        : `https://centroesteticoedith.com/endpoint/images/activities/${imageUri}`
+                        : `http://127.0.0.1:8000/endpoint/images/activities/${imageUri}`
                   }}
                   style={{ width: 100, height: 100, borderRadius: 5 }}
                   resizeMode="cover"
