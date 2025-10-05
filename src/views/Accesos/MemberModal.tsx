@@ -60,7 +60,7 @@ const MemberModal: React.FC<MemberModalProps> = ({
     // console.log("handleMakeAdmin:", member.id, project);
     try {
       const response = await axios.post(
-        "http://127.0.0.1:8000/endpoint/user/makeadmin",
+        "http://192.168.18.8/endpoint/user/makeadmin",
         {
           user_id: member.id,
           project_id: project,
@@ -88,7 +88,7 @@ const MemberModal: React.FC<MemberModalProps> = ({
     // console.log("handleRemoveAdmin:", member.id, project);
     try {
       const response = await axios.post(
-        "http://127.0.0.1:8000/endpoint/user/removeadmin",
+        "http://192.168.18.8/endpoint/user/removeadmin",
         {
           user_id: member.id,
           project_id: project,
@@ -110,7 +110,7 @@ const MemberModal: React.FC<MemberModalProps> = ({
     // console.log("handleRemoveMember:", member.id, project);
     try {
       const response = await axios.post(
-        "http://127.0.0.1:8000/endpoint/project/detach",
+        "http://192.168.18.8/endpoint/project/detach",
         {
           user_id: member.id,
           project_id: project,
@@ -156,7 +156,7 @@ const MemberModal: React.FC<MemberModalProps> = ({
               <Image
                 source={{
                   uri:
-                    "http://127.0.0.1:8000/endpoint/images/profile/" +
+                    "http://192.168.18.8/endpoint/images/profile/" +
                     member.uri,
                 }}
                 style={styles.avatar}

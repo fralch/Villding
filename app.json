@@ -14,7 +14,12 @@
       "imageWidth": 300
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSAppTransportSecurity": {
+          "NSAllowsArbitraryLoads": true
+        }
+      }
     },
     "android": {
       "newArchEnabled": true,
@@ -22,7 +27,9 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#0A3649"
       },
-      "package": "com.fralch.Villding"
+      "package": "com.fralch.Villding",
+      "usesCleartextTraffic": true,
+      "networkSecurityConfig": "./network_security_config.xml"
     },
     "web": {
       "favicon": "./assets/favicon.png"

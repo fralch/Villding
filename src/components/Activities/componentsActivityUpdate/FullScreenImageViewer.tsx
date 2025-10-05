@@ -49,7 +49,7 @@ const FullScreenImageViewer: React.FC<FullScreenImageViewerProps> = ({
     if (cleanUri.startsWith('http')) {
       return { uri: cleanUri };
     }
-    return { uri: `http://127.0.0.1:8000/endpoint/images/activities/${cleanUri}` };
+    return { uri: `http://192.168.18.8/endpoint/images/activities/${cleanUri}` };
   };
 
   // Filtrando imágenes vacías o undefined antes de usarlas

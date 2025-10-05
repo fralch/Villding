@@ -56,7 +56,7 @@ function Login(): any {
       };
 
       let reqOptions = {
-        url: "http://127.0.0.1:8000/endpoint/user/email_exists",
+        url: "http://192.168.18.8/endpoint/user/email_exists",
         method: "POST",
         data: JsonLogin,
       };

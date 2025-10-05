@@ -27,7 +27,7 @@ const { width, height } = Dimensions.get("window");
 
 const MAX_FILE_SIZE = 500 * 1024; // 500 KB en bytes
 
-function CreacionCuenta(): JSX.Element {
+function CreacionCuenta()  {
   const { navigate } = useNavigation<NavigationProp<any>>();
   const [secureText, setSecureText] = useState(true);
   const [errorBoolean, setErrorBoolean] = useState(false);
@@ -166,7 +166,7 @@ function CreacionCuenta(): JSX.Element {
         }
 
         let reqOptions = {
-          url: "http://127.0.0.1:8000/endpoint/user/create",
+          url: "http://192.168.18.8/endpoint/user/create",
           method: "POST",
           data: formData, // Enviar el FormData
           headers: {
@@ -183,7 +183,7 @@ function CreacionCuenta(): JSX.Element {
               user_id: response.data.user.id,
             };
             let reqOptions2 = {
-              url: "http://127.0.0.1:8000/endpoint/user/generate-code",
+              url: "http://192.168.18.8/endpoint/user/generate-code",
               method: "POST",
               data: JsonCode,
             };
@@ -200,7 +200,7 @@ function CreacionCuenta(): JSX.Element {
                   };
                   console.log("Ingresa este código: " + response2.data.code);
                   let reqOptions3 = {
-                    url: "http://127.0.0.1:8000:3000/api/whatsapp/text",
+                    url: "http://192.168.18.8:3000/api/whatsapp/text",
                     method: "POST",
                     data: JsonCodeWhatsapp,
                   };

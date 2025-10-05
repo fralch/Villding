@@ -71,7 +71,7 @@ const VistaMiembros: React.FC<any> = (project) => {
         console.log(session);
 
         const response = await axios.post(
-          "http://127.0.0.1:8000/endpoint/project/check-attachment",
+          "http://192.168.18.8/endpoint/project/check-attachment",
           { project_id: idProject },
           { headers: { "Content-Type": "application/json" } }
         );
@@ -114,7 +114,7 @@ const VistaMiembros: React.FC<any> = (project) => {
       <Image
         source={{
           uri: item.uri
-            ? "http://127.0.0.1:8000/endpoint/images/profile/" +
+            ? "http://192.168.18.8/endpoint/images/profile/" +
               item.uri
             : "https://cdn-icons-png.flaticon.com/512/9385/9385289.png",
         }}
@@ -134,7 +134,7 @@ const VistaMiembros: React.FC<any> = (project) => {
   const handleAddUser = async () => {
     try {
       const userCodeRpt = await axios.post(
-        "http://127.0.0.1:8000/endpoint/user/user_code",
+        "http://192.168.18.8/endpoint/user/user_code",
         { user_code: codeUser }
       );
       const userId = userCodeRpt.data.id;
@@ -149,7 +149,7 @@ const VistaMiembros: React.FC<any> = (project) => {
       };
 
       const response = await axios.post(
-        "http://127.0.0.1:8000/endpoint/project/attach",
+        "http://192.168.18.8/endpoint/project/attach",
         data,
         { headers: myHeaders }
       );
