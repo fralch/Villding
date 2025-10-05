@@ -80,7 +80,7 @@ const NewProject: React.FC = () => {
   }, [ ]);
 
   useEffect(() => {
-    fetch("http://192.168.18.8/endpoint/project/types")
+    fetch("https://villding.lat/endpoint/project/types")
       .then((response) => response.json())
       .then((data) => {
         setTiposProyectos(data);
@@ -88,7 +88,7 @@ const NewProject: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    fetch("http://192.168.18.8/endpoint/project/subtypes")
+    fetch("https://villding.lat/endpoint/project/subtypes")
       .then((response2) => response2.json())
       .then((data2) => {
         setSubtiposProyecto(data2);
@@ -264,7 +264,7 @@ const NewProject: React.FC = () => {
     }
 
     let reqOptions = {
-      url: "http://192.168.18.8/endpoint/project/store",
+      url: "https://villding.lat/endpoint/project/store",
       method: "POST",
       data: formdata, // Enviar el FormData
       headers: {
@@ -282,7 +282,7 @@ const NewProject: React.FC = () => {
       };
 
       let reqOptions2 = {
-        url: "http://192.168.18.8/endpoint/project/attach",
+        url: "https://villding.lat/endpoint/project/attach",
         method: "POST",
         data: AttachUserProjectJson,
       };

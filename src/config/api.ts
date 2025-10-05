@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Configuración base de la API
-const API_BASE_URL = 'http://192.168.18.8';
+const API_BASE_URL = 'https://villding.lat';
 
 // Crear instancia de axios con configuración personalizada
 export const apiClient = axios.create({

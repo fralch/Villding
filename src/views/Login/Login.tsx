@@ -56,7 +56,7 @@ function Login(): any {
       };
 
       let reqOptions = {
-        url: "http://192.168.18.8/endpoint/user/email_exists",
+        url: "https://villding.lat/endpoint/user/email_exists",
         method: "POST",
         data: JsonLogin,
       };
