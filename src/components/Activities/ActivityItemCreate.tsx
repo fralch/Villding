@@ -109,7 +109,7 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
 
       try {
         const response = await axios.post(
-          "https://villding.lat/endpoint/project/check-attachment",
+          "http://192.168.18.8/endpoint/project/check-attachment",
           { project_id }
         );
         setIsAdmin(response.data.users.some((user: any) =>
@@ -203,7 +203,7 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
     try {
       setIsLoading(true);
 
-      const url = 'https://villding.lat/endpoint/activities/create';
+      const url = 'http://192.168.18.8/endpoint/activities/create';
 
       if (formData.images.length > 0) {
         const formDataObj = new FormData();
@@ -450,7 +450,7 @@ const TitleSection: React.FC<TitleSectionProps> = ({
                   ? images[activeImageIndex]
                   : images[activeImageIndex].startsWith('http')
                     ? images[activeImageIndex]
-                    : `https://villding.lat/endpoint/images/activities/${images[activeImageIndex]}`
+                    : `http://192.168.18.8/endpoint/images/activities/${images[activeImageIndex]}`
               }}
               style={{
                 width: '100%',
@@ -537,7 +537,7 @@ const TitleSection: React.FC<TitleSectionProps> = ({
                       ? imageUri
                       : imageUri.startsWith('http')
                         ? imageUri
-                        : `https://villding.lat/endpoint/images/activities/${imageUri}`
+                        : `http://192.168.18.8/endpoint/images/activities/${imageUri}`
                   }}
                   style={{ width: 100, height: 100, borderRadius: 5 }}
                   resizeMode="cover"

@@ -59,7 +59,7 @@ function Password():any {
         };
 
         let reqOptions = {
-          url: "https://villding.lat/endpoint/user/login",
+          url: "http://192.168.18.8/endpoint/user/login",
           method: "POST",
           data: JsonLogin,
         };
@@ -81,7 +81,7 @@ function Password():any {
               rol: response.data.user.role,
               user_code : response.data.user.user_code,
               uri: response.data.user.uri
-                ? "https://villding.lat/endpoint/images/profile/" +
+                ? "http://192.168.18.8/endpoint/images/profile/" +
                   response.data.user.uri
                 : "",
               tamano_img: response.data.profile_image_size
@@ -93,7 +93,7 @@ function Password():any {
                   user_id: response.data.user.id,
                 };
                 let reqOptions = {
-                  url: "https://villding.lat/endpoint/user/generate-code",
+                  url: "http://192.168.18.8/endpoint/user/generate-code",
                   method: "POST",
                   data: JsonCode,
                 };

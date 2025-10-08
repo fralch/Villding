@@ -166,7 +166,7 @@ function CreacionCuenta()  {
         }
 
         let reqOptions = {
-          url: "https://villding.lat/endpoint/user/create",
+          url: "http://192.168.18.8/endpoint/user/create",
           method: "POST",
           data: formData, // Enviar el FormData
           headers: {
@@ -183,7 +183,7 @@ function CreacionCuenta()  {
               user_id: response.data.user.id,
             };
             let reqOptions2 = {
-              url: "https://villding.lat/endpoint/user/generate-code",
+              url: "http://192.168.18.8/endpoint/user/generate-code",
               method: "POST",
               data: JsonCode,
             };
@@ -200,7 +200,7 @@ function CreacionCuenta()  {
                   };
                   console.log("Ingresa este código: " + response2.data.code);
                   let reqOptions3 = {
-                    url: "https://villding.lat:3000/api/whatsapp/text",
+                    url: "http://192.168.18.8:3000/api/whatsapp/text",
                     method: "POST",
                     data: JsonCodeWhatsapp,
                   };

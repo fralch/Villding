@@ -49,7 +49,7 @@ const FullScreenImageViewer: React.FC<FullScreenImageViewerProps> = ({
     if (cleanUri.startsWith('http')) {
       return { uri: cleanUri };
     }
-    return { uri: `https://villding.lat/endpoint/images/activities/${cleanUri}` };
+    return { uri: `http://192.168.18.8/endpoint/images/activities/${cleanUri}` };
   };
 
   // Filtrando imágenes vacías o undefined antes de usarlas

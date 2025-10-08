@@ -198,7 +198,7 @@ const EditUser = () => {
       }
 
       let reqOptions = {
-        url: "https://villding.lat/endpoint/user/update",
+        url: "http://192.168.18.8/endpoint/user/update",
         method: "POST",
         data: formData, // Enviar el FormData
         headers: {

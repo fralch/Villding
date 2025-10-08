@@ -1,7 +1,8 @@
 import axios from 'axios';
+import Constants from 'expo-constants';
 
 // Configuración base de la API
-const API_BASE_URL = 'https://villding.lat';
+const API_BASE_URL = Constants.expoConfig?.extra?.apiBaseUrl || 'http://192.168.18.8';
 
 // Crear instancia de axios con configuración personalizada
 export const apiClient = axios.create({

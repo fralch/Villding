@@ -9,6 +9,7 @@
     "web": "expo start --web"
   },
   "dependencies": {
+    "@expo/vector-icons": "^15.0.2",
     "@react-native-async-storage/async-storage": "2.2.0",
     "@react-native-community/datetimepicker": "8.4.4",
     "@react-native-masked-view/masked-view": "^0.3.2",
@@ -21,9 +22,11 @@
     "babel-preset-expo": "^54.0.3",
     "expo": "54.0.12",
     "expo-clipboard": "~8.0.7",
+    "expo-constants": "^18.0.9",
     "expo-file-system": "~19.0.16",
     "expo-image-manipulator": "~14.0.7",
     "expo-image-picker": "~17.0.8",
+    "expo-manifests": "^1.0.8",
     "expo-splash-screen": "~31.0.10",
     "expo-status-bar": "~3.0.8",
     "prop-types": "^15.8.1",

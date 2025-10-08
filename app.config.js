@@ -1,0 +1,46 @@
+// Obtener la variable de entorno o usar un valor por defecto
+const API_BASE_URL = process.env.API_BASE_URL || 'http://192.168.18.8';
+
+export default {
+  expo: {
+    name: 'VillDing',
+    slug: 'Villding',
+    version: '1.0.0',
+    orientation: 'portrait',
+    icon: './assets/icon.png',
+    userInterfaceStyle: 'dark',
+    splash: {
+      image: './assets/splash.png',
+      resizeMode: 'cover',
+      backgroundColor: '#0A3649',
+      imageWidth: 300,
+    },
+    ios: {
+      supportsTablet: true,
+      infoPlist: {
+        NSAppTransportSecurity: {
+          NSAllowsArbitraryLoads: true,
+        },
+      },
+    },
+    android: {
+      newArchEnabled: true,
+      adaptiveIcon: {
+        foregroundImage: './assets/adaptive-icon.png',
+        backgroundColor: '#0A3649',
+      },
+      package: 'com.fralch.Villding',
+      usesCleartextTraffic: true,
+      networkSecurityConfig: './network_security_config.xml',
+    },
+    web: {
+      favicon: './assets/favicon.png',
+    },
+    extra: {
+      eas: {
+        projectId: '29c99799-a492-4d3c-8927-6a258e1958b5',
+      },
+      apiBaseUrl: API_BASE_URL,
+    },
+  },
+};

@@ -86,7 +86,7 @@ export default function Activity(props: any) {
 
   const handleSaveTitle = async () => {
     try {
-      await axios.post(`https://villding.lat/endpoint/tracking/update-title/${tracking.id}`, {
+      await axios.post(`http://192.168.18.8/endpoint/tracking/update-title/${tracking.id}`, {
         title: trackingTitle
       });
       setTitleTracking(trackingTitle);
@@ -104,7 +104,7 @@ export default function Activity(props: any) {
     }
     
     try {
-      await axios.post(`https://villding.lat/endpoint/tracking/delete/${tracking.id}`);
+      await axios.post(`http://192.168.18.8/endpoint/tracking/delete/${tracking.id}`);
       // Navigate back to the Project screen instead of directly to TrackingCurrent
       navigation.navigate('Project');
     } catch (error) {
@@ -171,7 +171,7 @@ export default function Activity(props: any) {
       try {
         const config = {
           method: 'get',
-          url: `https://villding.lat/endpoint/activities/tracking/${tracking.id}`,
+          url: `http://192.168.18.8/endpoint/activities/tracking/${tracking.id}`,
           headers: {
             'Cookie': 'XSRF-TOKEN=...' // Your existing token
           }
@@ -222,7 +222,7 @@ export default function Activity(props: any) {
 
       try {
         // Verifica si el usuario es admin del proyecto específico
-        const response = await axios.post("https://villding.lat/endpoint/project/check-attachment",{ project_id: idProject } );
+        const response = await axios.post("http://192.168.18.8/endpoint/project/check-attachment",{ project_id: idProject } );
         setIsAdmin(response.data.users.some((user: any) => 
           user.id === session?.id && user.is_admin === 1 
         ));
@@ -241,7 +241,7 @@ export default function Activity(props: any) {
     try {
       const config = {
         method: 'get',
-        url: `https://villding.lat/endpoint/activities/tracking/${tracking.id}`,
+        url: `http://192.168.18.8/endpoint/activities/tracking/${tracking.id}`,
         headers: {
           'Cookie': 'XSRF-TOKEN=...' // Your existing token
         }

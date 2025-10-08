@@ -110,7 +110,7 @@ export default function Project(props: any) {
   useEffect(() => {
     if (ProyectoActual) {
       // Sirve para actulizar las actividades pendientes o programadas 
-      axios.post(`https://villding.lat/endpoint/activities_check/${ProyectoActual.id}`)
+      axios.post(`http://192.168.18.8/endpoint/activities_check/${ProyectoActual.id}`)
         .then(response => {
         })
         .catch(error => {

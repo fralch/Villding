@@ -79,7 +79,7 @@ const TitleSection: React.FC<TitleSectionProps> = ({
     if (imageUri.startsWith('http')) {
       return { uri: imageUri };
     }
-    return { uri: `https://villding.lat/endpoint/images/activities/${imageUri}` };
+    return { uri: `http://192.168.18.8/endpoint/images/activities/${imageUri}` };
   };
 
   // Función para manejar la selección de imágenes de la galería

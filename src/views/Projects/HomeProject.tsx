@@ -112,7 +112,7 @@ export default function HomeProject() {
   async function fetchProjectsFromServer(userId: string): Promise<Project[]> {
     try {
         const response = await axios.post(
-            "https://villding.lat/endpoint/user/check-attachment",
+            "http://192.168.18.8/endpoint/user/check-attachment",
             { user_id: userId }, // Envía el ID del usuario en el cuerpo de la solicitud
             {
                 headers: {
@@ -146,7 +146,7 @@ export default function HomeProject() {
             company: project.company,
             image: project.uri.startsWith('http')
                 ? project.uri
-                : `https://villding.lat/endpoint/images/projects/${project.uri}`,
+                : `http://192.168.18.8/endpoint/images/projects/${project.uri}`,
             start_date: formatDate(project.start_date),
             end_date: formatDate(project.end_date),
             nearest_monday: formatDate(project.nearest_monday),
