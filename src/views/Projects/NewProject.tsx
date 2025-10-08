@@ -14,7 +14,7 @@ import { useNavigation, NavigationProp } from "@react-navigation/native";
 import { Picker } from "@react-native-picker/picker";
 import * as ImagePicker from "expo-image-picker";
 import * as ImageManipulator from 'expo-image-manipulator';
-import * as FileSystem from 'expo-file-system';
+import { getInfoAsync } from 'expo-file-system/legacy';
 import axios from 'axios';
 import { saveProject, deleteProject } from "../../hooks/localStorageProject";
 import { getSesion, removeSesion , updateSesion } from '../../hooks/localStorageUser';
@@ -137,45 +137,59 @@ const NewProject: React.FC = () => {
     setDurationOnWeeks(Math.ceil(durationInWeeks));
   };
   const handlePickImage = async () => {
+    console.log("Iniciando selección de imagen...");
     let pickerResult = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ['images'],
       allowsEditing: true,
       aspect: [4, 3],
-      quality: 0.5, // Calidad original
+      quality: 0.5,
     });
-  
+
+    console.log("Resultado del picker:", pickerResult);
+
     if (!pickerResult.canceled && pickerResult.assets && pickerResult.assets.length > 0) {
       let selectedImage = pickerResult.assets[0].uri;
-      let compressLevel = 0.8; // Comenzamos con 80% de compresión
-      let resizedWidth = 800; // Ancho inicial para redimensionar
-  
+      console.log("Imagen seleccionada:", selectedImage);
+
+      let compressLevel = 0.8;
+      let resizedWidth = 800;
+
       let manipulatedImage = await ImageManipulator.manipulateAsync(
         selectedImage,
-        [{ resize: { width: resizedWidth } }], // Redimensionar
-        { compress: compressLevel, format: ImageManipulator.SaveFormat.JPEG } // Comprimir
+        [{ resize: { width: resizedWidth } }],
+        { compress: compressLevel, format: ImageManipulator.SaveFormat.JPEG }
       );
-  
-      let fileInfo = await FileSystem.getInfoAsync(manipulatedImage.uri) as any;
-  
+
+      console.log("Imagen manipulada:", manipulatedImage.uri);
+
+      let fileInfo = await getInfoAsync(manipulatedImage.uri) as any;
+      console.log(`Tamaño inicial: ${(fileInfo.size / 1024).toFixed(2)} KB`);
+
       // Reducir el tamaño iterativamente si supera 500 KB
-      while (fileInfo.size> MAX_FILE_SIZE && compressLevel > 0.1) {
-        compressLevel -= 0.1; // Reducir nivel de compresión
-        resizedWidth -= 100; // Reducir ancho de la imagen
+      while (fileInfo.size > MAX_FILE_SIZE && compressLevel > 0.1) {
+        compressLevel -= 0.1;
+        resizedWidth -= 100;
+        console.log(`Recomprimiendo: compress=${compressLevel.toFixed(1)}, width=${resizedWidth}`);
         manipulatedImage = await ImageManipulator.manipulateAsync(
           selectedImage,
-          [{ resize: { width: resizedWidth } }], // Redimensionar
-          { compress: compressLevel, format: ImageManipulator.SaveFormat.JPEG } // Comprimir
+          [{ resize: { width: resizedWidth } }],
+          { compress: compressLevel, format: ImageManipulator.SaveFormat.JPEG }
         );
-        fileInfo = await FileSystem.getInfoAsync(manipulatedImage.uri);
+        fileInfo = await getInfoAsync(manipulatedImage.uri);
+        console.log(`Nuevo tamaño: ${(fileInfo.size / 1024).toFixed(2)} KB`);
       }
-  
+
       if (fileInfo.size <= MAX_FILE_SIZE) {
-        console.log(`Imagen lista: ${(fileInfo.size / 1024).toFixed(2)} KB`);
-        setProjectImage(manipulatedImage.uri); // Actualizar imagen reducida
+        console.log(`✓ Imagen lista: ${(fileInfo.size / 1024).toFixed(2)} KB`);
+        console.log("✓ Estableciendo projectImage con URI:", manipulatedImage.uri);
+        setProjectImage(manipulatedImage.uri);
+        console.log("✓ Estado actualizado, projectImage debería cambiar");
       } else {
-        console.log("No se pudo reducir la imagen a menos de 500 KB.");
+        console.log("✗ No se pudo reducir la imagen a menos de 500 KB.");
         alert("La imagen seleccionada es demasiado grande incluso después de ser comprimida.");
       }
+    } else {
+      console.log("Selección de imagen cancelada o sin resultados");
     }
   };
 
@@ -256,24 +270,31 @@ const NewProject: React.FC = () => {
       const uriParts = projectImage.split('.');
       const fileType = uriParts[uriParts.length - 1];
 
-      formdata.append('uri', {
+      console.log("Agregando imagen al FormData:", projectImage);
+      console.log("Tipo de archivo:", fileType);
+
+      formdata.append('image', {
         uri: projectImage,
-        name: `profile_image.${fileType}`,
-        type: `image/${fileType}`, // Tipo de imagen
-      } as any); // Especificar el tipo como 'any' para evitar errores de tipado en TypeScript
+        name: `project_image.${fileType}`,
+        type: `image/${fileType}`,
+      } as any);
+    } else {
+      console.log("No hay imagen seleccionada para enviar");
     }
 
     let reqOptions = {
       url: "http://192.168.18.8/endpoint/project/store",
       method: "POST",
-      data: formdata, // Enviar el FormData
+      data: formdata,
       headers: {
-        'Content-Type': 'multipart/form-data', // Asegurarse de usar el tipo correcto de contenido
+        'Content-Type': 'multipart/form-data',
       },
     };
 
     try {
+      console.log("Enviando petición al servidor...");
       let response = await axios(reqOptions);
+      console.log("Respuesta del servidor:", response.status);
 
       const AttachUserProjectJson = {
         user_id:  userData.id,
@@ -319,6 +340,8 @@ const NewProject: React.FC = () => {
       navigate('HomeProject', 'nuevoProyecto'); // Navega a HomeProject después de que se guarde
     } catch (error) {
       console.error("Error al guardar el proyecto:", error);
+      setShowModalLoading(false);
+      alert("Error al crear el proyecto. Por favor, intenta nuevamente.");
     }
   };
 
@@ -487,13 +510,21 @@ const NewProject: React.FC = () => {
         <Text style={styles.endDate}>{calculateEndDate()}</Text>
         <Text style={styles.label}>Foto de proyecto</Text>
 
-        <TouchableOpacity style={styles.imagePicker} onPress={handlePickImage}>
-          {projectImage ? (
-            <Image source={{ uri: projectImage }} style={styles.image} />
-          ) : (
-            <Text style={styles.imageText}>Subir foto del proyecto</Text>
-          )}
-        </TouchableOpacity>
+        <TouchableOpacity
+              style={styles.imagePicker}
+              onPress={handlePickImage}
+            >
+              {projectImage ? (
+                <Image
+                  key={projectImage}
+                  source={{ uri: projectImage }}
+                  style={styles.image}
+                  resizeMode="cover"
+                />
+              ) : (
+                <Text style={styles.imageText}>Seleccionar imagen</Text>
+              )}
+            </TouchableOpacity>
         {route.params.project ? (
           <TouchableOpacity
             style={{
