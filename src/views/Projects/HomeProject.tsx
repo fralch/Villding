@@ -142,11 +142,9 @@ export default function HomeProject() {
         const mappedProjects: Project[] = uniqueProjects.map((project: any) => ({
             id: String(project.id),
             title: project.name,
-            subtitle: project.location, // Asumiendo que `location` es un subtítulo adecuado
+            subtitle: project.location,
             company: project.company,
-            image: project.uri.startsWith('http')
-                ? project.uri
-                : `http://192.168.18.8/endpoint/images/projects/${project.uri}`,
+            image: project.uri || "",
             start_date: formatDate(project.start_date),
             end_date: formatDate(project.end_date),
             nearest_monday: formatDate(project.nearest_monday),
@@ -193,7 +191,8 @@ export default function HomeProject() {
   }
 
   function formatDate(date: string): string {
-    const [day, month, year] = date.split('-');
+    // El servidor devuelve fechas en formato YYYY-MM-DD
+    const [year, month, day] = date.split('-');
     return `${day}/${month}/${year}`;
   }
 

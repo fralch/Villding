@@ -268,15 +268,17 @@ const NewProject: React.FC = () => {
     // Si hay una imagen seleccionada, la agregamos al FormData
     if (projectImage) {
       const uriParts = projectImage.split('.');
-      const fileType = uriParts[uriParts.length - 1];
+      const fileExtensionRaw = uriParts[uriParts.length - 1] || 'jpg';
+      const fileExtension = fileExtensionRaw.toLowerCase();
+      const mimeType = fileExtension === 'jpg' ? 'image/jpeg' : `image/${fileExtension}`;
 
       console.log("Agregando imagen al FormData:", projectImage);
-      console.log("Tipo de archivo:", fileType);
+      console.log("Tipo de archivo:", fileExtension);
 
-      formdata.append('image', {
+      formdata.append('uri', {
         uri: projectImage,
-        name: `project_image.${fileType}`,
-        type: `image/${fileType}`,
+        name: `project_image.${fileExtension}`,
+        type: mimeType,
       } as any);
     } else {
       console.log("No hay imagen seleccionada para enviar");
@@ -295,10 +297,13 @@ const NewProject: React.FC = () => {
       console.log("Enviando petición al servidor...");
       let response = await axios(reqOptions);
       console.log("Respuesta del servidor:", response.status);
+      console.log("Proyecto creado en el servidor:", response.data);
+
+      const createdProject = response.data;
 
       const AttachUserProjectJson = {
         user_id:  userData.id,
-        project_id: response.data.id,
+        project_id: createdProject.id,
         is_admin: true,
       };
 
@@ -308,15 +313,14 @@ const NewProject: React.FC = () => {
         data: AttachUserProjectJson,
       };
 
-      response = await axios(reqOptions2);
-
-      console.log(response.data);
+      const attachResponse = await axios(reqOptions2);
+      console.log("Usuario asociado al proyecto:", attachResponse.data);
 
       console.log("Se ha creado el proyecto con exito");
 
       const newProject: any = {
-        id: response.data.id, 
-        image: projectImage || "",
+        id: createdProject.id,
+        image: createdProject.uri || "",
         title: projectName,
         subtitle: location,
         company,
