@@ -1,5 +1,5 @@
 // src/components/ProjectListItem.tsx
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
@@ -28,7 +28,13 @@ const ProjectListItem: React.FC<ProjectListItemProps> = ({
   id,
 }) => {
   const { navigate } = useNavigation<NavigationProp<any>>();
-  
+  const [hasImageError, setHasImageError] = useState(false);
+  const placeholderImage = require('../../assets/images/add_img.png');
+
+  useEffect(() => {
+    setHasImageError(false);
+  }, [image]);
+
   // Crear el objeto proyecto completo para pasar a la navegación
   const project = {
     id: id || '',
@@ -50,8 +56,9 @@ const ProjectListItem: React.FC<ProjectListItemProps> = ({
       onLongPress={() => navigate('Project', { project })}
     >
       <Image
-        source={{ uri: image }}
+        source={!hasImageError && image ? { uri: image } : placeholderImage}
         style={styles.image}
+        onError={() => setHasImageError(true)}
       />
       <View style={styles.infoContainer}>
         <Text style={styles.title}>{title}</Text>

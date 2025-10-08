@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 
@@ -20,11 +20,25 @@ interface ProjectCardProps {
 
 const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
   const { navigate } = useNavigation<NavigationProp<any>>();
+  const [hasImageError, setHasImageError] = useState(false);
+  const placeholderImage = require('../../assets/images/add_img.png');
+
+  useEffect(() => {
+    // Reset the error flag if the incoming image changes.
+    setHasImageError(false);
+  }, [project.image]);
+
+  const cardImageSource =
+    !hasImageError && project.image
+      ? { uri: project.image }
+      : placeholderImage;
+
   return (
     <View style={styles.card}>
       <Image
-        source={{ uri: project.image }}
+        source={cardImageSource}
         style={styles.cardImage}
+        onError={() => setHasImageError(true)}
       />
       <TouchableOpacity
         style={styles.cardContent}
