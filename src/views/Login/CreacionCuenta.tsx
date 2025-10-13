@@ -48,77 +48,131 @@ function CreacionCuenta()  {
   );
 
   const pickImage = async () => {
-    // Solicitar permisos para acceder a la galería
-    let result = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (result.granted === false) {
-      alert("Permiso para acceder a las fotos es necesario.");
-      return;
-    }
-  
-    // Abrir selector de imágenes
-    let pickerResult = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.3,
-    });
-  
-    // Verificar si el usuario seleccionó una imagen
-    if (
-      !pickerResult.canceled &&
-      pickerResult.assets &&
-      pickerResult.assets.length > 0
-    ) {
-      const selectedImage = pickerResult.assets[0].uri;
-  
-      let compressLevel = 0.8; // Comenzamos con 80% de compresión
-      let resizedWidth = 800; // Ancho inicial para redimensionar
-  
-      // Manipulamos la imagen inicialmente
-      let manipulatedImage = await ImageManipulator.manipulateAsync(
-        selectedImage,
-        [{ resize: { width: resizedWidth } }], // Redimensionamos
-        { compress: compressLevel, format: ImageManipulator.SaveFormat.JPEG } // Comprimimos
-      );
-  
-      // Obtener información del archivo manipulado
-      let fileInfo = await FileSystem.getInfoAsync(manipulatedImage.uri) as any;
-  
-      // Verificar si el archivo existe y tiene tamaño válido
-      if (fileInfo.exists) {
-        console.log(`Tamaño inicial: ${(fileInfo.size / 1024).toFixed(2)} KB`);
-  
-        // Reducir el tamaño iterativamente si supera los 500 KB
-        while (fileInfo.size > MAX_FILE_SIZE && compressLevel > 0.1) {
-          compressLevel -= 0.1; // Reducir el nivel de compresión
-          resizedWidth -= 100; // Reducir el ancho de la imagen
-          manipulatedImage = await ImageManipulator.manipulateAsync(
-            selectedImage,
-            [{ resize: { width: resizedWidth } }], // Redimensionar
-            { compress: compressLevel, format: ImageManipulator.SaveFormat.JPEG } // Comprimir
-          );
-          fileInfo = await FileSystem.getInfoAsync(manipulatedImage.uri);
-        }
-  
-        if (fileInfo.size <= MAX_FILE_SIZE) {
-          console.log(`Imagen lista: ${(fileInfo.size / 1024).toFixed(2)} KB`);
-          // Actualizar la imagen reducida
-          setProfileImage(manipulatedImage.uri);
+    console.log("📸 INICIO - pickImage ejecutándose");
+    
+    try {
+      // Solicitar permisos para acceder a la galería
+      console.log("🔐 PERMISOS - Solicitando permisos de galería");
+      let result = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      console.log("- Permisos concedidos:", result.granted);
+      
+      if (result.granted === false) {
+        console.log("❌ PERMISOS DENEGADOS - Usuario no concedió permisos");
+        alert("Permiso para acceder a las fotos es necesario.");
+        return;
+      }
+    
+      // Abrir selector de imágenes
+      console.log("🖼️ SELECTOR - Abriendo selector de imágenes");
+      let pickerResult = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.3,
+      });
+      console.log("- Resultado del picker:", {
+        canceled: pickerResult.canceled,
+        assetsLength: pickerResult.assets ? pickerResult.assets.length : 0
+      });
+    
+      // Verificar si el usuario seleccionó una imagen
+      if (
+        !pickerResult.canceled &&
+        pickerResult.assets &&
+        pickerResult.assets.length > 0
+      ) {
+        const selectedImage = pickerResult.assets[0].uri;
+        console.log("✅ IMAGEN SELECCIONADA:", selectedImage);
+
+        let compressLevel = 0.8; // Comenzamos con 80% de compresión
+        let resizedWidth = 800; // Ancho inicial para redimensionar
+        console.log("🔧 CONFIGURACIÓN INICIAL - Compresión:", compressLevel, "Ancho:", resizedWidth);
+
+        // Manipulamos la imagen inicialmente
+        console.log("⚙️ MANIPULANDO IMAGEN - Redimensionando y comprimiendo");
+        let manipulatedImage = await ImageManipulator.manipulateAsync(
+          selectedImage,
+          [{ resize: { width: resizedWidth } }], // Redimensionamos
+          { compress: compressLevel, format: ImageManipulator.SaveFormat.JPEG } // Comprimimos
+        );
+        console.log("- Imagen manipulada URI:", manipulatedImage.uri);
+
+        // Obtener información del archivo manipulado
+        console.log("📊 OBTENIENDO INFO - Verificando tamaño del archivo");
+        let fileInfo = await FileSystem.getInfoAsync(manipulatedImage.uri) as any;
+        console.log("- Info del archivo:", {
+          exists: fileInfo.exists,
+          size: fileInfo.size,
+          sizeKB: fileInfo.size ? (fileInfo.size / 1024).toFixed(2) + " KB" : "N/A"
+        });
+
+        // Verificar si el archivo existe y tiene tamaño válido
+        if (fileInfo.exists) {
+          console.log(`📏 TAMAÑO INICIAL: ${(fileInfo.size / 1024).toFixed(2)} KB (Límite: ${(MAX_FILE_SIZE / 1024).toFixed(2)} KB)`);
+
+          // Reducir el tamaño iterativamente si supera los 500 KB
+          let iterations = 0;
+          while (fileInfo.size > MAX_FILE_SIZE && compressLevel > 0.1) {
+            iterations++;
+            compressLevel -= 0.1; // Reducir el nivel de compresión
+            resizedWidth -= 100; // Reducir el ancho de la imagen
+            console.log(`🔄 ITERACIÓN ${iterations} - Nueva compresión: ${compressLevel.toFixed(1)}, Nuevo ancho: ${resizedWidth}`);
+
+            manipulatedImage = await ImageManipulator.manipulateAsync(
+              selectedImage,
+              [{ resize: { width: resizedWidth } }], // Redimensionar
+              { compress: compressLevel, format: ImageManipulator.SaveFormat.JPEG } // Comprimir
+            );
+            fileInfo = await FileSystem.getInfoAsync(manipulatedImage.uri);
+            console.log(`- Nuevo tamaño: ${(fileInfo.size / 1024).toFixed(2)} KB`);
+          }
+
+          if (fileInfo.size <= MAX_FILE_SIZE) {
+            console.log(`✅ IMAGEN OPTIMIZADA: ${(fileInfo.size / 1024).toFixed(2)} KB - Dentro del límite`);
+            // Actualizar la imagen reducida
+            setProfileImage(manipulatedImage.uri);
+            console.log("📱 ESTADO ACTUALIZADO - profileImage establecido");
+          } else {
+            console.log("❌ ERROR TAMAÑO - No se pudo reducir la imagen a menos de 500 KB");
+            console.log(`- Tamaño final: ${(fileInfo.size / 1024).toFixed(2)} KB`);
+            alert("La imagen seleccionada es demasiado grande incluso después de ser comprimida.");
+          }
         } else {
-          console.log("No se pudo reducir la imagen a menos de 500 KB.");
-          alert("La imagen seleccionada es demasiado grande incluso después de ser comprimida.");
+          console.error("❌ ERROR ARCHIVO - No se pudo obtener el tamaño de la imagen o el archivo no existe");
+          console.error("- fileInfo:", fileInfo);
+          alert("Hubo un error al procesar la imagen.");
         }
       } else {
-        console.error("No se pudo obtener el tamaño de la imagen o el archivo no existe.");
-        alert("Hubo un error al procesar la imagen.");
+        console.log("❌ CANCELADO - Usuario canceló la selección de imagen");
       }
+    } catch (error: any) {
+      console.error("❌ ERROR CRÍTICO en pickImage:", error);
+      console.error("- Tipo de error:", typeof error);
+      console.error("- Mensaje:", error.message || "Sin mensaje");
+      alert("Ocurrió un error inesperado al seleccionar la imagen.");
+    } finally {
+      console.log("🏁 FIN - pickImage terminado");
     }
   };
 
   const handleCreateAccount = async () => {
+    console.log("🚀 INICIO - handleCreateAccount ejecutándose");
+    console.log("📋 DATOS RECIBIDOS:", {
+      nombres,
+      apellidos,
+      email,
+      celular,
+      genero,
+      nacimiento,
+      edad,
+      claveLength: clave.length,
+      profileImageExists: !!profileImage
+    });
+
     // setShowModalLoading(true);
 
     if (nombres !== "" && apellidos !== "" && email !== "" && clave !== "") {
+      console.log("✅ VALIDACIÓN - Campos básicos completados");
       if (clave.length < 8) {
         setErrorBoolean(true);
         setMsjeModal("La contraseña debe tener al menos 8 caracteres.");
@@ -136,94 +190,162 @@ function CreacionCuenta()  {
       }
 
       const fetchData = async () => {
-        // Crear un nuevo FormData para adjuntar la imagen
-        const formData = new FormData();
-
-        // Agregar los campos de texto
-        formData.append("name", nombres);
-        formData.append("last_name", apellidos);
-        formData.append("email", email);
-        formData.append("telefono", celular);
-        formData.append("genero", genero);
-        formData.append("edad", edad.toString());
-        formData.append("password", clave);
-        formData.append("is_paid_user", "0");
-        formData.append("role", "user");
-
-        console.log(formData);
-
-        // Si hay una imagen seleccionada, la agregamos al FormData
-        if (profileImage) {
-          const uriParts = profileImage.split(".");
-          const fileType = uriParts[uriParts.length - 1];
-
-          // es importante comprobar en el php y en nginx que puedan subir imagenes grandes
-          formData.append("uri", {
-            uri: profileImage,
-            name: `profile_image.${fileType}`,
-            type: `image/${fileType}`, // Tipo de imagen
-          } as any); // Especificar el tipo como 'any' para evitar errores de tipado en TypeScript
-        }
-
-        let reqOptions = {
-          url: "http://192.168.18.8/endpoint/user/create",
-          method: "POST",
-          data: formData, // Enviar el FormData
-          headers: {
-            "Content-Type": "multipart/form-data", // Asegurarse de usar el tipo correcto de contenido
-          },
-        };
-
+        console.log("🌐 INICIO - fetchData ejecutándose");
+        
         try {
+          // Crear un nuevo FormData para adjuntar la imagen
+          const formData = new FormData();
+
+          // Agregar los campos de texto
+          formData.append("name", nombres);
+          formData.append("last_name", apellidos);
+          formData.append("email", email);
+          formData.append("telefono", celular);
+          formData.append("genero", genero);
+          formData.append("edad", edad.toString());
+          formData.append("password", clave);
+          formData.append("is_paid_user", "0");
+          formData.append("role", "user");
+
+          console.log("📦 FORMDATA CREADO - Campos agregados:");
+          console.log("- name:", nombres);
+          console.log("- last_name:", apellidos);
+          console.log("- email:", email);
+          console.log("- telefono:", celular);
+          console.log("- genero:", genero);
+          console.log("- edad:", edad.toString());
+          console.log("- password: [OCULTA]");
+          console.log("- is_paid_user: 0");
+          console.log("- role: user");
+
+          // Si hay una imagen seleccionada, la agregamos al FormData
+          if (profileImage) {
+            console.log("🖼️ IMAGEN DETECTADA - Procesando imagen de perfil");
+            const uriParts = profileImage.split(".");
+            const fileType = uriParts[uriParts.length - 1];
+            console.log("- URI de imagen:", profileImage);
+            console.log("- Tipo de archivo:", fileType);
+
+            // es importante comprobar en el php y en nginx que puedan subir imagenes grandes
+            formData.append("uri", {
+              uri: profileImage,
+              name: `profile_image.${fileType}`,
+              type: `image/${fileType}`, // Tipo de imagen
+            } as any); // Especificar el tipo como 'any' para evitar errores de tipado en TypeScript
+            
+            console.log("✅ Imagen agregada al FormData");
+          } else {
+            console.log("⚠️ NO HAY IMAGEN - Continuando sin imagen de perfil");
+          }
+
+          console.log("🚀 ENVIANDO PETICIÓN - Configuración de axios:");
+          let reqOptions = {
+            url: "https://villding.lat/endpoint/user/create",
+            method: "POST",
+            data: formData, // Enviar el FormData
+            headers: {
+              "Content-Type": "multipart/form-data", // Asegurarse de usar el tipo correcto de contenido
+            },
+          };
+          console.log("- URL:", reqOptions.url);
+          console.log("- Método:", reqOptions.method);
+          console.log("- Headers:", reqOptions.headers);
+
           const response = await axios(reqOptions);
-          console.log(response.data);
+          console.log("✅ RESPUESTA EXITOSA - Usuario creado:");
+          console.log("- Status:", response.status);
+          console.log("- Data completa:", response.data);
+          
+          if (response.data && response.data.user && response.data.user.id) {
+            console.log("- ID de usuario creado:", response.data.user.id);
+          } else {
+            console.log("⚠️ ADVERTENCIA - Respuesta no contiene user.id esperado");
+          }
           // Generate CODE
           const fetchCode = async () => {
+            console.log("🔢 GENERANDO CÓDIGO - Iniciando fetchCode");
             const JsonCode = {
               user_id: response.data.user.id,
             };
+            console.log("- User ID para código:", JsonCode.user_id);
+            
             let reqOptions2 = {
-              url: "http://192.168.18.8/endpoint/user/generate-code",
+              url: "https://villding.lat/endpoint/user/generate-code",
               method: "POST",
               data: JsonCode,
             };
+            console.log("- URL generación código:", reqOptions2.url);
   
             try {
               const response2 = await axios(reqOptions2);
-              console.log(response2.data);
+              console.log("✅ CÓDIGO GENERADO - Respuesta:");
+              console.log("- Status:", response2.status);
+              console.log("- Data completa:", response2.data);
+              
+              if (response2.data && response2.data.code) {
+                console.log("- Código generado:", response2.data.code);
+              } else {
+                console.log("⚠️ ADVERTENCIA - Respuesta no contiene código esperado");
+              }
                 
               // Send Code to whatsapp
-                const fetchCodeWhatsapp = async () => {
-                  const JsonCodeWhatsapp = {
-                    message:  "Ingresa este código: " + response2.data.code,
-                    phone:  celular
-                  };
-                  console.log("Ingresa este código: " + response2.data.code);
-                  let reqOptions3 = {
-                    url: "http://192.168.18.8:3000/api/whatsapp/text",
-                    method: "POST",
-                    data: JsonCodeWhatsapp,
-                  };
-        
-                  try {
-                    const response3 = await axios(reqOptions3);
-                    console.log(response3.data);
-                  } catch (error) {
-                    console.error(error);
-                  }
+              const fetchCodeWhatsapp = async () => {
+                console.log("📱 ENVIANDO WHATSAPP - Iniciando envío");
+                const JsonCodeWhatsapp = {
+                  message:  "Ingresa este código: " + response2.data.code,
+                  phone:  celular
                 };
+                console.log("- Mensaje:", JsonCodeWhatsapp.message);
+                console.log("- Teléfono:", JsonCodeWhatsapp.phone);
+                
+                let reqOptions3 = {
+                  url: "https://villding.lat:3000/api/whatsapp/text",
+                  method: "POST",
+                  data: JsonCodeWhatsapp,
+                };
+                console.log("- URL WhatsApp:", reqOptions3.url);
         
-                fetchCodeWhatsapp();
-            } catch (error) {
-              console.error(error);
+                try {
+                  const response3 = await axios(reqOptions3);
+                  console.log("✅ WHATSAPP ENVIADO - Respuesta:");
+                  console.log("- Status:", response3.status);
+                  console.log("- Data:", response3.data);
+                } catch (error: any) {
+                  console.error("❌ ERROR WHATSAPP:", error);
+                  if (error.response) {
+                    console.error("- Status:", error.response.status);
+                    console.error("- Data:", error.response.data);
+                  }
+                }
+              };
+        
+              fetchCodeWhatsapp();
+            } catch (error: any) {
+              console.error("❌ ERROR GENERACIÓN CÓDIGO:", error);
+              if (error.response) {
+                console.error("- Status:", error.response.status);
+                console.error("- Data:", error.response.data);
+              }
             }
           };
   
           //fetchCode();
           // ----------------
 
+          console.log("🎯 FINALIZANDO PROCESO - Configurando navegación");
           setShowModalLoading(false);
           setShowModal(true);
+          
+          console.log("📍 NAVEGANDO A VERIFICACIÓN - Datos enviados:");
+          console.log("- ID:", response.data.user.id);
+          console.log("- Nombres:", nombres);
+          console.log("- Apellidos:", apellidos);
+          console.log("- Email:", email);
+          console.log("- Rol: user");
+          console.log("- Teléfono:", celular ? celular : "");
+          console.log("- URI imagen:", profileImage);
+          console.log("- User code:", response.data.user.user_code);
+          
           navigate("Verificacion", {
             id: response.data.user.id,
             nombres: nombres,
@@ -236,14 +358,25 @@ function CreacionCuenta()  {
             user_code: response.data.user.user_code,
           });
         } catch (error: any) {
-          console.log(error);
+          console.error("❌ ERROR PRINCIPAL EN FETCHDATA:", error);
+          
           if (error.response) {
-            console.log(error.response.data.message);
+            console.error("- Error con respuesta del servidor:");
+            console.error("  - Status:", error.response.status);
+            console.error("  - Data:", error.response.data);
+            console.error("  - Message:", error.response.data.message);
             setMsjeModal(error.response.data.message);
+          } else if (error.request) {
+            console.error("- Error de red/conexión:");
+            console.error("  - Request:", error.request);
+            console.error("  - Message:", error.message);
+            setMsjeModal("Error de conexión: " + error.message);
           } else {
-            console.log(error.message);
+            console.error("- Error desconocido:");
+            console.error("  - Message:", error.message);
             setMsjeModal(error.message);
           }
+          
           setErrorBoolean(true);
           setShowModalLoading(false);
           setShowModal(true);
@@ -601,7 +734,7 @@ function CreacionCuenta()  {
       </ScrollView>
 
       <ConfirmModal
-        visible={false}
+        visible={showModal}
         message={msjeModal}
         onClose={() => setShowModal(false)}
       />

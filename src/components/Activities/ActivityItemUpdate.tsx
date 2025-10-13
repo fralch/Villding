@@ -96,7 +96,7 @@ const ActivityItemUpdate = forwardRef<ActivityItemUpdateRef, ActivityItemUpdateP
 
         try {
           // Verifica si el usuario es admin del proyecto específico
-          const response = await axios.post("http://192.168.18.8/endpoint/project/check-attachment",{ project_id } );
+          const response = await axios.post("https://villding.lat/endpoint/project/check-attachment",{ project_id } );
           
           setIsAdmin(response.data.users.some((user: any) => 
             user.id === session?.id && user.is_admin === 1 
@@ -238,7 +238,7 @@ const ActivityItemUpdate = forwardRef<ActivityItemUpdateRef, ActivityItemUpdateP
         } else {
           // Sin imágenes, usa una solicitud JSON normal
           response = await axios.post(
-            `http://192.168.18.8/endpoint/activities/${activity.id}`,
+            `https://villding.lat/endpoint/activities/${activity.id}`,
             activityData
           );
         }
@@ -296,7 +296,7 @@ const ActivityItemUpdate = forwardRef<ActivityItemUpdateRef, ActivityItemUpdateP
       // Envía solicitud con el FormData
       return await axios({
         method: 'post',
-        url: `http://192.168.18.8/endpoint/activities_imgs/${activityData.id}`,
+        url: `https://villding.lat/endpoint/activities_imgs/${activityData.id}`,
         data: formDataObj,
         headers: { "Content-Type": "multipart/form-data" }
       });
@@ -360,7 +360,7 @@ const ActivityItemUpdate = forwardRef<ActivityItemUpdateRef, ActivityItemUpdateP
         // Luego marcamos la actividad como completada
         await axios({
           method: 'post',
-          url: `http://192.168.18.8/endpoint/activities_complete`,
+          url: `https://villding.lat/endpoint/activities_complete`,
           data: { id: activity?.id },
           headers: { "Content-Type": "application/json" }
         });
@@ -423,7 +423,7 @@ const ActivityItemUpdate = forwardRef<ActivityItemUpdateRef, ActivityItemUpdateP
         setIsLoading(true);
         await removeActivity();
         const activityId = storedData?.activity?.id || activity?.id;
-        await axios.post(`http://192.168.18.8/endpoint/activities_delete/${activityId}`);
+        await axios.post(`https://villding.lat/endpoint/activities_delete/${activityId}`);
         setIsLoading(false);
         setShowDeleteConfirmation(false);
         showMessage('Actividad eliminada correctamente');

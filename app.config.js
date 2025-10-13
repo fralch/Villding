@@ -1,5 +1,5 @@
 // Obtener la variable de entorno o usar un valor por defecto
-const API_BASE_URL = process.env.API_BASE_URL || 'http://192.168.18.8';
+const API_BASE_URL = process.env.API_BASE_URL || 'https://villding.lat';
 
 export default {
   expo: {

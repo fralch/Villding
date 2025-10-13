@@ -58,7 +58,7 @@ function Verificacion(props: any): any {
       };
 
       // let reqOptions = {
-      //   url: "http://192.168.18.8/endpoint/user/verify-code",
+      //   url: "https://villding.lat/endpoint/user/verify-code",
       //   method: "POST",
       //   data: JsonCodeWhatsapp,
       // };

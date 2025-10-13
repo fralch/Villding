@@ -71,7 +71,7 @@ const VistaMiembros: React.FC<any> = (project) => {
         console.log(session);
 
         const response = await axios.post(
-          "http://192.168.18.8/endpoint/project/check-attachment",
+          "https://villding.lat/endpoint/project/check-attachment",
           { project_id: idProject },
           { headers: { "Content-Type": "application/json" } }
         );
@@ -114,7 +114,7 @@ const VistaMiembros: React.FC<any> = (project) => {
       <Image
         source={{
           uri: item.uri
-            ? "http://192.168.18.8/endpoint/images/profile/" +
+            ? "https://villding.lat/endpoint/images/profile/" +
               item.uri
             : "https://cdn-icons-png.flaticon.com/512/9385/9385289.png",
         }}
@@ -134,7 +134,7 @@ const VistaMiembros: React.FC<any> = (project) => {
   const handleAddUser = async () => {
     try {
       const userCodeRpt = await axios.post(
-        "http://192.168.18.8/endpoint/user/user_code",
+        "https://villding.lat/endpoint/user/user_code",
         { user_code: codeUser }
       );
       const userId = userCodeRpt.data.id;
@@ -149,7 +149,7 @@ const VistaMiembros: React.FC<any> = (project) => {
       };
 
       const response = await axios.post(
-        "http://192.168.18.8/endpoint/project/attach",
+        "https://villding.lat/endpoint/project/attach",
         data,
         { headers: myHeaders }
       );

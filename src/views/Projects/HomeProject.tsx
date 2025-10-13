@@ -112,7 +112,7 @@ export default function HomeProject() {
   async function fetchProjectsFromServer(userId: string): Promise<Project[]> {
     try {
         const response = await axios.post(
-            "http://192.168.18.8/endpoint/user/check-attachment",
+            "https://villding.lat/endpoint/user/check-attachment",
             { user_id: userId }, // Envía el ID del usuario en el cuerpo de la solicitud
             {
                 headers: {

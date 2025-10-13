@@ -66,7 +66,7 @@ The app uses AsyncStorage for persistent client-side storage with custom hooks:
 All API requests go through a centralized axios instance in `src/config/api.ts`.
 
 **IMPORTANT**: The API base URL (`API_BASE_URL` at line 4) is environment-specific and frequently changes between:
-- Local development: `http://192.168.18.8` (or other local IPs)
+- Local development: `https://villding.lat` (or other local IPs)
 - Production: `https://villding.lat`
 
 The axios instance includes request/response interceptors for logging and error handling.
