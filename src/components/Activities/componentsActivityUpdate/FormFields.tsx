@@ -146,19 +146,19 @@ const FormFields: React.FC<FormFieldsProps> = ({
         ))
       ) : (
         fields.map((inputConfig, index) => (
-          // Solo mostrar el campo si tiene un valor
-          inputConfig.value ? (
+          // Mostrar el campo de descripción siempre, ubicación solo si tiene valor
+          (inputConfig.field === 'description' || inputConfig.value) ? (
             <View key={index} style={[styles.inputContainer, { backgroundColor: "#0a3649" }]}>
               {inputConfig.icon}
               <Text
                 style={[
                   styles.input,
                   status === 'completado' && { opacity: 0.7 },
-                  { color: '#fff' }
+                  { color: inputConfig.value ? '#fff' : '#888' }
                 ]}
                 numberOfLines={inputConfig.field === 'description' ? 4 : 1}
               >
-                {inputConfig.value}
+                {inputConfig.value || (inputConfig.field === 'description' ? 'Sin descripción' : '')}
               </Text>
             </View>
           ) : null
@@ -193,8 +193,8 @@ const FormFields: React.FC<FormFieldsProps> = ({
           </View>
         </View>
       ) : (
-        // Solo mostrar el horario si tiene un valor
-        horas ? (
+        // Solo mostrar el horario si tiene un valor y no es "0"
+        horas && horas !== "0" ? (
           <View style={[styles.inputContainer, { backgroundColor: "#0a3649" }]}>
             <MaterialCommunityIcons name="clock-outline" size={24} color="white" />
             <Text
