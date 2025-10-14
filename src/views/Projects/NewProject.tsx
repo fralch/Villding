@@ -233,13 +233,31 @@ const NewProject: React.FC = () => {
 
   const handleCreateProject = async () => {
     setShowModalLoading(true);
-    console.log("Creando nuevo proyecto...");
+    console.log("[handleCreateProject] Iniciando flujo de guardado");
+    console.log("[handleCreateProject] Estado actual", {
+      projectName,
+      location,
+      company,
+      tipoProyecto,
+      subtipoProyecto,
+      startDate,
+      duration,
+      durationUnit,
+      hasProjectImage: Boolean(projectImage),
+      userId: userData?.id ?? null,
+    });
     if (
       projectName === "" ||
       location === "" ||
       company === "" ||
       tipoProyecto === "0"
     ) {
+      console.warn("[handleCreateProject] Validacion fallida - campos requeridos faltantes", {
+        projectNameEmpty: projectName === "",
+        locationEmpty: location === "",
+        companyEmpty: company === "",
+        tipoProyectoValue: tipoProyecto,
+      });
       setErrorBoolean(true);
       setShowModalLoading(false);
       return;
@@ -249,22 +267,46 @@ const NewProject: React.FC = () => {
     let day = monday.getDay();  // Obtiene el día de la semana (0 = Domingo, 1 = Lunes, ...)
     let diff = (day === 0 ? -6 : 1) - day;  // Calcula la diferencia para ajustar al lunes
     monday.setDate(monday.getDate() + diff); // 
+    const formattedStartDate = formatDate(startDate);
+    const calculatedEndDate = calculateEndDate();
+    const formattedEndDate = formatDate(calculatedEndDate);
+    const nearestMonday = monday.toISOString().split('T')[0];
+
+    console.log("[handleCreateProject] Fechas calculadas", {
+      rawStartDate: startDate,
+      formattedStartDate,
+      calculatedEndDate,
+      formattedEndDate,
+      nearestMonday,
+    });
 
     // Guarda el proyecto y espera a que se complete antes de navegar
     const formdata = new FormData();
     formdata.append("name", projectName);
     formdata.append("location", location);
     formdata.append("company", company);
-    formdata.append("start_date", formatDate(startDate));
-    formdata.append("end_date", formatDate(calculateEndDate()));
+    formdata.append("start_date", formattedStartDate);
+    formdata.append("end_date", formattedEndDate);
     formdata.append("project_type_id", tipoProyecto);
-    formdata.append("nearest_monday", monday.toISOString().split('T')[0]);
+    formdata.append("nearest_monday", nearestMonday);
     if (subtipoProyecto !== "0") {
       formdata.append("project_subtype_id", subtipoProyecto);
     }
 
-    
+    console.log("[handleCreateProject] Datos listos para enviar", {
+      name: projectName,
+      location,
+      company,
+      formattedStartDate,
+      formattedEndDate,
+      tipoProyecto,
+      subtipoProyecto: subtipoProyecto !== "0" ? subtipoProyecto : null,
+      nearestMonday,
+    });
 
+    if (!userData) {
+      console.warn("[handleCreateProject] userData no disponible, verificar sesion");
+    }
     // Si hay una imagen seleccionada, la agregamos al FormData
     if (projectImage) {
       const uriParts = projectImage.split('.');
@@ -306,6 +348,10 @@ const NewProject: React.FC = () => {
         project_id: createdProject.id,
         is_admin: true,
       };
+      console.log("[handleCreateProject] Datos para asociar usuario", {
+        attachPayload: AttachUserProjectJson,
+        userData,
+      });
 
       let reqOptions2 = {
         url: "https://villding.lat/endpoint/project/attach",
@@ -330,20 +376,34 @@ const NewProject: React.FC = () => {
       };
 
       setShowModalLoading(false);
+      console.log("[handleCreateProject] Guardando en localStorageProject", newProject);
       //  setMsjeModal("Se ha actualizado el perfil con exito") ;
       // setShowModalConfirm (true);
-      
-      
+
+      console.log("[handleCreateProject] Ejecutando saveProject...");
       await saveProject(newProject)
         .then(() => {
           console.log("Proyecto guardado en el almacenamiento local");
         })
         .catch((error) => {
           console.error("Error al guardar el proyecto en el almacenamiento local:", error);
+          console.error("[handleCreateProject] Detalles adicionales saveProject", {
+            message: error?.message,
+            stack: error?.stack,
+          });
         });
       navigate('HomeProject', 'nuevoProyecto'); // Navega a HomeProject después de que se guarde
     } catch (error) {
       console.error("Error al guardar el proyecto:", error);
+      if (axios.isAxiosError(error)) {
+        console.error("[handleCreateProject] Detalles del error de Axios", {
+          status: error.response?.status,
+          data: error.response?.data,
+          headers: error.response?.headers,
+        });
+      } else {
+        console.error("[handleCreateProject] Error no controlado en handleCreateProject", error);
+      }
       setShowModalLoading(false);
       alert("Error al crear el proyecto. Por favor, intenta nuevamente.");
     }
