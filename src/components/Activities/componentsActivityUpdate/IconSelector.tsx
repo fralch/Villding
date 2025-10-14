@@ -19,7 +19,6 @@ const IconSelector: React.FC<IconSelectorProps> = ({
   iconImports,
   iconsFiles
 }) => {
-  const recentIcons = iconsFiles.slice(0, 5);
   const [isExpanded, setIsExpanded] = useState(false);
   const [esEditable, setEsEditable] = useState(false);
 
@@ -82,35 +81,6 @@ const IconSelector: React.FC<IconSelectorProps> = ({
 
       {isExpanded && (
         <View>
-          <View style={[styles.section, { maxHeight: 120 }]}>
-            <Text style={styles.sectionTitle}>Recientes</Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-              <View style={styles.iconRow}>
-                {recentIcons.map((icon, index) => (
-                  <TouchableOpacity
-                    key={index}
-                    onPress={() => {
-                      onIconSelect(icon);
-                    }}
-                    style={[
-                      styles.iconContainer,
-                      selectedIcon === icon && styles.selectedIconContainer
-                    ]}
-                  >
-                    {iconImports[icon] ? (
-                      <Image
-                        source={iconImports[icon]}
-                        style={styles.iconImage}
-                      />
-                    ) : (
-                      <MaterialIcons name="error" size={24} color="white" />
-                    )}
-                  </TouchableOpacity>
-                ))}
-              </View>
-            </ScrollView>
-          </View>
-
           <View style={[styles.section, { maxHeight: 600 }]}>
             <Text style={styles.sectionTitle}>Todos los íconos</Text>
             <ScrollView 

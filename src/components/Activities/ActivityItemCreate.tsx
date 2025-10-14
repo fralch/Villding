@@ -351,7 +351,7 @@ const StatusIndicator = ({ tipoTask }: { tipoTask: string }) => {
         return (
           <View style={{ flexDirection: "row", gap: 5 }}>
             <MaterialIcons name="agriculture" size={24} color="#eee" />
-            <AntDesign name="clockcircle" size={24} color="#d1a44c" />
+            <AntDesign name="clock-circle" size={24} color="#d1a44c" />
           </View>
         );
       case "completado":
@@ -790,31 +790,7 @@ const IconSelector = ({
 
       {isExpanded && (
         <View>
-          <View style={[styles.section, { maxHeight: 120 }]}>
-            <Text style={styles.sectionTitle}>Recientes</Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-              <View style={styles.iconRow}>
-                {recentIcons.map((icon, index) => (
-                  <TouchableOpacity
-                    key={index}
-                    onPress={() => {
-                      console.log("Selected icon:", icon);
-                      onIconSelect(icon);
-                    }}
-                    style={[
-                      styles.iconContainer,
-                      selectedIcon === icon && styles.selectedIconContainer
-                    ]}
-                  >
-                    <Image
-                      source={iconImports[icon as keyof typeof iconImports]}
-                      style={styles.iconImage}
-                    />
-                  </TouchableOpacity>
-                ))}
-              </View>
-            </ScrollView>
-          </View>
+         
 
           <View style={[styles.section, { maxHeight: 600 }]}>
             <Text style={styles.sectionTitle}>Todos los íconos</Text>
