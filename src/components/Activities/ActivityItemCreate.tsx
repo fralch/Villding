@@ -84,7 +84,7 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
     titulo: "",
     description: "",
     location: "",
-    horaInicio: "",
+    horaInicio: "07:00",
     horaFin: "",
     comments: "",
     selectedIcon: "local-shipping.svg",
@@ -643,7 +643,11 @@ const FormFields = ({
 }) => {
   const [showTimePickerInicio, setShowTimePickerInicio] = useState(false);
   const [showTimePickerFin, setShowTimePickerFin] = useState(false);
-  const [selectedTimeInicio, setSelectedTimeInicio] = useState(new Date());
+  const [selectedTimeInicio, setSelectedTimeInicio] = useState(() => {
+    const date = new Date();
+    date.setHours(7, 0, 0, 0); // 7am por defecto
+    return date;
+  });
   const [selectedTimeFin, setSelectedTimeFin] = useState(new Date());
 
   // Función para manejar el cambio de hora de inicio en el DateTimePicker
