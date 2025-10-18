@@ -25,6 +25,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { styles } from "./styles/ActivityItemCreateStyles";
 import { iconImports, iconsFiles } from './icons';
 import { API_BASE_URL } from '../../config/api';
+import { Asset } from 'expo-asset';
 
 // Definición de tipos simplificados para los datos de la actividad
 interface ActivityData {
@@ -769,6 +770,26 @@ const IconSelector = ({
 }) => {
   const recentIcons = iconsFiles.slice(0, 5);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [assetsLoaded, setAssetsLoaded] = useState(false);
+  const [failedIcons, setFailedIcons] = useState<{ [key: string]: boolean }>({});
+
+  useEffect(() => {
+    const loadAssets = async () => {
+      try {
+        const modules = Object.values(iconImports).filter(Boolean);
+        if (modules.length > 0) {
+          await Asset.loadAsync(modules as any);
+        }
+      } catch (e) {
+        console.warn('No se pudieron precargar los íconos:', e);
+      } finally {
+        setAssetsLoaded(true);
+      }
+    };
+    loadAssets();
+  }, []);
+
+  const availableIcons = iconsFiles.filter((name) => !!iconImports[name]);
 
   return (
     <View style={{ backgroundColor: "#0a3649", marginBottom: 20 }}>
@@ -795,7 +816,7 @@ const IconSelector = ({
 
       {isExpanded && (
         <View>
-         
+          
 
           <View style={[styles.section, { maxHeight: 600 }]}>
             <Text style={styles.sectionTitle}>Todos los íconos</Text>
@@ -803,7 +824,7 @@ const IconSelector = ({
               showsVerticalScrollIndicator={true}
             >
               <View style={styles.iconGrid}>
-                {iconsFiles.map((icon, index) => (
+                {availableIcons.map((icon, index) => (
                   <TouchableOpacity
                     key={index}
                     onPress={() => {
@@ -815,10 +836,22 @@ const IconSelector = ({
                       selectedIcon === icon && styles.selectedIconContainer
                     ]}
                   >
-                    <Image
-                      source={iconImports[icon as keyof typeof iconImports]}
-                      style={styles.iconImage}
-                    />
+                    {!assetsLoaded || failedIcons[icon] ? (
+                      <MaterialIcons name="error" size={24} color="white" />
+                    ) : (
+                      (() => {
+                        const iconSrc = iconImports[icon as keyof typeof iconImports];
+                        const resolvedSource = typeof iconSrc === 'string' ? { uri: iconSrc } : iconSrc;
+                        return (
+                          <Image
+                            source={resolvedSource}
+                            style={styles.iconImage}
+                            resizeMode="contain"
+                            onError={() => setFailedIcons((prev) => ({ ...prev, [icon]: true }))}
+                          />
+                        );
+                      })()
+                    )}
                   </TouchableOpacity>
                 ))}
               </View>

@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, Image } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
+import { Asset } from 'expo-asset';
 import { styles } from '../styles/ActivityItemCreateStyles';
 import { getActivity } from '../../../hooks/localStorageCurrentActvity';
 
@@ -21,6 +22,26 @@ const IconSelector: React.FC<IconSelectorProps> = ({
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [esEditable, setEsEditable] = useState(false);
+  const [assetsLoaded, setAssetsLoaded] = useState(false);
+  const [failedIcons, setFailedIcons] = useState<{ [key: string]: boolean }>({});
+
+  // Pre-cargar los recursos de imagen para evitar espacios vacíos
+  useEffect(() => {
+    const loadAssets = async () => {
+      try {
+        const modules = Object.values(iconImports).filter(Boolean);
+        if (modules.length > 0) {
+          await Asset.loadAsync(modules as any);
+        }
+      } catch (e) {
+        // En caso de fallo, seguimos y mostramos el fallback por ícono
+        console.warn('No se pudieron precargar los íconos:', e);
+      } finally {
+        setAssetsLoaded(true);
+      }
+    };
+    loadAssets();
+  }, [iconImports]);
 
   // Verificar la editabilidad al cargar el componente
   useEffect(() => {
@@ -56,6 +77,9 @@ const IconSelector: React.FC<IconSelectorProps> = ({
     return null;
   }
 
+  // Filtrar íconos que tengan import resolvible
+  const availableIcons = iconsFiles.filter((name) => !!iconImports[name]);
+
   return (
     <View style={{ backgroundColor: "#0a3649", marginBottom: 20 }}>
       <TouchableOpacity
@@ -87,9 +111,9 @@ const IconSelector: React.FC<IconSelectorProps> = ({
               showsVerticalScrollIndicator={true}
             >
               <View style={styles.iconGrid}>
-                {iconsFiles.map((icon, index) => (
+                {availableIcons.map((icon, index) => (
                   <TouchableOpacity
-                    key={index}
+                    key={`icon-${index}-${icon}`}
                     onPress={() => {
                       onIconSelect(icon);
                     }}
@@ -98,13 +122,23 @@ const IconSelector: React.FC<IconSelectorProps> = ({
                       selectedIcon === icon && styles.selectedIconContainer
                     ]}
                   >
-                    {iconImports[icon] ? (
-                      <Image
-                        source={iconImports[icon]}
-                        style={styles.iconImage}
-                      />
-                    ) : (
+                    {!assetsLoaded || failedIcons[icon] ? (
                       <MaterialIcons name="error" size={24} color="white" />
+                    ) : (
+                      <View style={styles.iconImageWrapper}>
+                        {(() => {
+                          const src = iconImports[icon];
+                          const resolved = typeof src === 'string' ? { uri: src } : src;
+                          return (
+                            <Image
+                              source={resolved}
+                              style={styles.iconImage}
+                              resizeMode="contain"
+                              onError={() => setFailedIcons((prev) => ({ ...prev, [icon]: true }))}
+                            />
+                          );
+                        })()}
+                      </View>
                     )}
                   </TouchableOpacity>
                 ))}

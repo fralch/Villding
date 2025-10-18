@@ -83,9 +83,19 @@ export const styles = StyleSheet.create({
     alignItems: "center",
     borderRadius: 8,
     padding: 2,
+    backgroundColor: "rgba(255, 255, 255, 0.1)",
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.2)",
   },
   selectedIconContainer: {
     backgroundColor: "#33baba",
+    borderColor: "#33baba",
+  },
+  iconImageWrapper: {
+    width: 40,
+    height: 40,
+    justifyContent: "center",
+    alignItems: "center",
   },
   iconImage: {
     width: 40,
