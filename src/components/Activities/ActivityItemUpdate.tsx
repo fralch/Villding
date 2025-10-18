@@ -8,6 +8,7 @@ import { getActivity, storeActivity, removeActivity } from '../../hooks/localSto
 import { Activity } from './types/Activity_interface';
 import { iconImports, iconsFiles } from './icons';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
+import { normalizeImages } from '../../utils/imageUtils';
 
 // Componentes
 import TitleSection from './componentsActivityUpdate/TitleSection';
@@ -39,17 +40,28 @@ const ActivityItemUpdate = forwardRef<ActivityItemUpdateRef, ActivityItemUpdateP
     const { project_id, tracking_id, activity, date, hideModal, isAdmin: initialIsAdmin = true } = props;
     
     // Estado para el formulario
-    const [formData, setFormData] = useState({
-      titulo: activity?.name || '',
-      description: activity?.description || '',
-      location: activity?.location || '',
-      horas: activity?.horas || '',
-      status: activity?.status || 'Pendiente',
-      comments: activity?.comments || '',
-      selectedIcon: activity?.icon || '',
-      // Normaliza el formato de imágenes desde diferentes fuentes
-      images: normalizeImages(activity?.image),
-      fecha_creacion: activity?.fecha_creacion || date
+    const [formData, setFormData] = useState(() => {
+      console.log('========================================');
+      console.log('INICIALIZANDO ESTADO - ActivityItemUpdate');
+      console.log('activity?.image:', activity?.image);
+
+      const normalizedImages = normalizeImages(activity?.image);
+
+      console.log('Imágenes normalizadas en estado inicial:', normalizedImages);
+      console.log('========================================');
+
+      return {
+        titulo: activity?.name || '',
+        description: activity?.description || '',
+        location: activity?.location || '',
+        horas: activity?.horas || '',
+        status: activity?.status || 'Pendiente',
+        comments: activity?.comments || '',
+        selectedIcon: activity?.icon || '',
+        // Normaliza el formato de imágenes desde diferentes fuentes
+        images: normalizedImages,
+        fecha_creacion: activity?.fecha_creacion || date
+      };
     });
     
     // Estados adicionales para UI y lógica
@@ -64,21 +76,27 @@ const ActivityItemUpdate = forwardRef<ActivityItemUpdateRef, ActivityItemUpdateP
     // Nuevo estado para el modal de confirmación de eliminación
     const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
 
+
     /**
-     * Normaliza el formato de las imágenes según su tipo
-     * esto significa que si el usuario ingresó una imagen como string
-     * o un array de strings, lo normalizamos para que sea compatible
-     * con el formato requerido por el API
+     * Actualiza el formulario cuando cambia la actividad (prop externa)
      */
-    function normalizeImages(image: any): string[] {
-      if (!image) return []; // Si no hay imagen, devuelve una lista vacía
-       
-      if (typeof image === 'string') { // Si es una cadena, verifica si comienza con '['
-        return image.startsWith('[') ? JSON.parse(image) : [image]; // Si es así, convierte a un array
+    useEffect(() => {
+      if (activity) {
+        const normalizedImages = normalizeImages(activity.image);
+
+        setFormData({
+          titulo: activity.name || '',
+          description: activity.description || '',
+          location: activity.location || '',
+          horas: activity.horas || '',
+          status: activity.status || 'Pendiente',
+          comments: activity.comments || '',
+          selectedIcon: activity.icon || '',
+          images: normalizedImages,
+          fecha_creacion: activity.fecha_creacion || date
+        });
       }
-      
-      return Array.isArray(image) ? image : [image]; // Si no es un array, lo convierte en uno
-    }
+    }, [activity]);
 
     /**
      * Verifica el estado de administrador del usuario actual

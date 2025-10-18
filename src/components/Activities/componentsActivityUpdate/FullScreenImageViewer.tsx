@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { API_BASE_URL } from '../../../config/api';
+import { getImageSource } from '../../../utils/imageUtils';
 
 interface FullScreenImageViewerProps {
   images: string[];
@@ -33,25 +34,6 @@ const FullScreenImageViewer: React.FC<FullScreenImageViewerProps> = ({
 }) => {
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  
-  // Función para obtener la fuente de la imagen - agregando verificación para undefined
-  const getImageSource = (imageUri: string | undefined) => {
-    // Si imageUri es undefined, null, vacío o no es string, devolver una imagen placeholder
-    if (!imageUri || typeof imageUri !== 'string' || imageUri.trim() === '') {
-      return { uri: 'https://via.placeholder.com/400' };
-    }
-    
-    // Limpiar espacios en blanco
-    const cleanUri = imageUri.trim();
-    
-    if (cleanUri.startsWith('file://') || cleanUri.startsWith('content://')) {
-      return { uri: cleanUri };
-    }
-    if (cleanUri.startsWith('http')) {
-      return { uri: cleanUri };
-    }
-    return { uri: `${API_BASE_URL}/images/activities/${cleanUri}` };
-  };
 
   // Filtrando imágenes vacías o undefined antes de usarlas
   const validImages = images.filter(img => 

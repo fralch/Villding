@@ -8,6 +8,7 @@ import { styles } from '../styles/ActivityItemCreateStyles';
 import StatusIndicator from './StatusIndicator';
 import FullScreenImageViewer from './FullScreenImageViewer';
 import { API_BASE_URL } from '../../../config/api';
+import { getImageSource } from '../../../utils/imageUtils';
 
 // Definición de las propiedades que recibe el componente
 interface TitleSectionProps {
@@ -72,16 +73,6 @@ const TitleSection: React.FC<TitleSectionProps> = ({
     return () => clearInterval(intervalId);
   }, []);
 
-  // Función para obtener la fuente de la imagen
-  const getImageSource = (imageUri: string) => {
-    if (imageUri.startsWith('file://') || imageUri.startsWith('content://')) {
-      return { uri: imageUri };
-    }
-    if (imageUri.startsWith('http')) {
-      return { uri: imageUri };
-    }
-    return { uri: `${API_BASE_URL}/images/activities/${imageUri}` };
-  };
 
   // Función para manejar la selección de imágenes de la galería
   const handlePickImages = async () => {

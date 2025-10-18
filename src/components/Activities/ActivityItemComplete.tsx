@@ -12,6 +12,7 @@ import { getActivity, storeActivity, removeActivity } from '../../hooks/localSto
 import { iconImports, iconsFiles } from './icons';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { API_BASE_URL } from '../../config/api';
+import { normalizeImages } from '../../utils/imageUtils';
 
 // Importación de componentes
 import TitleSection from './componentsActivityUpdate/TitleSection';
@@ -125,18 +126,6 @@ const ActivityItemComplete = forwardRef<ActivityItemCompleteRef, ActivityItemCom
     }
   };
 
-  /**
-   * Normaliza las imágenes para un formato consistente
-   */
-  function normalizeImages(image: any): string[] {
-    if (!image) return [];
-
-    if (typeof image === 'string') {
-      return image.startsWith('[') ? JSON.parse(image) : [image];
-    }
-
-    return Array.isArray(image) ? image : [image];
-  }
 
   /**
    * Muestra un mensaje modal
