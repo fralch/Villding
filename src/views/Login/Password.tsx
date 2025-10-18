@@ -18,8 +18,6 @@ import axios from "axios";
 import { API_BASE_URL } from '../../config/api';
 import { useRoute } from "@react-navigation/native";
 import { storeSesion } from "../../hooks/localStorageUser";
-import ConfirmModal from "../../components/Alerta/ConfirmationModal";
-import LoadingModal from "../../components/Alerta/LoadingModal";
 
 const { width, height } = Dimensions.get("window");
 
@@ -32,27 +30,13 @@ function Password():any {
   const [clave, setClave] = useState("");
   const [errorBoolean, setErrorBoolean] = useState(false);
   const [showModal, setShowModal] = useState(false);
-  const [showModalLoading, setShowModalLoading] = useState(false);
-  const [msjeModal, setMsjeModal] = useState("Login correcto.");
   const [userID, setUserID] = useState("");
 
-  useEffect(() => {
-    const handleAppStateChange = (nextAppState: AppStateStatus) => {
-      if (nextAppState === 'active') {
-        setShowModalLoading(false);
-      }
-    };
 
-    const subscription = AppState.addEventListener('change', handleAppStateChange);
-
-    return () => {
-      subscription.remove();
-    };
-  }, []);
 
   const handleLogin = () => {
     if (clave !== "") {
-      setShowModalLoading(true);
+  
       const fetchData = async () => {
         const JsonLogin = {
           email: email,
@@ -70,73 +54,27 @@ function Password():any {
           console.log(response.data);
 
           if (response.data.message === "Login successful") {
-            navigation.navigate("Verificacion", {
+            storeSesion({
               id: response.data.user.id,
               nombres: response.data.user.name,
               apellidos: response.data.user.last_name,
               email: response.data.user.email,
-              clave: "",
+              password: "",
+              rol: response.data.user.role,
+              user_code: response.data.user.user_code,
               telefono: response.data.user.telefono
                 ? response.data.user.telefono
                 : "",
-              rol: response.data.user.role,
-              user_code : response.data.user.user_code,
               uri: response.data.user.uri
                 ? `${API_BASE_URL}/images/profile/${response.data.user.uri}`
                 : "",
               tamano_img: response.data.profile_image_size
             });
-
-            // Generate CODE
-              const fetchCode = async () => {
-                const JsonCode = {
-                  user_id: response.data.user.id,
-                };
-                let reqOptions = {
-                  url: `${API_BASE_URL}/user/generate-code`,
-                  method: "POST",
-                  data: JsonCode,
-                };
-
-                try {
-                  const response2 = await axios(reqOptions);
-                  console.log(response2.data);
-
-                  // Send Code to whatsapp
-                    const fetchCodeWhatsapp = async () => {
-                      const JsonCodeWhatsapp = {
-                        message:  "Ingresa este código: " + response2.data.code,
-                        phone:  response.data.user.telefono
-                      };
-                      console.log("Ingresa este código: " + response2.data.code);
-                      let reqOptions = {
-                        url: "https://www.centroesteticoedith.com/whatsapp/api/whatsapp/text",
-                        method: "POST",
-                        data: JsonCodeWhatsapp,
-                      };
-
-                      try {
-                        const response3 = await axios(reqOptions);
-                        console.log(response3.data);
-                      } catch (error) {
-                        console.error(error);
-                      }
-                    };
-
-                    fetchCodeWhatsapp();
-                } catch (error) {
-                  console.error(error);
-                }
-              };
-
-              // fetchCode();
+            navigation.navigate("HomeProject");
 
             setErrorBoolean(false);
-            setShowModalLoading(false);
           } else {
-            setMsjeModal("Contraseña incorrecta.");
             setErrorBoolean(true);
-            setShowModalLoading(false);
             setShowModal(true);
           }
         } catch (error) {
@@ -147,7 +85,6 @@ function Password():any {
       fetchData();
     } else {
       setErrorBoolean(true);
-      setShowModalLoading(false);
     }
   };
 
@@ -234,12 +171,7 @@ function Password():any {
           </TouchableOpacity>
         </View>
       </SafeAreaView>
-      <ConfirmModal
-        visible={showModal}
-        message={msjeModal}
-        onClose={() => setShowModal(false)}
-      />
-      <LoadingModal visible={showModalLoading} />
+
     </ScrollView>
   );
 }

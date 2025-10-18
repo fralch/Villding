@@ -6,7 +6,6 @@ import { getSesion } from './src/hooks/localStorageUser';
 import { getProject } from './src/hooks/localStorageCurrentProject';
 import Login from './src/views/Login/Login';
 import Password from './src/views/Login/Password';
-import Verificacion from './src/views/Login/Verificacion';
 import CreacionCuenta from './src/views/Login/CreacionCuenta';
 import EditUser from './src/views/Login/EditUser';
 import HomeProject from './src/views/Projects/HomeProject';
@@ -15,7 +14,6 @@ import EditProject from './src/views/Projects/EditProject';
 import Project from './src/views/Projects/Project';
 import Activity from './src/components/Activities/Activity';
 import VistaMiembros from './src/views/Accesos/VistaMiembros';
-
 SplashScreen.preventAutoHideAsync(); // Evita que el splash screen desaparezca automáticamente
 
 
@@ -30,7 +28,6 @@ export default function RootNavigator() {
   const Pages = [
     { name: 'Login', component: Login },
     { name: 'Password', component: Password },
-    { name: 'Verificacion', component: Verificacion },
     { name: 'CreacionCuenta', component: CreacionCuenta },
     { name: 'HomeProject', component: HomeProject },
     { name: 'NewProject', component: NewProject },
