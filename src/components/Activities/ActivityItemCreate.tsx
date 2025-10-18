@@ -85,7 +85,7 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
     titulo: "",
     description: "",
     location: "",
-    horaInicio: "07:00",
+    horaInicio: "07:30",
     horaFin: "",
     comments: "",
     selectedIcon: "local-shipping.svg",
