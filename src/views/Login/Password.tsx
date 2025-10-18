@@ -15,6 +15,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons"; // Importa el ícono
 import axios from "axios";
+import { API_BASE_URL } from '../../config/api';
 import { useRoute } from "@react-navigation/native";
 import { storeSesion } from "../../hooks/localStorageUser";
 import ConfirmModal from "../../components/Alerta/ConfirmationModal";
@@ -59,7 +60,7 @@ function Password():any {
         };
 
         let reqOptions = {
-          url: "https://villding.lat/endpoint/user/login",
+          url: `${API_BASE_URL}/user/login`,
           method: "POST",
           data: JsonLogin,
         };
@@ -81,8 +82,7 @@ function Password():any {
               rol: response.data.user.role,
               user_code : response.data.user.user_code,
               uri: response.data.user.uri
-                ? "https://villding.lat/endpoint/images/profile/" +
-                  response.data.user.uri
+                ? `${API_BASE_URL}/images/profile/${response.data.user.uri}`
                 : "",
               tamano_img: response.data.profile_image_size
             });
@@ -93,7 +93,7 @@ function Password():any {
                   user_id: response.data.user.id,
                 };
                 let reqOptions = {
-                  url: "https://villding.lat/endpoint/user/generate-code",
+                  url: `${API_BASE_URL}/user/generate-code`,
                   method: "POST",
                   data: JsonCode,
                 };

@@ -14,6 +14,7 @@ import {
   ActivityIndicator,
 } from "react-native";
 import axios from "axios";
+import { API_BASE_URL } from "../../config/api";
 import RNPickerSelect from 'react-native-picker-select';
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons"; // Importa el ícono
 import { DateTimePickerAndroid } from "@react-native-community/datetimepicker";
@@ -240,7 +241,7 @@ function CreacionCuenta()  {
 
           console.log("🚀 ENVIANDO PETICIÓN - Configuración de axios:");
           let reqOptions = {
-            url: "https://villding.lat/endpoint/user/create",
+            url: `${API_BASE_URL}/user/create`,
             method: "POST",
             data: formData, // Enviar el FormData
             headers: {
@@ -270,7 +271,7 @@ function CreacionCuenta()  {
             console.log("- User ID para código:", JsonCode.user_id);
             
             let reqOptions2 = {
-              url: "https://villding.lat/endpoint/user/generate-code",
+              url: `${API_BASE_URL}/user/generate-code`,
               method: "POST",
               data: JsonCode,
             };

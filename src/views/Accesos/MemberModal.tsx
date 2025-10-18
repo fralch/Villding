@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import { getSesion, removeSesion, updateSesion } from '../../hooks/localStorageUser';
 import axios from "axios";
+import { API_BASE_URL } from '../../config/api';
 
 type MemberModalProps = {
   visible: boolean;
@@ -60,7 +61,7 @@ const MemberModal: React.FC<MemberModalProps> = ({
     // console.log("handleMakeAdmin:", member.id, project);
     try {
       const response = await axios.post(
-        "https://villding.lat/endpoint/user/makeadmin",
+        `${API_BASE_URL}/user/makeadmin`,
         {
           user_id: member.id,
           project_id: project,
@@ -88,7 +89,7 @@ const MemberModal: React.FC<MemberModalProps> = ({
     // console.log("handleRemoveAdmin:", member.id, project);
     try {
       const response = await axios.post(
-        "https://villding.lat/endpoint/user/removeadmin",
+        `${API_BASE_URL}/user/removeadmin`,
         {
           user_id: member.id,
           project_id: project,
@@ -110,10 +111,10 @@ const MemberModal: React.FC<MemberModalProps> = ({
     // console.log("handleRemoveMember:", member.id, project);
     try {
       const response = await axios.post(
-        "https://villding.lat/endpoint/project/detach",
+        `${API_BASE_URL}/project/detach`,
         {
-          user_id: member.id,
           project_id: project,
+          user_id: member.id,
         }
       );
       const rpt = response.data.message;
@@ -155,9 +156,7 @@ const MemberModal: React.FC<MemberModalProps> = ({
             {member.uri ? (
               <Image
                 source={{
-                  uri:
-                    "https://villding.lat/endpoint/images/profile/" +
-                    member.uri,
+                  uri: `${API_BASE_URL}/images/profile/${member.uri}`,
                 }}
                 style={styles.avatar}
               />

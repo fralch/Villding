@@ -21,6 +21,7 @@ import { getSesion } from "../../hooks/localStorageUser";
 import { useNavigation, NavigationProp } from "@react-navigation/native";
 import axios from "axios";
 import { styles } from "./styles/HomeProject";
+import { API_BASE_URL } from '../../config/api';
 
 interface Project {
   id: string;
@@ -112,11 +113,11 @@ export default function HomeProject() {
   async function fetchProjectsFromServer(userId: string): Promise<Project[]> {
     try {
         const response = await axios.post(
-            "https://villding.lat/endpoint/user/check-attachment",
-            { user_id: userId }, // Envía el ID del usuario en el cuerpo de la solicitud
+            `${API_BASE_URL}/user/check-attachment`,
+            { user_id: userId },
             {
                 headers: {
-                    Authorization: `Bearer YOUR_TOKEN`, // Incluye el token si es necesario
+                    Authorization: `Bearer YOUR_TOKEN`,
                     "Content-Type": "application/json",
                 },
             }

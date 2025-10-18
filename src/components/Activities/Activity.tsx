@@ -17,6 +17,7 @@ import {
 import { StatusBar as ExpoStatusBar } from 'expo-status-bar';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 import axios from "axios";
+import { API_BASE_URL } from '../../config/api';
 import { MaterialIcons, MaterialCommunityIcons, Feather, Ionicons } from '@expo/vector-icons';
 import ActivityItemCreate, { ActivityItemCreateRef } from './ActivityItemCreate';
 import ActivityItemUpdate, { ActivityItemUpdateRef } from './ActivityItemUpdate';
@@ -86,7 +87,7 @@ export default function Activity(props: any) {
 
   const handleSaveTitle = async () => {
     try {
-      await axios.post(`https://villding.lat/endpoint/tracking/update-title/${tracking.id}`, {
+      await axios.post(`${API_BASE_URL}/tracking/update-title/${tracking.id}`, {
         title: trackingTitle
       });
       setTitleTracking(trackingTitle);
@@ -104,7 +105,7 @@ export default function Activity(props: any) {
     }
     
     try {
-      await axios.post(`https://villding.lat/endpoint/tracking/delete/${tracking.id}`);
+      await axios.post(`${API_BASE_URL}/tracking/delete/${tracking.id}`);
       // Navigate back to the Project screen instead of directly to TrackingCurrent
       navigation.navigate('Project');
     } catch (error) {
@@ -171,7 +172,7 @@ export default function Activity(props: any) {
       try {
         const config = {
           method: 'get',
-          url: `https://villding.lat/endpoint/activities/tracking/${tracking.id}`,
+          url: `${API_BASE_URL}/activities/tracking/${tracking.id}`,
           headers: {
             'Cookie': 'XSRF-TOKEN=...' // Your existing token
           }
@@ -222,7 +223,7 @@ export default function Activity(props: any) {
 
       try {
         // Verifica si el usuario es admin del proyecto específico
-        const response = await axios.post("https://villding.lat/endpoint/project/check-attachment",{ project_id: idProject } );
+        const response = await axios.post(`${API_BASE_URL}/project/check-attachment`,{ project_id: idProject } );
         setIsAdmin(response.data.users.some((user: any) => 
           user.id === session?.id && user.is_admin === 1 
         ));
@@ -241,7 +242,7 @@ export default function Activity(props: any) {
     try {
       const config = {
         method: 'get',
-        url: `https://villding.lat/endpoint/activities/tracking/${tracking.id}`,
+        url: `${API_BASE_URL}/activities/tracking/${tracking.id}`,
         headers: {
           'Cookie': 'XSRF-TOKEN=...' // Your existing token
         }

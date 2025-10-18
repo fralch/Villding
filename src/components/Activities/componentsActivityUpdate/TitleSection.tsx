@@ -7,6 +7,7 @@ import { getActivity } from '../../../hooks/localStorageCurrentActvity';
 import { styles } from '../styles/ActivityItemCreateStyles';
 import StatusIndicator from './StatusIndicator';
 import FullScreenImageViewer from './FullScreenImageViewer';
+import { API_BASE_URL } from '../../../config/api';
 
 // Definición de las propiedades que recibe el componente
 interface TitleSectionProps {
@@ -79,7 +80,7 @@ const TitleSection: React.FC<TitleSectionProps> = ({
     if (imageUri.startsWith('http')) {
       return { uri: imageUri };
     }
-    return { uri: `https://villding.lat/endpoint/images/activities/${imageUri}` };
+    return { uri: `${API_BASE_URL}/images/activities/${imageUri}` };
   };
 
   // Función para manejar la selección de imágenes de la galería

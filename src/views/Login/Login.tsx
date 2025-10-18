@@ -17,6 +17,7 @@ import {
   Keyboard,
 } from 'react-native';
 import axios from "axios";
+import { API_BASE_URL } from '../../config/api';
 
 const { width, height } = Dimensions.get('window');
 
@@ -56,10 +57,11 @@ function Login(): any {
       };
 
       let reqOptions = {
-        url: "https://villding.lat/endpoint/user/email_exists",
+        url: `${API_BASE_URL}/user/email_exists`,
         method: "POST",
         data: JsonLogin,
       };
+      console.log(reqOptions);
 
       try {
         const response = await axios(reqOptions);

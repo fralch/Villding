@@ -9,6 +9,7 @@ import { storeProject } from '../../hooks/localStorageCurrentProject';
 import { useNavigation, NavigationProp, useFocusEffect } from "@react-navigation/native";
 import { getSesion } from "../../hooks/localStorageUser";
 import axios from 'axios';
+import { API_BASE_URL } from '../../config/api';
 
 interface Project {
   company: string;
@@ -110,7 +111,7 @@ export default function Project(props: any) {
   useEffect(() => {
     if (ProyectoActual) {
       // Sirve para actulizar las actividades pendientes o programadas 
-      axios.post(`https://villding.lat/endpoint/activities_check/${ProyectoActual.id}`)
+      axios.post(`${API_BASE_URL}/activities_check/${ProyectoActual.id}`)
         .then(response => {
         })
         .catch(error => {

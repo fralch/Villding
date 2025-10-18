@@ -21,13 +21,14 @@ import { saveProject, deleteProject } from "../../hooks/localStorageProject";
 import { getSesion } from '../../hooks/localStorageUser';
 import { useRoute, RouteProp } from "@react-navigation/native";
 import { styles as baseStyles } from "./styles/NewProject";
+import { API_BASE_URL } from '../../config/api';
 
 import ConfirmModal from '../../components/Alerta/ConfirmationModal';
 import LoadingModal from '../../components/Alerta/LoadingModal';
 
 // Constante para el tamaño máximo de archivo en bytes (500 KB)
 const MAX_FILE_SIZE = 500 * 1024;
-const API_BASE_URL = "https://villding.lat/endpoint";
+
 
 // Interfaz para la estructura de un proyecto
 interface Project {

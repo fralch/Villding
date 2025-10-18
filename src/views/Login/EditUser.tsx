@@ -21,6 +21,7 @@ import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
 import * as FileSystem from 'expo-file-system';
 import axios from 'axios';
+import { API_BASE_URL } from '../../config/api';
 import { getSesion, removeSesion , updateSesion } from '../../hooks/localStorageUser';
 import { useNavigation, NavigationProp } from "@react-navigation/native";
 import ConfirmModal from '../../components/Alerta/ConfirmationModal';
@@ -198,7 +199,7 @@ const EditUser = () => {
       }
 
       let reqOptions = {
-        url: "https://villding.lat/endpoint/user/update",
+        url: `${API_BASE_URL}/user/update`,
         method: "POST",
         data: formData, // Enviar el FormData
         headers: {

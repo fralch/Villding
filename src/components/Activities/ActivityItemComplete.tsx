@@ -11,6 +11,7 @@ import { getSesion } from '../../hooks/localStorageUser';
 import { getActivity, storeActivity, removeActivity } from '../../hooks/localStorageCurrentActvity';
 import { iconImports, iconsFiles } from './icons';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
+import { API_BASE_URL } from '../../config/api';
 
 // Importación de componentes
 import TitleSection from './componentsActivityUpdate/TitleSection';
@@ -77,7 +78,7 @@ const ActivityItemComplete = forwardRef<ActivityItemCompleteRef, ActivityItemCom
         // Verifica si el usuario es admin del proyecto específico
         if (storedData?.project_id) {
           const response = await axios.post(
-            "https://villding.lat/endpoint/project/check-attachment",
+            `${API_BASE_URL}/project/check-attachment`,
             { project_id: storedData.project_id }
           );
           
@@ -203,7 +204,7 @@ const ActivityItemComplete = forwardRef<ActivityItemCompleteRef, ActivityItemCom
       const response = newImages.length > 0 || existingImages.length > 0
         ? await uploadWithImages(activityData)
         : await axios.post(
-            `https://villding.lat/endpoint/activities/${storedData.activity?.id}`,
+            `${API_BASE_URL}/activities/${storedData.activity?.id}`,
             activityData
           );
         
@@ -279,7 +280,7 @@ const ActivityItemComplete = forwardRef<ActivityItemCompleteRef, ActivityItemCom
     // Enviar solicitud
     return await axios({
       method: 'post',
-      url: `https://villding.lat/endpoint/activities_imgs/${activityData.id}`,
+      url: `${API_BASE_URL}/activities_imgs/${activityData.id}`,
       data: formDataObj,
       headers: { "Content-Type": "multipart/form-data" }
     });
@@ -305,7 +306,7 @@ const ActivityItemComplete = forwardRef<ActivityItemCompleteRef, ActivityItemCom
 
       await axios({
         method: 'post',
-        url: 'https://villding.lat/endpoint/activities_complete',
+        url: `${API_BASE_URL}/activities_complete`,
         data: { id: storedData.activity?.id },
         headers: { "Content-Type": "application/json" }
       });
@@ -359,7 +360,7 @@ const ActivityItemComplete = forwardRef<ActivityItemCompleteRef, ActivityItemCom
       setIsLoading(true);
       await removeActivity();
       const activityId = storedData?.activity?.id;
-      await axios.post(`https://villding.lat/endpoint/activities_delete/${activityId}`);
+      await axios.post(`${API_BASE_URL}/activities_delete/${activityId}`);
       setIsLoading(false);
       setShowDeleteConfirmation(false);
       showMessage('Actividad eliminada correctamente');

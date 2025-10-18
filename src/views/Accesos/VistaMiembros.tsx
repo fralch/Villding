@@ -18,6 +18,7 @@ import MemberModal from "./MemberModal";
 import { useNavigation, NavigationProp } from "@react-navigation/native";
 import { getSesion, removeSesion , updateSesion } from '../../hooks/localStorageUser';
 import axios from "axios";
+import { API_BASE_URL } from '../../config/api';
 
 type User = {
   id: string;
@@ -71,7 +72,7 @@ const VistaMiembros: React.FC<any> = (project) => {
         console.log(session);
 
         const response = await axios.post(
-          "https://villding.lat/endpoint/project/check-attachment",
+          `${API_BASE_URL}/project/check-attachment`,
           { project_id: idProject },
           { headers: { "Content-Type": "application/json" } }
         );
@@ -114,8 +115,7 @@ const VistaMiembros: React.FC<any> = (project) => {
       <Image
         source={{
           uri: item.uri
-            ? "https://villding.lat/endpoint/images/profile/" +
-              item.uri
+            ? `${API_BASE_URL}/images/profile/${item.uri}`
             : "https://cdn-icons-png.flaticon.com/512/9385/9385289.png",
         }}
         style={styles.avatar}
@@ -134,7 +134,7 @@ const VistaMiembros: React.FC<any> = (project) => {
   const handleAddUser = async () => {
     try {
       const userCodeRpt = await axios.post(
-        "https://villding.lat/endpoint/user/user_code",
+        `${API_BASE_URL}/user/user_code`,
         { user_code: codeUser }
       );
       const userId = userCodeRpt.data.id;
@@ -149,7 +149,7 @@ const VistaMiembros: React.FC<any> = (project) => {
       };
 
       const response = await axios.post(
-        "https://villding.lat/endpoint/project/attach",
+        `${API_BASE_URL}/project/attach`,
         data,
         { headers: myHeaders }
       );

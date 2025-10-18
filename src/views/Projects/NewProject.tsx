@@ -20,6 +20,7 @@ import { saveProject, deleteProject } from "../../hooks/localStorageProject";
 import { getSesion, removeSesion , updateSesion } from '../../hooks/localStorageUser';
 import { useRoute, RouteProp } from "@react-navigation/native";
 import { styles } from "./styles/NewProject";
+import { API_BASE_URL } from '../../config/api';
 
 import ConfirmModal from '../../components/Alerta/ConfirmationModal';
 import LoadingModal from '../../components/Alerta/LoadingModal';
@@ -80,7 +81,7 @@ const NewProject: React.FC = () => {
   }, [ ]);
 
   useEffect(() => {
-    fetch("https://villding.lat/endpoint/project/types")
+    fetch(`${API_BASE_URL}/project/types`)
       .then((response) => response.json())
       .then((data) => {
         setTiposProyectos(data);
@@ -88,7 +89,7 @@ const NewProject: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    fetch("https://villding.lat/endpoint/project/subtypes")
+    fetch(`${API_BASE_URL}/project/subtypes`)
       .then((response2) => response2.json())
       .then((data2) => {
         setSubtiposProyecto(data2);
@@ -327,7 +328,7 @@ const NewProject: React.FC = () => {
     }
 
     let reqOptions = {
-      url: "https://villding.lat/endpoint/project/store",
+      url: `${API_BASE_URL}/project/store`,
       method: "POST",
       data: formdata,
       headers: {
@@ -354,7 +355,7 @@ const NewProject: React.FC = () => {
       });
 
       let reqOptions2 = {
-        url: "https://villding.lat/endpoint/project/attach",
+        url: `${API_BASE_URL}/project/attach`,
         method: "POST",
         data: AttachUserProjectJson,
       };

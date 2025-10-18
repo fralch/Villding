@@ -2,6 +2,7 @@ import React, { forwardRef, useImperativeHandle, useState, useEffect } from 'rea
 import { View, ScrollView, Alert, TouchableOpacity, Text, ActivityIndicator, Modal, StyleSheet } from 'react-native';
 import { StatusBar as ExpoStatusBar } from 'expo-status-bar';
 import axios from 'axios';
+import { API_BASE_URL } from '../../config/api';
 import { getSesion } from '../../hooks/localStorageUser';
 import { getActivity, storeActivity, removeActivity } from '../../hooks/localStorageCurrentActvity';
 import { Activity } from './types/Activity_interface';
@@ -96,7 +97,7 @@ const ActivityItemUpdate = forwardRef<ActivityItemUpdateRef, ActivityItemUpdateP
 
         try {
           // Verifica si el usuario es admin del proyecto específico
-          const response = await axios.post("https://villding.lat/endpoint/project/check-attachment",{ project_id } );
+          const response = await axios.post(`${API_BASE_URL}/project/check-attachment`,{ project_id } );
           
           setIsAdmin(response.data.users.some((user: any) => 
             user.id === session?.id && user.is_admin === 1 
@@ -238,7 +239,7 @@ const ActivityItemUpdate = forwardRef<ActivityItemUpdateRef, ActivityItemUpdateP
         } else {
           // Sin imágenes, usa una solicitud JSON normal
           response = await axios.post(
-            `https://villding.lat/endpoint/activities/${activity.id}`,
+            `${API_BASE_URL}/activities/${activity.id}`,
             activityData
           );
         }
@@ -296,7 +297,7 @@ const ActivityItemUpdate = forwardRef<ActivityItemUpdateRef, ActivityItemUpdateP
       // Envía solicitud con el FormData
       return await axios({
         method: 'post',
-        url: `https://villding.lat/endpoint/activities_imgs/${activityData.id}`,
+        url: `${API_BASE_URL}/activities_imgs/${activityData.id}`,
         data: formDataObj,
         headers: { "Content-Type": "multipart/form-data" }
       });
@@ -360,7 +361,7 @@ const ActivityItemUpdate = forwardRef<ActivityItemUpdateRef, ActivityItemUpdateP
         // Luego marcamos la actividad como completada
         await axios({
           method: 'post',
-          url: `https://villding.lat/endpoint/activities_complete`,
+          url: `${API_BASE_URL}/activities_complete`,
           data: { id: activity?.id },
           headers: { "Content-Type": "application/json" }
         });
@@ -423,7 +424,7 @@ const ActivityItemUpdate = forwardRef<ActivityItemUpdateRef, ActivityItemUpdateP
         setIsLoading(true);
         await removeActivity();
         const activityId = storedData?.activity?.id || activity?.id;
-        await axios.post(`https://villding.lat/endpoint/activities_delete/${activityId}`);
+        await axios.post(`${API_BASE_URL}/activities_delete/${activityId}`);
         setIsLoading(false);
         setShowDeleteConfirmation(false);
         showMessage('Actividad eliminada correctamente');

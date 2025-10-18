@@ -12,6 +12,7 @@ import {
   Platform
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
+import { API_BASE_URL } from '../../../config/api';
 
 interface FullScreenImageViewerProps {
   images: string[];
@@ -49,7 +50,7 @@ const FullScreenImageViewer: React.FC<FullScreenImageViewerProps> = ({
     if (cleanUri.startsWith('http')) {
       return { uri: cleanUri };
     }
-    return { uri: `https://villding.lat/endpoint/images/activities/${cleanUri}` };
+    return { uri: `${API_BASE_URL}/images/activities/${cleanUri}` };
   };
 
   // Filtrando imágenes vacías o undefined antes de usarlas

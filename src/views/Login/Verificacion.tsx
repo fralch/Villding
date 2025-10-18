@@ -15,6 +15,7 @@ import {
 import { storeSesion } from "../../hooks/localStorageUser";
 import * as FileSystem from "expo-file-system";
 import axios from "axios";
+import { API_BASE_URL } from '../../config/api';
 
 const { width, height } = Dimensions.get("window");
 
@@ -57,16 +58,15 @@ function Verificacion(props: any): any {
         code: codigo,
       };
 
-      // let reqOptions = {
-      //   url: "https://villding.lat/endpoint/user/verify-code",
-      //   method: "POST",
-      //   data: JsonCodeWhatsapp,
-      // };
+      let reqOptions = {
+        url: `${API_BASE_URL}/user/verify-code`,
+        method: "POST",
+        data: JsonCodeWhatsapp,
+      };
 
-      // const response = await axios(reqOptions);
+      const response = await axios(reqOptions);
 
-      // if (response.status === 200) { // Suponiendo que 200 es éxito
-      if (true) { // Suponiendo que 200 es éxito
+      if (response.status === 200) { // Suponiendo que 200 es éxito
         const imageUri = propsUser.uri ?? "";
         let localUri = "";
 
