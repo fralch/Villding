@@ -603,6 +603,30 @@ const ActivityCard: React.FC<{
     }
   };
 
+  // Función para convertir hora de 24h a 12h con am/pm
+  const convertTo12Hour = (time: string) => {
+    const [hours, minutes] = time.split(':').map(Number);
+    const period = hours >= 12 ? 'pm' : 'am';
+    const hours12 = hours % 12 || 12;
+    return `${hours12}:${minutes.toString().padStart(2, '0')} ${period}`;
+  };
+
+  // Función para formatear la hora según si tiene inicio y fin
+  const formatTimeDisplay = (horas: string) => {
+    if (!horas || horas === "0") {
+      return "7:30 am";
+    }
+
+    // Si tiene formato "HH:MM - HH:MM" convierte ambas horas
+    if (horas.includes(" - ")) {
+      const [horaInicio, horaFin] = horas.split(" - ");
+      return `${convertTo12Hour(horaInicio)} - ${convertTo12Hour(horaFin)}`;
+    }
+
+    // Si solo tiene hora de inicio, convertirla a formato 12 horas
+    return convertTo12Hour(horas);
+  };
+
   const statusLabel = getStatusLabel(activity.status);
 
   // Definimos los colores de fondo según si es hoy o no
@@ -637,7 +661,7 @@ const ActivityCard: React.FC<{
         
         </View>
         <Text style={styles.taskTitle}>{activity.name}</Text>
-        <Text style={styles.taskTime}>{activity.horas} horas</Text>
+        <Text style={styles.taskTime}>{formatTimeDisplay(activity.horas)}</Text>
       </View>
       {/* Icono de la actividad 👇 */}
       <Image 

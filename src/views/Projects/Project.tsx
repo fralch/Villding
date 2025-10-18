@@ -110,6 +110,7 @@ export default function Project(props: any) {
 
   useEffect(() => {
     if (ProyectoActual) {
+      console.log('Componente Proyecto Actual:', ProyectoActual);
       // Sirve para actulizar las actividades pendientes o programadas 
       axios.post(`${API_BASE_URL}/activities_check/${ProyectoActual.id}`)
         .then(response => {
