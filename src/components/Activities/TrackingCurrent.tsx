@@ -25,6 +25,7 @@ const TrackingCurrent = () => {
   const [filteredTrackings, setFilteredTrackings] = useState<TrackingSection[]>([]); // Seguimientos filtrados para la semana actual, son los seguimientos de la semana actual
   const [weekDates, setWeekDates] = useState<string[]>([]); // Fechas de la semana actual son los 7 días de la semana actual
   const [currentWeekIndex, setCurrentWeekIndex] = useState(0); // Índice de la semana actual 0 es la primera semana
+  const [totalWeeks, setTotalWeeks] = useState(0); // Número total de semanas del proyecto (desde start_date hasta end_date)
   const [titleTracking, setTitleTracking] = useState(""); // Título del nuevo seguimiento 
 
   // Estados para controlar la visibilidad de los modales
@@ -87,18 +88,26 @@ const loadProject = async () => {
 
     setProject(parsedProject);
 
-    // Convertir el formato YYYY/MM/DD a un objeto Date
-    const [year, month, day] = parsedProject.start_date.split('/').map(Number);
-    const startDate = new Date(year, month - 1, day);
+    // Convertir el formato DD/MM/YYYY a un objeto Date para start_date
+    const [startDay, startMonth, startYear] = parsedProject.start_date.split('/').map(Number);
+    const startDate = new Date(startYear, startMonth - 1, startDay);
+
+    // Convertir el formato DD/MM/YYYY a un objeto Date para end_date
+    const [endDay, endMonth, endYear] = parsedProject.end_date.split('/').map(Number);
+    const endDate = new Date(endYear, endMonth - 1, endDay);
+
+    // Calcular el número total de semanas del proyecto
+    const totalProjectWeeks = Math.ceil((endDate.getTime() - startDate.getTime()) / (7 * 24 * 60 * 60 * 1000));
+    setTotalWeeks(totalProjectWeeks);
+
+    // Calcular la semana actual del proyecto
     const currentDate = new Date();
-    
-    // Calcular la diferencia en días
     const differenceInMs = currentDate.getTime() - startDate.getTime();
     const differenceInDays = Math.floor(differenceInMs / (1000 * 60 * 60 * 24));
-    
-    // Calcular el número de semana inicial
+
+    // Calcular el número de semana inicial (0-indexed)
     const initialWeekIndex = Math.floor(differenceInDays / 7);
-    
+
     setCurrentWeekIndex(initialWeekIndex);
     
     // Calcular las fechas de la semana inicial
@@ -114,8 +123,8 @@ const loadProject = async () => {
 // Verificar si el día actual está en la semana mostrada y ajustar si es necesario
 const checkAndAdjustCurrentWeek = (startDateStr: string, weekIndex: number, isInitialLoad: boolean = false) => {
   if (!startDateStr) return;
-  
-  const [year, month, day] = startDateStr.split('/').map(Number);
+
+  const [day, month, year] = startDateStr.split('/').map(Number);
   const projectStartDate = new Date(year, month - 1, day);
   const firstMonday = getMonday(projectStartDate);
   
@@ -145,15 +154,15 @@ const checkAndAdjustCurrentWeek = (startDateStr: string, weekIndex: number, isIn
   // Calcular las fechas de una semana inicial o de las semanas siguientes
   const calculateWeekDates = (startDateStr: string, weekOffset: number) => {
     if (!startDateStr) return;
-    
+
     // Asegurar que weekOffset sea al menos 1
     if (weekOffset < 1) {
       weekOffset = 1;
     }
-  
+
     console.log(`Calculating dates for week: ${weekOffset}`);
-  
-    const [year, month, day] = startDateStr.split('/').map(Number);
+
+    const [day, month, year] = startDateStr.split('/').map(Number);
     const projectStartDate = new Date(year, month - 1, day);
     const firstMonday = getMonday(projectStartDate);
   
@@ -264,34 +273,43 @@ const checkAndAdjustCurrentWeek = (startDateStr: string, weekIndex: number, isIn
   // Cambiar a la semana anterior o siguiente
   const handleWeekChange = (direction: string) => {
     if (!project?.start_date || !project?.end_date) return;
-  
-    const startDate = new Date(project.start_date.replace(/\//g, "-"));
-    const endDate = new Date(project.end_date.replace(/\//g, "-"));
-  
+
+    // Parsear correctamente las fechas en formato DD/MM/YYYY
+    const [startDay, startMonth, startYear] = project.start_date.split('/').map(Number);
+    const startDate = new Date(startYear, startMonth - 1, startDay);
+
+    const [endDay, endMonth, endYear] = project.end_date.split('/').map(Number);
+    const endDate = new Date(endYear, endMonth - 1, endDay);
+
     // Calcular nuevo índice de semana
     const newWeekIndex = direction === "right"
       ? currentWeekIndex + 1
       : currentWeekIndex - 1;
-  
+
+    // Validar límites de navegación
+    if (direction === "left" && newWeekIndex < 0) {
+      console.log("No se puede navegar antes de la semana 1");
+      return;
+    }
+
+    if (direction === "right" && newWeekIndex >= totalWeeks) {
+      console.log(`No se puede navegar más allá de la semana ${totalWeeks} (total de semanas del proyecto)`);
+      return;
+    }
+
     // Calcular la fecha del lunes de la semana a la que queremos navegar
     const mondayOfStartWeek = getMonday(startDate);
     const targetMonday = new Date(mondayOfStartWeek);
     targetMonday.setDate(mondayOfStartWeek.getDate() + (newWeekIndex * 7));
-  
-    // Validar límites de navegación
-    if (direction === "left" && newWeekIndex < 0) {
+
+    // Verificación adicional: el lunes de la nueva semana no debe exceder la fecha de fin
+    if (targetMonday > endDate) {
+      console.log("El lunes de esta semana excede la fecha de fin del proyecto");
       return;
     }
-  
-    if (direction === "right") {
-      // Verificar que el lunes de la nueva semana no exceda la fecha de fin del proyecto
-      if (targetMonday > endDate) {
-        return;
-      }
-    }
-  
+
     setCurrentWeekIndex(newWeekIndex);
-    
+
     // Pasar newWeekIndex + 1 para mantener la consistencia con la numeración de semanas
     calculateWeekDates(project.start_date, newWeekIndex + 1);
   };

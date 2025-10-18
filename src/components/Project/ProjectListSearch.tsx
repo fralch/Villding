@@ -25,10 +25,11 @@ const ProjectListSearch: React.FC<ProjectListProps> = ({ projects }) => {
   const [projectsWithCurrentWeek, setProjectsWithCurrentWeek] = useState<Project[]>([]);
 
   const calculateCurrentWeek = (startDateStr: string) => {
-    const [year, month, day] = startDateStr.split('/').map(Number);
+    // Las fechas vienen formateadas como DD/MM/YYYY
+    const [day, month, year] = startDateStr.split('/').map(Number);
     const startDate = new Date(year, month - 1, day);
     const currentDate = new Date();
-    
+
     const differenceInMs = currentDate.getTime() - startDate.getTime();
     const differenceInDays = Math.floor(differenceInMs / (1000 * 60 * 60 * 24));
     return Math.floor(differenceInDays / 7) + 1;

@@ -38,7 +38,7 @@ const ProjectList: React.FC<ProjectListProps> = ({ projects }) => {
   };
 
   const calculateCurrentWeek = (startDateStr: string) => {
-    const [year, month, day] = startDateStr.split('/').map(Number);
+    const [day, month, year] = startDateStr.split('/').map(Number);
     const startDate = new Date(year, month - 1, day);
     const currentDate = new Date();
     

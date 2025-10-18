@@ -150,7 +150,7 @@ export default function HomeProject() {
             end_date: formatDate(project.end_date),
             nearest_monday: formatDate(project.nearest_monday),
             week: calculateWeekDifference(project.start_date, project.end_date),
-            week_current: calculateWeekCurrent(project.start_date, project.end_date),
+            week_current: calculateWeekCurrent(project.start_date, project.nearest_monday),
         }));
 
         return mappedProjects;
@@ -176,19 +176,36 @@ export default function HomeProject() {
     }
   }
 
-  // Función auxiliar para calcular semanas entre dos fechas
+  // Obtener el lunes de una semana dada una fecha
+  const getMonday = (date: Date) => {
+    const day = date.getDay();
+    const diff = date.getDate() - day + (day === 0 ? -6 : 1); // Ajustar cuando es domingo
+    const monday = new Date(date);
+    monday.setDate(diff);
+    return monday;
+  };
+
+  // Función auxiliar para calcular semanas totales del proyecto (desde start_date hasta end_date)
   function calculateWeekDifference(startDate: string, endDate: string): number {
     const start = new Date(startDate);
     const end = new Date(endDate);
     const msPerWeek = 1000 * 60 * 60 * 24 * 7;
-    return Math.round((end.getTime() - start.getTime()) / msPerWeek);
+    const diffInWeeks = Math.ceil((end.getTime() - start.getTime()) / msPerWeek);
+    return diffInWeeks;
   }
-  function   calculateWeekCurrent(startDate: string, endDate: string): number {
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-    const current = new Date();
+
+  // Función para calcular la semana actual del proyecto
+  function calculateWeekCurrent(startDate: string, nearestMonday: string): number {
+    // nearestMonday ya es el lunes de la semana de inicio del proyecto
+    const firstMonday = new Date(nearestMonday);
+    const currentDate = new Date();
+    const currentMonday = getMonday(currentDate);
+
     const msPerWeek = 1000 * 60 * 60 * 24 * 7;
-    return Math.round((current.getTime() - start.getTime()) / msPerWeek) + 1;
+    const weeksDiff = Math.floor((currentMonday.getTime() - firstMonday.getTime()) / msPerWeek);
+
+    // La primera semana es 1, no 0
+    return weeksDiff + 1;
   }
 
   function formatDate(date: string): string {
