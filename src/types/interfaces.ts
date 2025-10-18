@@ -41,6 +41,7 @@ interface User {
   telefono?: string;
   edad?: number;
   uri?: string;
+  tamano_img?: number;
 }
 
 // exportar las interfaces

@@ -1,18 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-interface User {
-  id: any;
-  nombres: string;
-  apellidos: string;
-  email: string;
-  email_contact?: string;
-  password: string;
-  rol: string;
-  user_code: string;
-  telefono?: string;
-  edad? : number;
-  uri?: string;
-}
+import { User } from "../types/interfaces";
 
 // Función para almacenar la sesión
 const storeSesion = async (NewUser: User): Promise<void> => {
