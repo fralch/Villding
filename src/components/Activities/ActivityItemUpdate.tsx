@@ -137,32 +137,25 @@ const ActivityItemUpdate = forwardRef<ActivityItemUpdateRef, ActivityItemUpdateP
 
     // Interceptar botón de retroceso de Android en el modal de edición
     useEffect(() => {
-      console.log('[Update] BackHandler useEffect mount. showDeleteConfirmation:', showDeleteConfirmation, 'showModal:', showModal, 'isLoading:', isLoading, 'isEditLoading:', isEditLoading);
       const onBackPress = () => {
-        console.log('[Update] hardwareBackPress fired. showDeleteConfirmation:', showDeleteConfirmation, 'showModal:', showModal, 'isLoading:', isLoading, 'isEditLoading:', isEditLoading);
         if (showDeleteConfirmation) {
-          console.log('[Update] Closing delete confirmation modal via back');
           setShowDeleteConfirmation(false);
           return true;
         }
         if (isLoading || isEditLoading) {
-          console.log('[Update] Block back during loading');
           // Evita cerrar mientras está procesando/guardando
           return true;
         }
         if (showModal) {
-          console.log('[Update] Closing message modal via back');
           setShowModal(false);
           return true;
         }
-        console.log('[Update] Calling hideModal to return to tracking current');
         hideModal();
         return true;
       };
 
       const subscription = BackHandler.addEventListener('hardwareBackPress', onBackPress);
       return () => {
-        console.log('[Update] BackHandler subscription removed');
         subscription.remove();
       };
     }, [hideModal, showModal, showDeleteConfirmation, isLoading, isEditLoading]);
