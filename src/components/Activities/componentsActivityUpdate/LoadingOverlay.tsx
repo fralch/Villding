@@ -10,7 +10,7 @@ interface LoadingOverlayProps {
 
 const LoadingOverlay: React.FC<LoadingOverlayProps> = ({ visible, message }) => {
   return (
-    <Modal transparent={true} visible={visible}>
+    <Modal transparent={true} visible={visible} onRequestClose={() => {}}>
       <View style={styles.overlay}>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#33baba" />

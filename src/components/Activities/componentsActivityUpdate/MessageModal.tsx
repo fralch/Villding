@@ -23,6 +23,7 @@ const MessageModal: React.FC<MessageModalProps> = ({
       visible={visible}
       transparent={true}
       animationType="fade"
+      onRequestClose={onClose}
     >
       <View style={styles.centeredView}>
         <View style={styles.modalView}>

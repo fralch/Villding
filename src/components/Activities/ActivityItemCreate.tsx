@@ -10,6 +10,7 @@ import {
   Alert,
   ActivityIndicator,
   StyleSheet,
+  BackHandler,
 } from "react-native";
 import { StatusBar as ExpoStatusBar } from "expo-status-bar";
 import DateTimePicker, { DateTimePickerEvent } from "@react-native-community/datetimepicker";
@@ -99,7 +100,7 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
   const [modalMessage, setModalMessage] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-
+  
   // Efecto para verificar el estado de administrador al montar el componente
   useEffect(() => {
     const checkAdminStatus = async () => {
@@ -266,6 +267,36 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
     handleCreateActivity: () => handleSubmit()
   }));
 
+  // Interceptar botón de retroceso de Android cuando este modal está visible
+  useEffect(() => {
+    console.log('[Create] BackHandler useEffect mount. showModal:', showModal, 'isLoading:', isLoading);
+    const onBackPress = () => {
+      console.log('[Create] hardwareBackPress fired. showModal:', showModal, 'isLoading:', isLoading);
+      if (showModal) {
+        console.log('[Create] Closing confirmation modal via back');
+        setShowModal(false);
+        return true;
+      }
+      if (isLoading) {
+        console.log('[Create] Block back during loading');
+        // Evita cerrar mientras está cargando
+        return true;
+      }
+      if (hideModal) {
+        console.log('[Create] Calling hideModal to return to tracking current');
+        hideModal();
+        return true;
+      }
+      console.log('[Create] Passing back press to default (return false)');
+      return false;
+    };
+
+    const subscription = BackHandler.addEventListener('hardwareBackPress', onBackPress);
+    return () => {
+      console.log('[Create] BackHandler subscription removed');
+      subscription.remove();
+    };
+  }, [hideModal, showModal, isLoading]);
   return (
     <View style={{ backgroundColor: "#0a3649", flex: 1 }}>
       <ExpoStatusBar style="light" />
@@ -303,7 +334,7 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
       </ScrollView>
 
       {/* Modal de Confirmación */}
-      <Modal transparent={true} animationType="slide" visible={showModal}>
+      <Modal transparent={true} animationType="slide" visible={showModal} onRequestClose={() => { console.log('[Create] Modal onRequestClose fired'); setShowModal(false); }}>
         <View style={modalStyles.modalContainer}>
           <View style={modalStyles.modalContent}>
             <Text style={modalStyles.modalText}>{modalMessage}</Text>
@@ -316,7 +347,7 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
 
       {/* Loading Overlay - Muestra solo cuando isLoading es true */}
       {isLoading && (
-        <Modal transparent={true} visible={true}>
+        <Modal transparent={true} visible={true} onRequestClose={() => { console.log('[Create] Loading onRequestClose fired - ignoring'); }}>
           <View style={loadingStyles.overlay}>
             <View style={loadingStyles.loadingContainer}>
               <ActivityIndicator size="large" color="#33baba" />

@@ -322,6 +322,7 @@ export default function Activity(props: any) {
   };
 
   const hideModal = async () => {
+    console.log('[Activity] hideModal called');
     Animated.timing(slideAnim, {
       toValue: height,
       duration: 300,
@@ -523,6 +524,10 @@ const handleSaveActivity = async () => {
         transparent 
         visible={isVisible} 
         animationType="none"
+        onRequestClose={() => { 
+          console.log('[Activity] isVisible Modal onRequestClose (Android back)');
+          hideModal();
+        }}
       >
         <View style={styles.modalBackground}>
           <Animated.View 
