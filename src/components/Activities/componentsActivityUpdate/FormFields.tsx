@@ -32,6 +32,7 @@ const FormFields: React.FC<FormFieldsProps> = ({
   const [selectedTimeFin, setSelectedTimeFin] = useState(new Date());
   const [horaInicio, setHoraInicio] = useState("");
   const [horaFin, setHoraFin] = useState("");
+  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
 
   // Verificar la editabilidad al cargar el componente
   useEffect(() => {
@@ -148,18 +149,36 @@ const FormFields: React.FC<FormFieldsProps> = ({
         fields.map((inputConfig, index) => (
           // Mostrar el campo de descripción siempre, ubicación solo si tiene valor
           (inputConfig.field === 'description' || inputConfig.value) ? (
-            <View key={index} style={[styles.inputContainer, { backgroundColor: "#0a3649" }]}>
-              {inputConfig.icon}
-              <Text
-                style={[
-                  styles.input,
-                  status === 'completado' && { opacity: 0.7 },
-                  { color: inputConfig.value ? '#fff' : '#888' }
-                ]}
-                numberOfLines={inputConfig.field === 'description' ? undefined : 1}
-              >
-                {inputConfig.value || (inputConfig.field === 'description' ? 'Sin descripción' : '')}
-              </Text>
+            <View key={index}>
+              <View style={[styles.inputContainer, { backgroundColor: "#0a3649" }]}>
+                {inputConfig.icon}
+                <View style={{ flex: 1 }}>
+                  <Text
+                    style={[
+                      styles.input,
+                      status === 'completado' && { opacity: 0.7 },
+                      { color: inputConfig.value ? '#fff' : '#888' }
+                    ]}
+                    numberOfLines={inputConfig.field === 'description'
+                      ? (isDescriptionExpanded ? undefined : 3)
+                      : 1
+                    }
+                  >
+                    {inputConfig.value || (inputConfig.field === 'description' ? 'Sin descripción' : '')}
+                  </Text>
+                  {/* Botón "Ver más" solo para descripción con contenido */}
+                  {inputConfig.field === 'description' && inputConfig.value && (
+                    <TouchableOpacity
+                      onPress={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
+                      style={{ paddingTop: 5 }}
+                    >
+                      <Text style={{ color: '#4A9EFF', fontSize: 14 }}>
+                        {isDescriptionExpanded ? 'Ver menos' : 'Ver más'}
+                      </Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
+              </View>
             </View>
           ) : null
         ))
