@@ -23,6 +23,8 @@ import {
 } from "@expo/vector-icons";
 import axios from "axios";
 import * as ImagePicker from 'expo-image-picker';
+import * as ImageManipulator from 'expo-image-manipulator';
+import * as FileSystem from 'expo-file-system/legacy';
 import { styles } from "./styles/ActivityItemCreateStyles";
 import { iconImports, iconsFiles } from './icons';
 import { API_BASE_URL } from '../../config/api';
@@ -133,6 +135,97 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
     setFormData(prev => ({ ...prev, fecha_creacion: new Date(newDate).toISOString().split('T')[0] }));
   };
 
+  // Función para comprimir imagen si es mayor a 0.5 MB
+  const compressImageIfNeeded = async (uri: string): Promise<string> => {
+    const MAX_SIZE_MB = 0.5;
+    const MAX_SIZE_BYTES = MAX_SIZE_MB * 1024 * 1024; // 0.5 MB en bytes
+
+    try {
+      // Obtener información del archivo
+      const fileInfo = await FileSystem.getInfoAsync(uri);
+
+      if (!fileInfo.exists || !fileInfo.size) {
+        console.warn('No se pudo obtener información del archivo');
+        return uri;
+      }
+
+      console.log(`Tamaño original de la imagen: ${(fileInfo.size / 1024 / 1024).toFixed(2)} MB`);
+
+      // Si la imagen es menor a 0.5 MB, retornar la URI original
+      if (fileInfo.size <= MAX_SIZE_BYTES) {
+        console.log('La imagen ya es menor a 0.5 MB, no se requiere compresión');
+        return uri;
+      }
+
+      // Comprimir la imagen iterativamente hasta que sea menor a 0.5 MB
+      let compressedUri = uri;
+      let quality = 0.8; // Comenzar con 80% de calidad
+      let attempts = 0;
+      const MAX_ATTEMPTS = 10; // Límite de intentos para evitar bucles infinitos
+
+      while (attempts < MAX_ATTEMPTS) {
+        attempts++;
+
+        // Comprimir la imagen
+        const manipulatedImage = await ImageManipulator.manipulateAsync(
+          compressedUri,
+          [], // No realizar transformaciones, solo comprimir
+          {
+            compress: quality,
+            format: ImageManipulator.SaveFormat.JPEG
+          }
+        );
+
+        compressedUri = manipulatedImage.uri;
+
+        // Verificar el tamaño del archivo comprimido
+        const compressedFileInfo = await FileSystem.getInfoAsync(compressedUri);
+
+        if (!compressedFileInfo.exists || !compressedFileInfo.size) {
+          console.warn('No se pudo obtener información del archivo comprimido');
+          break;
+        }
+
+        console.log(
+          `Intento ${attempts}: Calidad ${(quality * 100).toFixed(0)}% - Tamaño: ${(compressedFileInfo.size / 1024 / 1024).toFixed(2)} MB`
+        );
+
+        // Si la imagen ya es menor a 0.5 MB, salir del bucle
+        if (compressedFileInfo.size <= MAX_SIZE_BYTES) {
+          console.log(`✓ Imagen comprimida exitosamente a ${(compressedFileInfo.size / 1024 / 1024).toFixed(2)} MB`);
+          break;
+        }
+
+        // Reducir la calidad para el próximo intento
+        quality -= 0.1;
+
+        // Si la calidad es muy baja, intentar reducir las dimensiones
+        if (quality < 0.3) {
+          console.log('Calidad muy baja, reduciendo dimensiones de la imagen...');
+          const resizedImage = await ImageManipulator.manipulateAsync(
+            uri,
+            [{ resize: { width: 1024 } }], // Reducir a ancho de 1024px manteniendo proporción
+            {
+              compress: 0.7,
+              format: ImageManipulator.SaveFormat.JPEG
+            }
+          );
+          compressedUri = resizedImage.uri;
+          break;
+        }
+      }
+
+      if (attempts >= MAX_ATTEMPTS) {
+        console.warn('Se alcanzó el límite de intentos de compresión');
+      }
+
+      return compressedUri;
+    } catch (error) {
+      console.error('Error al comprimir la imagen:', error);
+      return uri; // En caso de error, retornar la URI original
+    }
+  };
+
   // Modificación en la función handleImagePicker para limitar a 5 imágenes
   const handleImagePicker = async (useCamera = false) => {
     // Verificar primero si ya se alcanzó el límite de imágenes
@@ -165,18 +258,26 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
     if (!result.canceled && result.assets) {
       // Calcular cuántas imágenes podemos agregar sin exceder el límite
       const remainingSlots = 5 - formData.images.length;
-      const newImages = result.assets.slice(0, remainingSlots).map(asset => asset.uri);
-      
+      const assetsToProcess = result.assets.slice(0, remainingSlots);
+
+      // Comprimir cada imagen antes de agregarla
+      const compressedImages = await Promise.all(
+        assetsToProcess.map(async (asset) => {
+          const compressedUri = await compressImageIfNeeded(asset.uri);
+          return compressedUri;
+        })
+      );
+
       setFormData(prev => ({
         ...prev,
-        images: [...prev.images, ...newImages]
+        images: [...prev.images, ...compressedImages]
       }));
-      
+
       // Si se seleccionaron más imágenes de las permitidas, mostrar un mensaje
       if (result.assets.length > remainingSlots) {
         showMessage(
-          "Límite alcanzado", 
-          `Se han agregado ${newImages.length} de ${result.assets.length} imágenes seleccionadas. Máximo permitido: 5`
+          "Límite alcanzado",
+          `Se han agregado ${compressedImages.length} de ${result.assets.length} imágenes seleccionadas. Máximo permitido: 5`
         );
       }
     }
