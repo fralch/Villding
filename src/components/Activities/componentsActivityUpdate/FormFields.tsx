@@ -156,7 +156,7 @@ const FormFields: React.FC<FormFieldsProps> = ({
                   status === 'completado' && { opacity: 0.7 },
                   { color: inputConfig.value ? '#fff' : '#888' }
                 ]}
-                numberOfLines={inputConfig.field === 'description' ? 4 : 1}
+                numberOfLines={inputConfig.field === 'description' ? undefined : 1}
               >
                 {inputConfig.value || (inputConfig.field === 'description' ? 'Sin descripción' : '')}
               </Text>
