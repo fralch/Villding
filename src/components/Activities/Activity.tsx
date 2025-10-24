@@ -383,7 +383,11 @@ const handleSaveActivity = async () => {
 
   const panResponder = useRef(
     PanResponder.create({
-      onMoveShouldSetPanResponder: (_, gestureState) => gestureState.dy > 0,
+      onMoveShouldSetPanResponder: (_, gestureState) => {
+        // Solo activar el pan responder si el movimiento vertical es significativo
+        // y mayor que el movimiento horizontal
+        return Math.abs(gestureState.dy) > 5 && Math.abs(gestureState.dy) > Math.abs(gestureState.dx);
+      },
       onPanResponderMove: (_, gestureState) => {
         if (gestureState.dy > 0) {
           slideAnim.setValue(gestureState.dy);
@@ -520,31 +524,50 @@ const handleSaveActivity = async () => {
         </TouchableOpacity>
       </Modal>
 
-      <Modal 
-        transparent 
-        visible={isVisible} 
+      <Modal
+        transparent
+        visible={isVisible}
         animationType="none"
-        onRequestClose={() => { 
+        onRequestClose={() => {
           console.log('[Activity] isVisible Modal onRequestClose (Android back)');
           hideModal();
         }}
       >
-        <View style={styles.modalBackground}>
-          <Animated.View 
+        <View style={styles.modalBackground} pointerEvents="box-none">
+          <Animated.View
             style={[
-              styles.modalContainerInferior, 
+              styles.modalContainerInferior,
               { transform: [{ translateY: slideAnim }] }
-            ]} 
-            {...panResponder.panHandlers}
+            ]}
+            pointerEvents="auto"
           >
+            {/* Drag handle area */}
+            <View
+              style={{
+                backgroundColor: '#05222f',
+                paddingTop: 8,
+                paddingBottom: 4,
+                alignItems: 'center'
+              }}
+              {...panResponder.panHandlers}
+            >
+              <View style={{
+                width: 40,
+                height: 5,
+                backgroundColor: '#666',
+                borderRadius: 3,
+                marginBottom: 4
+              }} />
+            </View>
+
             <View style={{ backgroundColor: '#05222f', flexDirection: 'row', justifyContent: 'space-between' }}>
-              <TouchableOpacity 
-                onPress={hideModal} 
+              <TouchableOpacity
+                onPress={hideModal}
                 style={{ width: '50%', paddingVertical: 10, paddingLeft: 10 }}
               >
                 <Text style={{ color: 'white' }}>Cancelar</Text>
               </TouchableOpacity>
-              <TouchableOpacity 
+              <TouchableOpacity
                 onPress={handleSaveActivity}
                 style={{ width: '50%', paddingVertical: 10, paddingRight: 10, alignItems: 'flex-end' }}
               >
