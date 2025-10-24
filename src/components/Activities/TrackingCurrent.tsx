@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, FlatList, TouchableOpacity, Text, Modal, Pressable } from 'react-native';
+import { View, FlatList, TouchableOpacity, Text, Modal, Pressable, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, NavigationProp, useRoute } from '@react-navigation/native';
 import { getProject } from '../../hooks/localStorageCurrentProject';
@@ -12,6 +12,8 @@ import DayColumn from './trackingAsset/DayColumn';
 import TrackingSectionComponent from './trackingAsset/TrackingSection';
 import AddTrackingModal from './trackingAsset/AddTrackingModal';
 import { useFocusEffect } from '@react-navigation/native';
+import * as FileSystem from 'expo-file-system/legacy';
+import * as Sharing from 'expo-sharing';
 
 import { API_BASE_URL } from '../../config/api';
 
@@ -406,7 +408,98 @@ const checkAndAdjustCurrentWeek = (startDateStr: string, weekIndex: number, isIn
       month: '2-digit'
     }) === date;
   };
-  
+
+  // Descargar reportes diarios para un día específico
+  const downloadDailyReports = async (dayIndex: number) => {
+    if (!weekDates[dayIndex] || filteredTrackings.length === 0) {
+      Alert.alert('Sin datos', 'No hay seguimientos para este día');
+      return;
+    }
+
+    try {
+      // Obtener la fecha en formato YYYY-MM-DD
+      const [day, month] = weekDates[dayIndex].split('/').map(Number);
+      const year = new Date().getFullYear();
+      const formattedDate = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+
+      // Obtener todos los trackings activos
+      const activeTrackings = filteredTrackings.flatMap(section => section.trackings);
+
+      if (activeTrackings.length === 0) {
+        Alert.alert('Sin datos', 'No hay seguimientos activos para este día');
+        return;
+      }
+
+      Alert.alert(
+        'Descargando',
+        `Iniciando descarga de ${activeTrackings.length} reporte(s)...`
+      );
+
+      // Descargar reportes para cada tracking
+      let successCount = 0;
+      let failCount = 0;
+
+      for (const tracking of activeTrackings) {
+        try {
+          // Hacer POST request usando axios para obtener el PDF
+          const response = await axios.post(
+            `${API_BASE_URL}/tracking/report/daily/${tracking.id}`,
+            { date: formattedDate },
+            {
+              responseType: 'arraybuffer',
+              headers: {
+                'Content-Type': 'application/json',
+              }
+            }
+          );
+
+          // Generar nombre de archivo
+          const sanitizedTitle = tracking.title.replace(/[^a-zA-Z0-9]/g, '_');
+          const fileName = `reporte_${sanitizedTitle}_${formattedDate}.pdf`;
+          const fileUri = FileSystem.documentDirectory + fileName;
+
+          // Convertir arraybuffer a base64
+          const base64 = btoa(
+            new Uint8Array(response.data).reduce(
+              (data, byte) => data + String.fromCharCode(byte),
+              ''
+            )
+          );
+
+          // Escribir el archivo en el sistema de archivos
+          await FileSystem.writeAsStringAsync(fileUri, base64, {
+            encoding: FileSystem.EncodingType.Base64,
+          });
+
+          // Compartir el archivo si está disponible
+          if (await Sharing.isAvailableAsync()) {
+            await Sharing.shareAsync(fileUri, {
+              mimeType: 'application/pdf',
+              dialogTitle: `Reporte: ${tracking.title}`,
+            });
+          }
+
+          successCount++;
+        } catch (error) {
+          console.error(`Error descargando reporte para ${tracking.title}:`, error);
+          failCount++;
+        }
+      }
+
+      // Mostrar resultado
+      if (successCount > 0) {
+        Alert.alert(
+          'Descarga completa',
+          `Se descargaron ${successCount} reporte(s) exitosamente${failCount > 0 ? ` y ${failCount} fallaron` : ''}`
+        );
+      } else {
+        Alert.alert('Error', 'No se pudo descargar ningún reporte');
+      }
+    } catch (error) {
+      console.error('Error en downloadDailyReports:', error);
+      Alert.alert('Error', 'Ocurrió un error al descargar los reportes');
+    }
+  };
 
 
   return (
@@ -425,6 +518,7 @@ const checkAndAdjustCurrentWeek = (startDateStr: string, weekIndex: number, isIn
             day={day}
             date={weekDates[index] || ''}
             isToday={isToday(weekDates[index] || '')}
+            onDownloadReport={() => downloadDailyReports(index)}
           />
         ))}
       </View>

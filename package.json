@@ -31,6 +31,7 @@
     "expo-image-manipulator": "~14.0.7",
     "expo-image-picker": "~17.0.8",
     "expo-manifests": "^1.0.8",
+    "expo-sharing": "~14.0.7",
     "expo-splash-screen": "~31.0.10",
     "expo-status-bar": "~3.0.8",
     "prop-types": "^15.8.1",

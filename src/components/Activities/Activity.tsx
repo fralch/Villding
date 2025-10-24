@@ -27,6 +27,8 @@ import {iconImports} from './icons';
 import { styles } from "./styles/ActivityStyles";
 import { storeActivity, removeActivity } from '../../hooks/localStorageCurrentActvity';
 import MessageModal from './componentsActivityUpdate/MessageModal';
+import * as FileSystem from 'expo-file-system/legacy';
+import * as Sharing from 'expo-sharing';
 
 
 export interface Activity {
@@ -150,18 +152,78 @@ export default function Activity(props: any) {
         const [year, month, day] = dateString.split('-');
         return `${parseInt(day, 10)}/${parseInt(month, 10)}`;
       }
-      
+
       // Intenta con Date si el formato es otro
       const date = new Date(dateString);
       if (!isNaN(date.getTime())) {
         return `${date.getDate()}/${date.getMonth() + 1}`;
       }
-      
+
       console.error('Formato de fecha no reconocido:', dateString);
       return '';
     } catch (error) {
       console.error('Error al formatear fecha:', error);
       return '';
+    }
+  };
+
+  // Descargar reporte diario para el tracking actual en una fecha específica
+  const downloadDailyReport = async (dayLabel: string) => {
+    if (!tracking?.id) {
+      Alert.alert('Error', 'No se encontró el seguimiento');
+      return;
+    }
+
+    try {
+      // Convertir fecha de formato DD/MM a YYYY-MM-DD
+      const [day, month] = dayLabel.split('/').map(Number);
+      const year = new Date().getFullYear();
+      const formattedDate = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+
+      Alert.alert('Descargando', 'Preparando el reporte diario...');
+
+      // Hacer POST request usando axios para obtener el PDF
+      const response = await axios.post(
+        `${API_BASE_URL}/tracking/report/daily/${tracking.id}`,
+        { date: formattedDate },
+        {
+          responseType: 'arraybuffer',
+          headers: {
+            'Content-Type': 'application/json',
+          }
+        }
+      );
+
+      // Generar nombre de archivo
+      const sanitizedTitle = titleTracking.replace(/[^a-zA-Z0-9]/g, '_');
+      const fileName = `reporte_${sanitizedTitle}_${formattedDate}.pdf`;
+      const fileUri = FileSystem.documentDirectory + fileName;
+
+      // Convertir arraybuffer a base64
+      const base64 = btoa(
+        new Uint8Array(response.data).reduce(
+          (data, byte) => data + String.fromCharCode(byte),
+          ''
+        )
+      );
+
+      // Escribir el archivo en el sistema de archivos
+      await FileSystem.writeAsStringAsync(fileUri, base64, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+
+      // Compartir el archivo si está disponible
+      if (await Sharing.isAvailableAsync()) {
+        await Sharing.shareAsync(fileUri, {
+          mimeType: 'application/pdf',
+          dialogTitle: `Reporte: ${titleTracking} - ${getDayName(dayLabel)}`,
+        });
+      }
+
+      Alert.alert('Éxito', 'Reporte descargado exitosamente');
+    } catch (error) {
+      console.error('Error descargando reporte:', error);
+      Alert.alert('Error', 'Ocurrió un error al descargar el reporte');
     }
   };
 
@@ -432,9 +494,17 @@ const handleSaveActivity = async () => {
         
         {weekDays.map((day) => (
           <View key={day.dayLabel} style={styles.dayContainer}>
-            <Text style={[styles.dayTitle, { width: '100%', textAlign: 'right' }]}>
-              {getDayName(day.dayLabel)} - {day.dayLabel}
-            </Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+              <TouchableOpacity
+                onPress={() => downloadDailyReport(day.dayLabel)}
+                style={{ padding: 8 }}
+              >
+                <Ionicons name="download-outline" size={20} color="#7bc4c4" />
+              </TouchableOpacity>
+              <Text style={[styles.dayTitle, { textAlign: 'right', flex: 1 }]}>
+                {getDayName(day.dayLabel)} - {day.dayLabel}
+              </Text>
+            </View>
             {day.activities.length > 0 ? (
               day.activities.map((activity) => (
                 <ActivityCard
