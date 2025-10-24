@@ -43,7 +43,7 @@ eas build --profile production --platform android
 
 The app uses React Navigation with a native stack navigator (App.tsx). The navigation flow is session-based:
 
-1. **Unauthenticated flow**: Login → Password → Verificacion → CreacionCuenta
+1. **Unauthenticated flow**: Login → Password / CreacionCuenta → HomeProject (automatic session)
 2. **Authenticated flow**: HomeProject → Project → Activity
 3. **Additional screens**: EditProject, NewProject, EditUser, VistaMiembros
 
@@ -74,7 +74,7 @@ The axios instance includes request/response interceptors for logging and error 
 ### Component Organization
 
 **Views** (`src/views/`):
-- `Login/`: Authentication screens (Login, Password, Verificacion, CreacionCuenta, EditUser)
+- `Login/`: Authentication screens (Login, Password, CreacionCuenta, EditUser)
 - `Projects/`: Project management (HomeProject, Project, NewProject, EditProject)
 - `Accesos/`: Team member management (VistaMiembros, MemberModal)
 

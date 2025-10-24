@@ -23,6 +23,7 @@ import LoadingModal from "../../components/Alerta/LoadingModal";
 import * as ImagePicker from "expo-image-picker";
 import * as ImageManipulator from 'expo-image-manipulator';
 import * as FileSystem from 'expo-file-system';
+import { storeSesion } from "../../hooks/localStorageUser";
 const { width, height } = Dimensions.get("window");
 
 
@@ -256,108 +257,40 @@ function CreacionCuenta()  {
           console.log("✅ RESPUESTA EXITOSA - Usuario creado:");
           console.log("- Status:", response.status);
           console.log("- Data completa:", response.data);
-          
+
           if (response.data && response.data.user && response.data.user.id) {
             console.log("- ID de usuario creado:", response.data.user.id);
+
+            // Guardar sesión automáticamente
+            console.log("🔐 GUARDANDO SESIÓN - Inicio de sesión automático");
+            storeSesion({
+              id: response.data.user.id,
+              nombres: response.data.user.name,
+              apellidos: response.data.user.last_name,
+              email: response.data.user.email,
+              password: "",
+              rol: response.data.user.role,
+              user_code: response.data.user.user_code,
+              telefono: response.data.user.telefono ? response.data.user.telefono : "",
+              uri: response.data.user.uri ? `${API_BASE_URL}/images/profile/${response.data.user.uri}` : "",
+              tamano_img: response.data.profile_image_size || 0
+            });
+            console.log("✅ SESIÓN GUARDADA - Navegando a HomeProject");
+
+            setShowModalLoading(false);
+            setShowModal(true);
+
+            // Navegar a HomeProject después de un breve delay para que el usuario vea el mensaje de éxito
+            setTimeout(() => {
+              navigate("HomeProject");
+            }, 1500);
           } else {
             console.log("⚠️ ADVERTENCIA - Respuesta no contiene user.id esperado");
+            setShowModalLoading(false);
+            setErrorBoolean(true);
+            setMsjeModal("Error al crear el usuario. Por favor, intenta nuevamente.");
+            setShowModal(true);
           }
-          // Generate CODE
-          const fetchCode = async () => {
-            console.log("🔢 GENERANDO CÓDIGO - Iniciando fetchCode");
-            const JsonCode = {
-              user_id: response.data.user.id,
-            };
-            console.log("- User ID para código:", JsonCode.user_id);
-            
-            let reqOptions2 = {
-              url: `${API_BASE_URL}/user/generate-code`,
-              method: "POST",
-              data: JsonCode,
-            };
-            console.log("- URL generación código:", reqOptions2.url);
-  
-            try {
-              const response2 = await axios(reqOptions2);
-              console.log("✅ CÓDIGO GENERADO - Respuesta:");
-              console.log("- Status:", response2.status);
-              console.log("- Data completa:", response2.data);
-              
-              if (response2.data && response2.data.code) {
-                console.log("- Código generado:", response2.data.code);
-              } else {
-                console.log("⚠️ ADVERTENCIA - Respuesta no contiene código esperado");
-              }
-                
-              // Send Code to whatsapp
-              const fetchCodeWhatsapp = async () => {
-                console.log("📱 ENVIANDO WHATSAPP - Iniciando envío");
-                const JsonCodeWhatsapp = {
-                  message:  "Ingresa este código: " + response2.data.code,
-                  phone:  celular
-                };
-                console.log("- Mensaje:", JsonCodeWhatsapp.message);
-                console.log("- Teléfono:", JsonCodeWhatsapp.phone);
-                
-                let reqOptions3 = {
-                  url: "https://villding.lat:3000/api/whatsapp/text",
-                  method: "POST",
-                  data: JsonCodeWhatsapp,
-                };
-                console.log("- URL WhatsApp:", reqOptions3.url);
-        
-                try {
-                  const response3 = await axios(reqOptions3);
-                  console.log("✅ WHATSAPP ENVIADO - Respuesta:");
-                  console.log("- Status:", response3.status);
-                  console.log("- Data:", response3.data);
-                } catch (error: any) {
-                  console.error("❌ ERROR WHATSAPP:", error);
-                  if (error.response) {
-                    console.error("- Status:", error.response.status);
-                    console.error("- Data:", error.response.data);
-                  }
-                }
-              };
-        
-              fetchCodeWhatsapp();
-            } catch (error: any) {
-              console.error("❌ ERROR GENERACIÓN CÓDIGO:", error);
-              if (error.response) {
-                console.error("- Status:", error.response.status);
-                console.error("- Data:", error.response.data);
-              }
-            }
-          };
-  
-          //fetchCode();
-          // ----------------
-
-          console.log("🎯 FINALIZANDO PROCESO - Configurando navegación");
-          setShowModalLoading(false);
-          setShowModal(true);
-          
-          console.log("📍 NAVEGANDO A VERIFICACIÓN - Datos enviados:");
-          console.log("- ID:", response.data.user.id);
-          console.log("- Nombres:", nombres);
-          console.log("- Apellidos:", apellidos);
-          console.log("- Email:", email);
-          console.log("- Rol: user");
-          console.log("- Teléfono:", celular ? celular : "");
-          console.log("- URI imagen:", profileImage);
-          console.log("- User code:", response.data.user.user_code);
-          
-          navigate("Verificacion", {
-            id: response.data.user.id,
-            nombres: nombres,
-            apellidos: apellidos,
-            email: email,
-            clave: clave,
-            rol: "user",
-            telefono: celular ? celular : "",
-            uri: profileImage,
-            user_code: response.data.user.user_code,
-          });
         } catch (error: any) {
           console.error("❌ ERROR PRINCIPAL EN FETCHDATA:", error);
           
