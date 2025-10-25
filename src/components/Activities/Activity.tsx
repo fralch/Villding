@@ -494,12 +494,13 @@ const handleSaveActivity = async () => {
         
         {weekDays.map((day) => (
           <View key={day.dayLabel} style={styles.dayContainer}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%', backgroundColor: '#05222f' }}>
               <TouchableOpacity
                 onPress={() => downloadDailyReport(day.dayLabel)}
-                style={{ padding: 8 }}
+                style={{ padding: 8, flexDirection: 'row', alignItems: 'center' }}
               >
                 <Ionicons name="download-outline" size={20} color="#7bc4c4" />
+                <Text style={{ color: '#7bc4c4', marginLeft: 8, fontSize: 14 }}>Descargar Reporte</Text>
               </TouchableOpacity>
               <Text style={[styles.dayTitle, { textAlign: 'right', flex: 1 }]}>
                 {getDayName(day.dayLabel)} - {day.dayLabel}
