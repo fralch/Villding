@@ -411,7 +411,13 @@ const checkAndAdjustCurrentWeek = (startDateStr: string, weekIndex: number, isIn
 
   // Descargar reportes diarios para un día específico
   const downloadDailyReports = async (dayIndex: number) => {
+    console.log('=== INICIO downloadDailyReports ===');
+    console.log('dayIndex:', dayIndex);
+    console.log('weekDates[dayIndex]:', weekDates[dayIndex]);
+    console.log('filteredTrackings.length:', filteredTrackings.length);
+
     if (!weekDates[dayIndex] || filteredTrackings.length === 0) {
+      console.log('ERROR: No hay datos para descargar');
       Alert.alert('Sin datos', 'No hay seguimientos para este día');
       return;
     }
@@ -422,10 +428,16 @@ const checkAndAdjustCurrentWeek = (startDateStr: string, weekIndex: number, isIn
       const year = new Date().getFullYear();
       const formattedDate = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 
+      console.log('Fecha formateada:', formattedDate);
+
       // Obtener todos los trackings activos
       const activeTrackings = filteredTrackings.flatMap(section => section.trackings);
 
+      console.log('Número de trackings activos:', activeTrackings.length);
+      console.log('Trackings IDs:', activeTrackings.map(t => t.id));
+
       if (activeTrackings.length === 0) {
+        console.log('ERROR: No hay trackings activos');
         Alert.alert('Sin datos', 'No hay seguimientos activos para este día');
         return;
       }
@@ -440,11 +452,20 @@ const checkAndAdjustCurrentWeek = (startDateStr: string, weekIndex: number, isIn
       let failCount = 0;
 
       for (const tracking of activeTrackings) {
+        console.log(`--- Descargando reporte para tracking ID: ${tracking.id}, Título: "${tracking.title}" ---`);
+
         try {
+          const url = `${API_BASE_URL}/tracking/report/daily/${tracking.id}`;
+          const body = { date: formattedDate };
+
+          console.log('URL:', url);
+          console.log('Body:', body);
+          console.log('Iniciando request POST...');
+
           // Hacer POST request usando axios para obtener el PDF
           const response = await axios.post(
-            `${API_BASE_URL}/tracking/report/daily/${tracking.id}`,
-            { date: formattedDate },
+            url,
+            body,
             {
               responseType: 'arraybuffer',
               headers: {
@@ -453,12 +474,18 @@ const checkAndAdjustCurrentWeek = (startDateStr: string, weekIndex: number, isIn
             }
           );
 
+          console.log(`Response status: ${response.status}`);
+          console.log(`Response data length: ${response.data?.byteLength || 0}`);
+
           // Generar nombre de archivo
           const sanitizedTitle = tracking.title.replace(/[^a-zA-Z0-9]/g, '_');
           const fileName = `reporte_${sanitizedTitle}_${formattedDate}.pdf`;
           const fileUri = FileSystem.documentDirectory + fileName;
 
+          console.log('Archivo generado:', fileName);
+
           // Convertir arraybuffer a base64
+          console.log('Convirtiendo a base64...');
           const base64 = btoa(
             new Uint8Array(response.data).reduce(
               (data, byte) => data + String.fromCharCode(byte),
@@ -466,25 +493,41 @@ const checkAndAdjustCurrentWeek = (startDateStr: string, weekIndex: number, isIn
             )
           );
 
+          console.log('Base64 length:', base64.length);
+
           // Escribir el archivo en el sistema de archivos
+          console.log('Escribiendo archivo...');
           await FileSystem.writeAsStringAsync(fileUri, base64, {
             encoding: FileSystem.EncodingType.Base64,
           });
 
+          console.log('Archivo escrito exitosamente');
+
           // Compartir el archivo si está disponible
           if (await Sharing.isAvailableAsync()) {
+            console.log('Compartiendo archivo...');
             await Sharing.shareAsync(fileUri, {
               mimeType: 'application/pdf',
               dialogTitle: `Reporte: ${tracking.title}`,
             });
+            console.log('Archivo compartido exitosamente');
           }
 
           successCount++;
-        } catch (error) {
-          console.error(`Error descargando reporte para ${tracking.title}:`, error);
+          console.log(`✓ Reporte descargado exitosamente para tracking ${tracking.id}`);
+        } catch (error: any) {
+          console.error(`✗ ERROR descargando reporte para tracking ${tracking.id}:`);
+          console.error('Error completo:', error);
+          console.error('Error message:', error.message);
+          console.error('Error response status:', error.response?.status);
+          console.error('Error response data:', error.response?.data);
+          console.error('Error response headers:', error.response?.headers);
+          console.error('Error config:', error.config);
           failCount++;
         }
       }
+
+      console.log(`Resumen: ${successCount} éxito(s), ${failCount} fallo(s)`);
 
       // Mostrar resultado
       if (successCount > 0) {
@@ -495,8 +538,13 @@ const checkAndAdjustCurrentWeek = (startDateStr: string, weekIndex: number, isIn
       } else {
         Alert.alert('Error', 'No se pudo descargar ningún reporte');
       }
-    } catch (error) {
-      console.error('Error en downloadDailyReports:', error);
+
+      console.log('=== FIN downloadDailyReports ===');
+    } catch (error: any) {
+      console.error('=== ERROR GENERAL en downloadDailyReports ===');
+      console.error('Error completo:', error);
+      console.error('Error message:', error.message);
+      console.error('=== FIN ERROR GENERAL ===');
       Alert.alert('Error', 'Ocurrió un error al descargar los reportes');
     }
   };

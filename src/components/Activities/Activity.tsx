@@ -169,7 +169,12 @@ export default function Activity(props: any) {
 
   // Descargar reporte diario para el tracking actual en una fecha específica
   const downloadDailyReport = async (dayLabel: string) => {
+    console.log('=== INICIO downloadDailyReport ===');
+    console.log('dayLabel recibido:', dayLabel);
+    console.log('tracking.id:', tracking?.id);
+
     if (!tracking?.id) {
+      console.error('ERROR: No hay tracking.id disponible');
       Alert.alert('Error', 'No se encontró el seguimiento');
       return;
     }
@@ -180,9 +185,14 @@ export default function Activity(props: any) {
       const year = new Date().getFullYear();
       const formattedDate = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 
+      console.log('Fecha formateada:', formattedDate);
+      console.log('URL del API:', `${API_BASE_URL}/tracking/report/daily/${tracking.id}`);
+      console.log('Body de la request:', { date: formattedDate });
+
       Alert.alert('Descargando', 'Preparando el reporte diario...');
 
       // Hacer POST request usando axios para obtener el PDF
+      console.log('Iniciando request POST...');
       const response = await axios.post(
         `${API_BASE_URL}/tracking/report/daily/${tracking.id}`,
         { date: formattedDate },
@@ -194,12 +204,20 @@ export default function Activity(props: any) {
         }
       );
 
+      console.log('Response recibida, status:', response.status);
+      console.log('Response headers:', response.headers);
+      console.log('Response data length:', response.data?.byteLength || 0);
+
       // Generar nombre de archivo
       const sanitizedTitle = titleTracking.replace(/[^a-zA-Z0-9]/g, '_');
       const fileName = `reporte_${sanitizedTitle}_${formattedDate}.pdf`;
       const fileUri = FileSystem.documentDirectory + fileName;
 
+      console.log('Nombre de archivo:', fileName);
+      console.log('URI del archivo:', fileUri);
+
       // Convertir arraybuffer a base64
+      console.log('Convirtiendo arraybuffer a base64...');
       const base64 = btoa(
         new Uint8Array(response.data).reduce(
           (data, byte) => data + String.fromCharCode(byte),
@@ -207,22 +225,40 @@ export default function Activity(props: any) {
         )
       );
 
+      console.log('Base64 length:', base64.length);
+
       // Escribir el archivo en el sistema de archivos
+      console.log('Escribiendo archivo en el sistema de archivos...');
       await FileSystem.writeAsStringAsync(fileUri, base64, {
         encoding: FileSystem.EncodingType.Base64,
       });
 
+      console.log('Archivo escrito exitosamente');
+
       // Compartir el archivo si está disponible
-      if (await Sharing.isAvailableAsync()) {
+      const sharingAvailable = await Sharing.isAvailableAsync();
+      console.log('Sharing disponible:', sharingAvailable);
+
+      if (sharingAvailable) {
+        console.log('Compartiendo archivo...');
         await Sharing.shareAsync(fileUri, {
           mimeType: 'application/pdf',
           dialogTitle: `Reporte: ${titleTracking} - ${getDayName(dayLabel)}`,
         });
+        console.log('Archivo compartido exitosamente');
       }
 
+      console.log('=== FIN downloadDailyReport (ÉXITO) ===');
       Alert.alert('Éxito', 'Reporte descargado exitosamente');
-    } catch (error) {
-      console.error('Error descargando reporte:', error);
+    } catch (error: any) {
+      console.error('=== ERROR en downloadDailyReport ===');
+      console.error('Error completo:', error);
+      console.error('Error message:', error.message);
+      console.error('Error response status:', error.response?.status);
+      console.error('Error response data:', error.response?.data);
+      console.error('Error response headers:', error.response?.headers);
+      console.error('Error config:', error.config);
+      console.error('=== FIN ERROR ===');
       Alert.alert('Error', 'Ocurrió un error al descargar el reporte');
     }
   };

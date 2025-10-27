@@ -21,6 +21,7 @@
     "axios": "^1.7.8",
     "babel-preset-expo": "^54.0.3",
     "dotenv": "^17.2.3",
+    "eas": "^0.1.0",
     "expo": "54.0.20",
     "expo-asset": "^12.0.9",
     "expo-build-properties": "~1.0.9",
