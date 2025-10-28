@@ -19,7 +19,7 @@ import {
 import { StatusBar as ExpoStatusBar } from "expo-status-bar";
 import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
-import * as FileSystem from 'expo-file-system';
+import * as FileSystem from 'expo-file-system/legacy';
 import axios from 'axios';
 import { API_BASE_URL } from '../../config/api';
 import { getSesion, removeSesion , updateSesion } from '../../hooks/localStorageUser';
@@ -107,75 +107,119 @@ const EditUser = () => {
   };
 
   const pickImage = async () => {
-    setEditBool(true);
+    try {
+      setEditBool(true);
+      setShowModalLoading(true);
+      setMsjeModal("Procesando imagen...");
+      
+      // Solicitar permisos para acceder a la galería
+      let result = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (!result.granted) {
+        setShowModalLoading(false);
+        setMsjeModal("Permiso para acceder a las fotos es necesario.");
+        setShowModalConfirm(true);
+        return;
+      }
     
-    // Solicitar permisos para acceder a la galería
-    let result = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!result.granted) {
-      alert("Permiso para acceder a las fotos es necesario.");
-      return;
-    }
-  
-    // Abrir selector de imágenes
-    let pickerResult = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [1, 1], // Aspecto de la imagen
-      quality: 0.3, // Calidad original
-    });
-  
-    // Verificar si el usuario seleccionó una imagen
-    if (!pickerResult.canceled && pickerResult.assets && pickerResult.assets.length > 0) {
-      const selectedImage = pickerResult.assets[0].uri;
-  
-      let compressLevel = 0.8; // Comenzamos con 80% de compresión
-      let resizedWidth = 800; // Ancho inicial para redimensionar
-  
-      // Manipulamos la imagen inicialmente
-      let manipulatedImage = await ImageManipulator.manipulateAsync(
-        selectedImage,
-        [{ resize: { width: resizedWidth } }], // Redimensionamos
-        { compress: compressLevel, format: ImageManipulator.SaveFormat.JPEG } // Comprimimos
-      );
-  
-      // Obtener información del archivo manipulado
-      let fileInfo = await FileSystem.getInfoAsync(manipulatedImage.uri) as any;
-  
-      // Verificar si el archivo existe y tiene tamaño válido
-      if (fileInfo.exists) {
-        console.log(`Tamaño inicial: ${(fileInfo.size / 1024).toFixed(2)} KB`);
-  
-        // Reducir el tamaño iterativamente si supera los 500 KB
-        while (fileInfo.size > MAX_FILE_SIZE && compressLevel > 0.1) {
-          compressLevel -= 0.1; // Reducir el nivel de compresión
-          resizedWidth -= 100; // Reducir el ancho de la imagen
-          manipulatedImage = await ImageManipulator.manipulateAsync(
-            selectedImage,
-            [{ resize: { width: resizedWidth } }], // Redimensionar
-            { compress: compressLevel, format: ImageManipulator.SaveFormat.JPEG } // Comprimir
-          );
-          fileInfo = await FileSystem.getInfoAsync(manipulatedImage.uri);
+      // Abrir selector de imágenes
+      let pickerResult = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1], // Aspecto de la imagen
+        quality: 0.8, // Calidad mejorada
+      });
+    
+      // Verificar si el usuario canceló la selección
+      if (pickerResult.canceled) {
+        setShowModalLoading(false);
+        setEditBool(false);
+        return;
+      }
+
+      // Verificar si el usuario seleccionó una imagen
+      if (pickerResult.assets && pickerResult.assets.length > 0) {
+        const selectedImage = pickerResult.assets[0];
+        const selectedImageUri = selectedImage.uri;
+        
+        // Validar tipo de archivo
+        const fileExtension = selectedImageUri.split('.').pop()?.toLowerCase();
+        const validExtensions = ['jpg', 'jpeg', 'png', 'webp'];
+        
+        if (!fileExtension || !validExtensions.includes(fileExtension)) {
+          setShowModalLoading(false);
+          setMsjeModal("Por favor selecciona una imagen válida (JPG, PNG, WEBP).");
+          setShowModalConfirm(true);
+          return;
         }
-  
-        if (fileInfo.size <= MAX_FILE_SIZE) {
-          console.log(`Imagen lista: ${(fileInfo.size / 1024).toFixed(2)} KB`);
-          // Actualizar la imagen reducida
-          setProfileImage(manipulatedImage.uri);
-          setData({ ...Data, uri: manipulatedImage.uri });
+    
+        let compressLevel = 0.8; // Comenzamos con 80% de compresión
+        let resizedWidth = 800; // Ancho inicial para redimensionar
+    
+        // Manipulamos la imagen inicialmente
+        let manipulatedImage = await ImageManipulator.manipulateAsync(
+          selectedImageUri,
+          [{ resize: { width: resizedWidth } }], // Redimensionamos
+          { compress: compressLevel, format: ImageManipulator.SaveFormat.JPEG } // Comprimimos
+        );
+    
+        // Obtener información del archivo manipulado
+        let fileInfo = await FileSystem.getInfoAsync(manipulatedImage.uri) as any;
+    
+        // Verificar si el archivo existe y tiene tamaño válido
+        if (fileInfo.exists && fileInfo.size) {
+          console.log(`Tamaño inicial: ${(fileInfo.size / 1024).toFixed(2)} KB`);
+    
+          // Reducir el tamaño iterativamente si supera los 100 KB
+          while (fileInfo.size > MAX_FILE_SIZE && compressLevel > 0.1 && resizedWidth > 200) {
+            compressLevel -= 0.1; // Reducir el nivel de compresión
+            resizedWidth -= 100; // Reducir el ancho de la imagen
+            
+            manipulatedImage = await ImageManipulator.manipulateAsync(
+              selectedImageUri,
+              [{ resize: { width: resizedWidth } }], // Redimensionar
+              { compress: compressLevel, format: ImageManipulator.SaveFormat.JPEG } // Comprimir
+            );
+            
+            fileInfo = await FileSystem.getInfoAsync(manipulatedImage.uri) as any;
+            console.log(`Nuevo tamaño: ${(fileInfo.size / 1024).toFixed(2)} KB`);
+          }
+    
+          if (fileInfo.size <= MAX_FILE_SIZE) {
+            console.log(`Imagen lista: ${(fileInfo.size / 1024).toFixed(2)} KB`);
+            // Actualizar la imagen reducida
+            setProfileImage(manipulatedImage.uri);
+            setData(prevData => ({ ...prevData, uri: manipulatedImage.uri }));
+            
+            setShowModalLoading(false);
+            setMsjeModal("Imagen cargada correctamente. Recuerda guardar los cambios.");
+            setShowModalConfirm(true);
+          } else {
+            setShowModalLoading(false);
+            setMsjeModal("No se pudo reducir la imagen a menos de 100 KB. Intenta con una imagen más pequeña.");
+            setShowModalConfirm(true);
+            setEditBool(false);
+          }
         } else {
-          console.log("No se pudo reducir la imagen a menos de 500 KB.");
-          alert("La imagen seleccionada es demasiado grande incluso después de ser comprimida.");
+          throw new Error("No se pudo obtener información del archivo de imagen.");
         }
       } else {
-        console.error("No se pudo obtener el tamaño de la imagen o el archivo no existe.");
-        alert("Hubo un error al procesar la imagen.");
+        setShowModalLoading(false);
+        setEditBool(false);
       }
+    } catch (error: any) {
+      console.error("Error al procesar la imagen:", error);
+      setShowModalLoading(false);
+      setMsjeModal(`Error al procesar la imagen: ${error.message || 'Error desconocido'}`);
+      setShowModalConfirm(true);
+      setEditBool(false);
     }
   };
 
-  const handleEditAcount = () => { 
-    setShowModalLoading(true);
-    const fetchData = async () => {
+  const handleEditAcount = async () => { 
+    try {
+      setShowModalLoading(true);
+      setMsjeModal("Actualizando perfil...");
+      
       // Crear un nuevo FormData para adjuntar la imagen
       const formData = new FormData();
 
@@ -185,17 +229,24 @@ const EditUser = () => {
       formData.append('last_name', Data.apellidos);
       if (Data.telefono) formData.append('telefono', Data.telefono);   
       formData.append('email', Data.email);
+      if (Data.email_contact) formData.append('email_contact', Data.email_contact);
 
       // Si hay una imagen seleccionada, la agregamos al FormData
-      if (profileImage) {
-        const uriParts = profileImage.split('.');
-        const fileType = uriParts[uriParts.length - 1];
+      if (profileImage && profileImage !== Data.uri) {
+        // Verificar que la imagen existe antes de enviarla
+        const fileInfo = await FileSystem.getInfoAsync(profileImage);
+        if (fileInfo.exists) {
+          const uriParts = profileImage.split('.');
+          const fileType = uriParts[uriParts.length - 1];
 
-        formData.append('uri', {
-          uri: profileImage,
-          name: `profile_image.${fileType}`,
-          type: `image/${fileType}`, // Tipo de imagen
-        } as any); // Especificar el tipo como 'any' para evitar errores de tipado en TypeScript
+          formData.append('uri', {
+            uri: profileImage,
+            name: `profile_image.${fileType}`,
+            type: `image/${fileType}`, // Tipo de imagen
+          } as any);
+        } else {
+          throw new Error("La imagen seleccionada no existe o no es válida.");
+        }
       }
 
       let reqOptions = {
@@ -205,32 +256,43 @@ const EditUser = () => {
         headers: {
           'Content-Type': 'multipart/form-data', // Asegurarse de usar el tipo correcto de contenido
         },
+        timeout: 30000, // Timeout de 30 segundos
       };
 
-      try {
-        console.log(Data); 
-        await axios(reqOptions);
-        await updateSesion(Data);
-        setEditBool(false);
-        setShowModalLoading(false);
-        setMsjeModal("Se ha actualizado el perfil con exito") ;
-        setShowModalConfirm (true);
-
-      } catch (error: any) {
-        if (error.response) {
-          console.log(error.response.data.message);
-          setEditBool(false);
-          setShowModalLoading(false);
-          setMsjeModal(error.response.data.message);
-          setShowModalConfirm (true);
-
-        } else {
-          console.log(error.message);
-        }
+      console.log("Enviando datos del usuario:", Data); 
+      const response = await axios(reqOptions);
+      
+      // Actualizar la sesión con los nuevos datos
+      const updatedData = { ...Data };
+      if (profileImage) {
+        updatedData.uri = profileImage;
       }
-    };
+      
+      await updateSesion(updatedData);
+      setEditBool(false);
+      setShowModalLoading(false);
+      setMsjeModal("Se ha actualizado el perfil con éxito");
+      setShowModalConfirm(true);
 
-    fetchData();
+    } catch (error: any) {
+      console.error("Error al actualizar perfil:", error);
+      setEditBool(false);
+      setShowModalLoading(false);
+      
+      if (error.response) {
+        const errorMessage = error.response.data?.message || "Error del servidor";
+        console.log("Error del servidor:", errorMessage);
+        setMsjeModal(`Error: ${errorMessage}`);
+      } else if (error.request) {
+        console.log("Error de conexión:", error.request);
+        setMsjeModal("Error de conexión. Verifica tu conexión a internet.");
+      } else {
+        console.log("Error:", error.message);
+        setMsjeModal(`Error: ${error.message}`);
+      }
+      
+      setShowModalConfirm(true);
+    }
   }
 
   return (
