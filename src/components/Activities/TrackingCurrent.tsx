@@ -566,7 +566,7 @@ const checkAndAdjustCurrentWeek = (startDateStr: string, weekIndex: number, isIn
             day={day}
             date={weekDates[index] || ''}
             isToday={isToday(weekDates[index] || '')}
-            onDownloadReport={() => downloadDailyReports(index)}
+         
           />
         ))}
       </View>
