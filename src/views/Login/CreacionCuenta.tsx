@@ -22,7 +22,7 @@ import ConfirmModal from "../../components/Alerta/ConfirmationModal";
 import LoadingModal from "../../components/Alerta/LoadingModal";
 import * as ImagePicker from "expo-image-picker";
 import * as ImageManipulator from 'expo-image-manipulator';
-import * as FileSystem from 'expo-file-system';
+import * as FileSystem from 'expo-file-system/legacy';
 import { storeSesion } from "../../hooks/localStorageUser";
 const { width, height } = Dimensions.get("window");
 
@@ -223,19 +223,30 @@ function CreacionCuenta()  {
           // Si hay una imagen seleccionada, la agregamos al FormData
           if (profileImage) {
             console.log("🖼️ IMAGEN DETECTADA - Procesando imagen de perfil");
-            const uriParts = profileImage.split(".");
-            const fileType = uriParts[uriParts.length - 1];
-            console.log("- URI de imagen:", profileImage);
-            console.log("- Tipo de archivo:", fileType);
 
-            // es importante comprobar en el php y en nginx que puedan subir imagenes grandes
-            formData.append("uri", {
-              uri: profileImage,
-              name: `profile_image.${fileType}`,
-              type: `image/${fileType}`, // Tipo de imagen
-            } as any); // Especificar el tipo como 'any' para evitar errores de tipado en TypeScript
-            
-            console.log("✅ Imagen agregada al FormData");
+            // Verificar que la imagen existe antes de enviarla
+            const fileInfo = await FileSystem.getInfoAsync(profileImage);
+            console.log("- Verificación de archivo:", fileInfo);
+
+            if (fileInfo.exists) {
+              const uriParts = profileImage.split(".");
+              const fileType = uriParts[uriParts.length - 1];
+              console.log("- URI de imagen:", profileImage);
+              console.log("- Tipo de archivo:", fileType);
+              console.log("- Tamaño del archivo:", fileInfo.size ? `${(fileInfo.size / 1024).toFixed(2)} KB` : "N/A");
+
+              // es importante comprobar en el php y en nginx que puedan subir imagenes grandes
+              formData.append("uri", {
+                uri: profileImage,
+                name: `profile_image.${fileType}`,
+                type: `image/${fileType}`, // Tipo de imagen
+              } as any); // Especificar el tipo como 'any' para evitar errores de tipado en TypeScript
+
+              console.log("✅ Imagen agregada al FormData");
+            } else {
+              console.error("❌ ERROR - La imagen seleccionada no existe o no es válida");
+              throw new Error("La imagen seleccionada no existe o no es válida.");
+            }
           } else {
             console.log("⚠️ NO HAY IMAGEN - Continuando sin imagen de perfil");
           }
@@ -248,10 +259,12 @@ function CreacionCuenta()  {
             headers: {
               "Content-Type": "multipart/form-data", // Asegurarse de usar el tipo correcto de contenido
             },
+            timeout: 30000, // Timeout de 30 segundos
           };
           console.log("- URL:", reqOptions.url);
           console.log("- Método:", reqOptions.method);
           console.log("- Headers:", reqOptions.headers);
+          console.log("- Timeout:", reqOptions.timeout);
 
           const response = await axios(reqOptions);
           console.log("✅ RESPUESTA EXITOSA - Usuario creado:");
@@ -293,26 +306,28 @@ function CreacionCuenta()  {
           }
         } catch (error: any) {
           console.error("❌ ERROR PRINCIPAL EN FETCHDATA:", error);
-          
+
+          setShowModalLoading(false);
+
           if (error.response) {
             console.error("- Error con respuesta del servidor:");
             console.error("  - Status:", error.response.status);
             console.error("  - Data:", error.response.data);
-            console.error("  - Message:", error.response.data.message);
-            setMsjeModal(error.response.data.message);
+            const errorMessage = error.response.data?.message || "Error del servidor";
+            console.error("  - Message:", errorMessage);
+            setMsjeModal(`Error: ${errorMessage}`);
           } else if (error.request) {
             console.error("- Error de red/conexión:");
             console.error("  - Request:", error.request);
             console.error("  - Message:", error.message);
-            setMsjeModal("Error de conexión: " + error.message);
+            setMsjeModal("Error de conexión. Verifica tu conexión a internet.");
           } else {
             console.error("- Error desconocido:");
             console.error("  - Message:", error.message);
-            setMsjeModal(error.message);
+            setMsjeModal(`Error: ${error.message}`);
           }
-          
+
           setErrorBoolean(true);
-          setShowModalLoading(false);
           setShowModal(true);
         }
       };
