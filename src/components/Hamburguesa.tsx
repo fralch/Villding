@@ -155,7 +155,7 @@ export default function Hamburguesa(props: any) {
         }}
       />
       <List.Item
-        title='Administrar accesos'
+        title='Administrar miembros'
         titleStyle={{ color: '#FFF' }}
         right={(props) => (
           <List.Icon
@@ -170,18 +170,7 @@ export default function Hamburguesa(props: any) {
           });
         }}
       />
-      <List.Item
-        title='Ver tutorial'
-        titleStyle={{ color: '#FFF' }}
-        right={(props) => (
-          <List.Icon
-            {...props}
-            icon='video'
-            color='#FFF'
-          />
-        )}
-        onPress={() => {}}
-      />
+     
      
       <Divider style={{ backgroundColor: '#0A455E' }} />
       {/* Ver proyectos */}
