@@ -290,6 +290,12 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
       return false;
     }
 
+    // Validar que si el estado es 'completado', debe haber al menos una imagen
+    if (status === 'completado' && formData.images.length === 0) {
+      showMessage("Error", "Para crear y finalizar la actividad, debe subir al menos una imagen");
+      return false;
+    }
+
     const activityData: ActivityData = {
       project_id,
       tracking_id,
