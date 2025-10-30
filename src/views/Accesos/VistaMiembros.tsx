@@ -56,6 +56,7 @@ const VistaMiembros: React.FC<any> = (project) => {
   const [userSelected, setUserSelected] = useState<User | null>(null);
   const [codeUser, setCodeUser] = useState("");
   const [ingresado, setIngresado] = useState();
+  const [imageErrorMap, setImageErrorMap] = useState<Record<string, boolean>>({});
 
 
   useEffect(() => {
@@ -101,14 +102,19 @@ const VistaMiembros: React.FC<any> = (project) => {
         setModalVisible(true);
       }}
     >
-      <Image
-        source={{
-          uri: item.uri
-            ? `${API_BASE_URL}/images/profile/${item.uri}`
-            : "https://cdn-icons-png.flaticon.com/512/9385/9385289.png",
-        }}
-        style={styles.avatar}
-      />
+      {item.uri && !imageErrorMap[item.id] ? (
+        <Image
+          source={{ uri: `${API_BASE_URL}/images/profile/${item.uri}` }}
+          style={styles.avatar}
+          onError={() =>
+            setImageErrorMap((prev) => ({ ...prev, [item.id]: true }))
+          }
+        />
+      ) : (
+        <View style={[styles.avatar, styles.avatarPlaceholder]}>
+          <MaterialCommunityIcons name="account" size={24} color="#fff" />
+        </View>
+      )}
       <View style={styles.infoContainer}>
         <Text style={styles.name}>{item.name}</Text>
         <Text style={styles.email}>{item.email}</Text>
@@ -270,6 +276,11 @@ const styles = StyleSheet.create({
     height: 40,
     borderRadius: 20,
     marginRight: 12,
+  },
+  avatarPlaceholder: {
+    backgroundColor: "#0D465E",
+    justifyContent: "center",
+    alignItems: "center",
   },
   infoContainer: {
     flex: 1,

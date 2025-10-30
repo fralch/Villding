@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   Modal,
 } from "react-native";
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { getSesion, removeSesion, updateSesion } from '../../hooks/localStorageUser';
 import axios from "axios";
 import { API_BASE_URL } from '../../config/api';
@@ -28,6 +29,7 @@ const MemberModal: React.FC<MemberModalProps> = ({
   const { navigate } = useNavigation<NavigationProp<any>>();
   const [member, setMember] = useState<any>(null);
   const [userSession, setUserSession] = useState<any>(null);
+  const [imageError, setImageError] = useState<boolean>(false);
 
   useEffect(() => {
     // console.log("useEffect for user:", user);
@@ -101,20 +103,18 @@ const MemberModal: React.FC<MemberModalProps> = ({
 
           {/* Member Info */}
           <View style={styles.memberInfo}>
-            {member.uri ? (
+            {member.uri && !imageError ? (
               <Image
                 source={{
                   uri: `${API_BASE_URL}/images/profile/${member.uri}`,
                 }}
                 style={styles.avatar}
+                onError={() => setImageError(true)}
               />
             ) : (
-              <Image
-                source={{
-                  uri: "https://cdn-icons-png.flaticon.com/512/9385/9385289.png",
-                }}
-                style={styles.avatar}
-              />
+              <View style={[styles.avatar, styles.avatarPlaceholder]}>
+                <MaterialCommunityIcons name="account" size={28} color="#fff" />
+              </View>
             )}
             <View style={styles.info}>
               <Text style={styles.name}>{member.name}</Text>
@@ -178,6 +178,11 @@ const styles = StyleSheet.create({
     height: 50,
     borderRadius: 25,
     marginRight: 12,
+  },
+  avatarPlaceholder: {
+    backgroundColor: "#0D465E",
+    justifyContent: "center",
+    alignItems: "center",
   },
   info: {
     flex: 1,
