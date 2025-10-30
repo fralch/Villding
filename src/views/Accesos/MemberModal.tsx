@@ -15,7 +15,6 @@ import { API_BASE_URL } from '../../config/api';
 type MemberModalProps = {
   visible: boolean;
   onClose: () => void;
-  admin: boolean;
   user: any;
   project: any;
 };
@@ -23,7 +22,6 @@ type MemberModalProps = {
 const MemberModal: React.FC<MemberModalProps> = ({
   visible,
   onClose,
-  admin,
   user,
   project,
 }) => {
@@ -56,56 +54,6 @@ const MemberModal: React.FC<MemberModalProps> = ({
 
     // console.log("userSession:", userSession.id);
     // console.log("member:", member.id);
-
-  const handleMakeAdmin = async () => {
-    // console.log("handleMakeAdmin:", member.id, project);
-    try {
-      const response = await axios.post(
-        `${API_BASE_URL}/user/makeadmin`,
-        {
-          user_id: member.id,
-          project_id: project,
-        },
-        {
-          headers: {
-            Authorization: `Bearer YOUR_TOKEN`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      const rpt = response.data.message;
-      // console.log("handleMakeAdmin response:", rpt);
-      if (rpt === "User is now an admin of the project") {
-        onClose();
-      } else {
-         console.log("Error al agregar al proyecto");
-      }
-    } catch (error) {
-      console.error("Error making admin:", error);
-    }
-  };
-
-  const handleRemoveAdmin = async () => {
-    // console.log("handleRemoveAdmin:", member.id, project);
-    try {
-      const response = await axios.post(
-        `${API_BASE_URL}/user/removeadmin`,
-        {
-          user_id: member.id,
-          project_id: project,
-        }
-      );
-      const rpt = response.data.message;
-      // console.log("handleRemoveAdmin response:", rpt);
-      if (rpt === "User is no longer an admin of the project") {
-        onClose();
-      } else {
-        console.log("Error al retirar del proyecto");
-      }
-    } catch (error) {
-      console.error("Error removing admin:", error);
-    }
-  };
 
   const handleRemoveMember = async () => {
     // console.log("handleRemoveMember:", member.id, project);
@@ -172,44 +120,20 @@ const MemberModal: React.FC<MemberModalProps> = ({
               <Text style={styles.name}>{member.name}</Text>
               <Text style={styles.email}>{member.email}</Text>
               <Text style={styles.id}>{member.user_code}</Text>
-              <Text
-                style={[
-                  styles.name,
-                  {
-                    color: member.is_admin == 1 ? "#e74c3c" : "#2ecc71",
-                    fontSize: 14,
-                    fontWeight: "normal",
-                  },
-                ]}
-              >
-                {member.is_admin == 1 ? "Admin" : "User"}
-              </Text>
             </View>
           </View>
 
           {/* Access Section */}
           <View style={styles.accessSection}>
-            {admin ? (
-              member.is_admin == 0 ? (
-                <TouchableOpacity style={styles.adminButton} onPress={handleMakeAdmin}>
-                  <Text style={styles.adminText}>Volver administrador</Text>
-                </TouchableOpacity>
-              ) : (
-                <TouchableOpacity style={styles.removeButton} onPress={handleRemoveAdmin}>
-                  <Text style={styles.removeText}>Quitar permiso de administrador</Text>
-                </TouchableOpacity>
-              )
-            ) : null}
-
-            {admin ? (
-              <TouchableOpacity style={styles.removeButton} onPress={handleRemoveMember}>
-                <Text style={styles.removeText}>Retirar del proyecto</Text>
-              </TouchableOpacity>
-            ) : userSession.id == member.id ? (
+            {userSession && userSession.id == member.id ? (
               <TouchableOpacity style={styles.removeButton} onPress={handleRemoveMember}>
                 <Text style={styles.removeText}>Salir del proyecto</Text>
               </TouchableOpacity>
-            ) : null}
+            ) : (
+              <TouchableOpacity style={styles.removeButton} onPress={handleRemoveMember}>
+                <Text style={styles.removeText}>Retirar del proyecto</Text>
+              </TouchableOpacity>
+            )}
           </View>
         </View>
       </View>
@@ -275,23 +199,6 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: "#004466",
     paddingTop: 12,
-  },
-  sectionTitle: {
-    color: "white",
-    fontSize: 14,
-  },
-  adminButton: {
-    borderWidth: 1,
-    borderColor: "#00FFFF", // Color de borde cian
-    borderRadius: 10,
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    marginBottom: 15,
-  },
-  adminText: {
-    color: "#00FFFF",
-    fontSize: 16,
-    textAlign: "center",
   },
   removeButton: {
     borderWidth: 1,
