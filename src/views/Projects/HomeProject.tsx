@@ -208,7 +208,11 @@ export default function HomeProject() {
     return weeksDiff + 1;
   }
 
-  function formatDate(date: string): string {
+  function formatDate(date: string | null | undefined): string {
+    // Validar que la fecha no sea null o undefined
+    if (!date) {
+      return '';
+    }
     // El servidor devuelve fechas en formato YYYY-MM-DD
     const [year, month, day] = date.split('-');
     return `${day}/${month}/${year}`;
