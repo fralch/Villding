@@ -285,7 +285,7 @@ function CreacionCuenta()  {
               rol: response.data.user.role,
               user_code: response.data.user.user_code,
               telefono: response.data.user.telefono ? response.data.user.telefono : "",
-              uri: response.data.user.uri ? `${API_BASE_URL}/images/profile/${response.data.user.uri}` : "",
+              uri: profileImage || (response.data.user.uri ? `${API_BASE_URL}/images/profile/${response.data.user.uri}` : ""),
               tamano_img: response.data.profile_image_size || 0
             });
             console.log("✅ SESIÓN GUARDADA - Navegando a HomeProject");
