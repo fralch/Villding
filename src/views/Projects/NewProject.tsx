@@ -14,7 +14,7 @@ import { useNavigation, NavigationProp } from "@react-navigation/native";
 import { Picker } from "@react-native-picker/picker";
 import * as ImagePicker from "expo-image-picker";
 import * as ImageManipulator from 'expo-image-manipulator';
-import { getInfoAsync } from 'expo-file-system/legacy';
+import * as FileSystem from 'expo-file-system';
 import axios from 'axios';
 import { saveProject, deleteProject } from "../../hooks/localStorageProject";
 import { getSesion, removeSesion , updateSesion } from '../../hooks/localStorageUser';
@@ -163,7 +163,7 @@ const NewProject: React.FC = () => {
 
       console.log("Imagen manipulada:", manipulatedImage.uri);
 
-      let fileInfo = await getInfoAsync(manipulatedImage.uri) as any;
+      let fileInfo = await FileSystem.getInfoAsync(manipulatedImage.uri) as any;
       console.log(`Tamaño inicial: ${(fileInfo.size / 1024).toFixed(2)} KB`);
 
       // Reducir el tamaño iterativamente si supera 500 KB
@@ -176,7 +176,7 @@ const NewProject: React.FC = () => {
           [{ resize: { width: resizedWidth } }],
           { compress: compressLevel, format: ImageManipulator.SaveFormat.JPEG }
         );
-        fileInfo = await getInfoAsync(manipulatedImage.uri);
+        fileInfo = await FileSystem.getInfoAsync(manipulatedImage.uri);
         console.log(`Nuevo tamaño: ${(fileInfo.size / 1024).toFixed(2)} KB`);
       }
 

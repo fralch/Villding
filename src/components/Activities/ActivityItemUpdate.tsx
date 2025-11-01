@@ -9,6 +9,8 @@ import { Activity } from './types/Activity_interface';
 import { iconImports, iconsFiles } from './icons';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { normalizeImages } from '../../utils/imageUtils';
+import { compressImages, COMPRESSION_PRESETS, validateImagesSize } from '../../utils/imageCompression';
+import { UPLOAD_CONFIG, getErrorMessage } from '../../config/uploadConfig';
 
 // Componentes
 import TitleSection from './componentsActivityUpdate/TitleSection';
@@ -202,11 +204,36 @@ const ActivityItemUpdate = forwardRef<ActivityItemUpdateRef, ActivityItemUpdateP
      * Actualiza el array de imágenes en el estado del formulario
      * Esto se utiliza para actualizar la lista de imágenes cuando se agregan o eliminan
      */
-    const handleImagesUpdate = (newImages: string[]) => {
-      setFormData(prev => ({
-        ...prev,
-        images: newImages
-      }));
+    const handleImagesUpdate = async (newImages: string[]) => {
+      try {
+        // Validar tamaño de las nuevas imágenes
+        const imagesToValidate = newImages.filter(img => 
+          img.startsWith('file://') || img.startsWith('content://')
+        );
+
+        if (imagesToValidate.length > 0) {
+          console.log('Validando tamaño de imágenes...');
+          const validation = await validateImagesSize(imagesToValidate, UPLOAD_CONFIG.MAX_FILE_SIZE.VALIDATION_LIMIT);
+          
+          if (!validation.isValid) {
+            const errorMessage = validation.messages.join('\n');
+            showMessage(`Error en las imágenes:\n${errorMessage}\n\nLas imágenes serán comprimidas automáticamente al subir.`);
+            // Continuar con las imágenes, se comprimirán al subir
+          }
+        }
+
+        setFormData(prev => ({
+          ...prev,
+          images: newImages
+        }));
+      } catch (error) {
+        console.error('Error validando imágenes:', error);
+        // En caso de error, continuar con las imágenes
+        setFormData(prev => ({
+          ...prev,
+          images: newImages
+        }));
+      }
     };
 
     /**
@@ -316,19 +343,41 @@ const ActivityItemUpdate = forwardRef<ActivityItemUpdateRef, ActivityItemUpdateP
         }
       });
     
-      // Procesa y añade imágenes al FormData
+      // Comprimir y procesar imágenes nuevas
       if (activityData.images && activityData.images.length > 0) {
-        activityData.images.forEach((imageUri: string, index: number) => {
-          // Solo procesa nuevas imágenes (las que empiezan con file:// o content://)
-          if (imageUri.startsWith('file://') || imageUri.startsWith('content://')) {
-            const fileType = imageUri.split('.').pop();
+        console.log('Comprimiendo imágenes antes de subir...');
+        
+        try {
+          // Validar imágenes antes de comprimir
+          const imagesToCompress = activityData.images.filter((uri: string) => 
+            uri.startsWith('file://') || uri.startsWith('content://')
+          );
+          
+          if (imagesToCompress.length > 0) {
+            const validation = await validateImagesSize(imagesToCompress, UPLOAD_CONFIG.MAX_FILE_SIZE.VALIDATION_LIMIT);
+            if (!validation.isValid) {
+              console.warn('Imágenes grandes detectadas, aplicando compresión:', validation.messages);
+            }
+          }
+          
+          const compressedImages = await compressImages(imagesToCompress, COMPRESSION_PRESETS.MEDIUM);
+          
+          console.log(`Imágenes comprimidas: ${imagesToCompress.length} -> ${compressedImages.length}`);
+          
+          // Agregar imágenes comprimidas al FormData
+          compressedImages.forEach((imageUri: string, index: number) => {
+            const fileType = imageUri.split('.').pop() || 'jpg';
             formDataObj.append(`images[${index}]`, {
               uri: imageUri,
               name: `photo_${index}.${fileType}`,
               type: `image/${fileType}`
             } as any);
-          }
-        });
+          });
+          
+        } catch (compressionError) {
+          console.error('Error al comprimir imágenes:', compressionError);
+          throw new Error(UPLOAD_CONFIG.ERROR_MESSAGES.COMPRESSION_FAILED);
+        }
       }
     
       // Añade también las imágenes existentes como un campo separado para que el backend pueda combinarlas
@@ -336,13 +385,27 @@ const ActivityItemUpdate = forwardRef<ActivityItemUpdateRef, ActivityItemUpdateP
         formDataObj.append('existing_images', JSON.stringify(activityData.existing_images));
       }
     
-      // Envía solicitud con el FormData
-      return await axios({
-        method: 'post',
-        url: `${API_BASE_URL}/activities_imgs/${activityData.id}`,
-        data: formDataObj,
-        headers: { "Content-Type": "multipart/form-data" }
-      });
+      // Envía solicitud con manejo de errores mejorado
+      try {
+        return await axios({
+          method: 'post',
+          url: `${API_BASE_URL}/activities_imgs/${activityData.id}`,
+          data: formDataObj,
+          headers: { "Content-Type": "multipart/form-data" },
+          timeout: UPLOAD_CONFIG.TIMEOUTS.IMAGE_UPLOAD
+        });
+      } catch (error: any) {
+        console.error('Error en uploadWithImages:', error);
+        
+        // Manejar errores específicos
+        if (error.code === 'ECONNABORTED') {
+          throw new Error('Tiempo de espera agotado. Las imágenes pueden ser demasiado grandes.');
+        }
+        
+        const statusCode = error.response?.status;
+        const errorMessage = getErrorMessage(statusCode);
+        throw new Error(errorMessage);
+      }
     };
 
     /**
