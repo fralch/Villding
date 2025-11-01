@@ -171,18 +171,16 @@ export const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
   },
-  modalBackground: {
-    flex: 1,
-    justifyContent: 'flex-end',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Fondo semi-transparente
-  },
-  modalContainerInferior: {
-    backgroundColor: '#05222f',
-    borderTopLeftRadius: 0,
-    borderTopRightRadius: 0,
-    maxHeight: '100%',
-    height: '95%',
-  },
+   modalBackground: {
+     flex: 1,
+     backgroundColor: 'rgba(0, 0, 0, 0.5)', // Fondo semi-transparente
+   },
+   modalContainerInferior: {
+     backgroundColor: '#05222f',
+     borderTopLeftRadius: 0,
+     borderTopRightRadius: 0,
+     flex: 1,
+   },
   modalText: {
     fontSize: 18,
     textAlign: 'center',
