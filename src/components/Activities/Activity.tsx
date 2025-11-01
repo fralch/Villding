@@ -5,11 +5,9 @@ import {
   Text,
   TouchableOpacity,
   ScrollView,
-  Animated,
   Dimensions,
   Modal,
   Pressable,
-  PanResponder,
   Image,
   TextInput,
   Alert
@@ -117,10 +115,9 @@ export default function Activity(props: any) {
       setShowDeleteConfirmation(false);
     }
   };
-  const [activityItemCreateType, setActivityItemCreateType] = useState('Pendiente');
-  const [selectedDate, setSelectedDate] = useState('');
-  const [isVisible, setIsVisible] = useState(false);
-  const slideAnim = useRef(new Animated.Value(height)).current;
+   const [activityItemCreateType, setActivityItemCreateType] = useState('Pendiente');
+   const [selectedDate, setSelectedDate] = useState('');
+   const [isVisible, setIsVisible] = useState(false);
   
   const [titleTracking, setTitleTracking] = useState(props.route.params.tracking.title);
   const [tracking, setTracking] = useState<Tracking>(props.route.params.tracking);
@@ -375,63 +372,47 @@ export default function Activity(props: any) {
   };
   
   // Mostrar modal para crear nueva actividad
-  const showCreateModal = (date: string) => {
-    setSelectedDate(date);
-    setIsEditing(false);
-    setSelectedActivity(null);
-    setIsVisible(true);
-    // Almacenar actividad vacía en localStorage
-    storeActivity({
-      project_id: tracking.project_id,
-      tracking_id: tracking.id,
-      activity: null,
-      date: date,
-      isAdmin: isAdmin, 
-      editMode: false
-    });
-    Animated.timing(slideAnim, {
-      toValue: 0,
-      duration: 300,
-      useNativeDriver: true,
-    }).start();
-  };
+   const showCreateModal = (date: string) => {
+     setSelectedDate(date);
+     setIsEditing(false);
+     setSelectedActivity(null);
+     setIsVisible(true);
+     // Almacenar actividad vacía en localStorage
+     storeActivity({
+       project_id: tracking.project_id,
+       tracking_id: tracking.id,
+       activity: null,
+       date: date,
+       isAdmin: isAdmin,
+       editMode: false
+     });
+   };
 
   // Mostrar modal para editar actividad existente
-  const showModal = (activity: Activity, date: string) => {
-    setSelectedDate(date);
-    setIsEditing(true);
-    setSelectedActivity(activity);
-    setActivityItemCreateType('edit');
-    setIsVisible(true);
-    // Almacenar actividad actual en localStorage
-    storeActivity({
-      project_id: tracking.project_id,
-      tracking_id: tracking.id,
-      activity: activity as any,
-      date: date,
-      isAdmin: isAdmin, 
-      editMode: false 
-    });
-    Animated.timing(slideAnim, {
-      toValue: 0,
-      duration: 300,
-      useNativeDriver: true,
-    }).start();
-  };
+   const showModal = (activity: Activity, date: string) => {
+     setSelectedDate(date);
+     setIsEditing(true);
+     setSelectedActivity(activity);
+     setActivityItemCreateType('edit');
+     setIsVisible(true);
+     // Almacenar actividad actual en localStorage
+     storeActivity({
+       project_id: tracking.project_id,
+       tracking_id: tracking.id,
+       activity: activity as any,
+       date: date,
+       isAdmin: isAdmin,
+       editMode: false
+     });
+   };
 
-  const hideModal = async () => {
-    console.log('[Activity] hideModal called');
-    Animated.timing(slideAnim, {
-      toValue: height,
-      duration: 300,
-      useNativeDriver: true,
-    }).start(async () => {
-      setIsVisible(false);
-      // Eliminar actividad del localStorage al cerrar el modal
-      await removeActivity();
-      await refreshActivities();
-    });
-  };
+   const hideModal = async () => {
+     console.log('[Activity] hideModal called');
+     setIsVisible(false);
+     // Eliminar actividad del localStorage al cerrar el modal
+     await removeActivity();
+     await refreshActivities();
+   };
 
   // Actualizado para refrescar actividades después de guardar
   // Update the handleSaveActivity function
@@ -479,30 +460,7 @@ const handleSaveActivity = async () => {
     }
   };
 
-  const panResponder = useRef(
-    PanResponder.create({
-      onMoveShouldSetPanResponder: (_, gestureState) => {
-        // Solo activar el pan responder si el movimiento vertical es significativo
-        // y mayor que el movimiento horizontal
-        return Math.abs(gestureState.dy) > 5 && Math.abs(gestureState.dy) > Math.abs(gestureState.dx);
-      },
-      onPanResponderMove: (_, gestureState) => {
-        if (gestureState.dy > 0) {
-          slideAnim.setValue(gestureState.dy);
-        }
-      },
-      onPanResponderRelease: (_, gestureState) => {
-        if (gestureState.dy > 100) {
-          hideModal();
-        } else {
-          Animated.spring(slideAnim, {
-            toValue: 0,
-            useNativeDriver: true,
-          }).start();
-        }
-      },
-    })
-  ).current;
+
 
   return (
     <View style={styles.container}>
@@ -631,87 +589,65 @@ const handleSaveActivity = async () => {
         </TouchableOpacity>
       </Modal>
 
-      <Modal
-        transparent
-        visible={isVisible}
-        animationType="none"
-        onRequestClose={() => {
-          console.log('[Activity] isVisible Modal onRequestClose (Android back)');
-          hideModal();
-        }}
-      >
-        <View style={styles.modalBackground} pointerEvents="box-none">
-          <Animated.View
-            style={[
-              styles.modalContainerInferior,
-              { transform: [{ translateY: slideAnim }] }
-            ]}
-            pointerEvents="auto"
-          >
-            {/* Drag handle area */}
-            <View
-              style={{
-                backgroundColor: '#05222f',
-                paddingTop: 8,
-                paddingBottom: 4,
-                alignItems: 'center'
-              }}
-              {...panResponder.panHandlers}
-            >
-              <View style={{
-                width: 40,
-                height: 5,
-                backgroundColor: '#666',
-                borderRadius: 3,
-                marginBottom: 4
-              }} />
-            </View>
+       <Modal
+         transparent
+         visible={isVisible}
+         animationType="fade"
+         onRequestClose={() => {
+           console.log('[Activity] isVisible Modal onRequestClose (Android back)');
+           hideModal();
+         }}
+       >
+         <View style={styles.modalBackground} pointerEvents="box-none">
+           <View
+             style={styles.modalContainerInferior}
+             pointerEvents="auto"
+           >
+             <View style={{ backgroundColor: '#05222f', flexDirection: 'row', justifyContent: 'space-between' }}>
+               <TouchableOpacity
+                 onPress={hideModal}
+                 style={{ width: '50%', paddingVertical: 10, paddingLeft: 10 }}
+               >
+                 <Text style={{ color: 'white' }}>Cancelar</Text>
+               </TouchableOpacity>
+               <TouchableOpacity
+                 onPress={handleSaveActivity}
+                 style={{ width: '50%', paddingVertical: 10, paddingRight: 10, alignItems: 'flex-end' }}
+               >
+                 <Text style={{ color: 'white' }}>Guardar</Text>
+               </TouchableOpacity>
+             </View>
+             {isEditing ? (
+               selectedActivity?.status === 'completado' ? (
+                 console.log('Activity status dentro:', selectedActivity?.status),
+                 <ActivityItemComplete
+                   ref={activityItemCompleteRef}
+                   hideModal={hideModal}
+                 />
+               ) : (
+                 <ActivityItemUpdate
+                   ref={activityItemUpdateRef}
+                   project_id={tracking.project_id}
+                   tracking_id={tracking.id}
+                   activity={selectedActivity as any}
+                   date={selectedDate}
+                   hideModal={hideModal}
+                 />
+               )
 
-            <View style={{ backgroundColor: '#05222f', flexDirection: 'row', justifyContent: 'space-between' }}>
-              <TouchableOpacity
-                onPress={hideModal}
-                style={{ width: '50%', paddingVertical: 10, paddingLeft: 10 }}
-              >
-                <Text style={{ color: 'white' }}>Cancelar</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={handleSaveActivity}
-                style={{ width: '50%', paddingVertical: 10, paddingRight: 10, alignItems: 'flex-end' }}
-              >
-                <Text style={{ color: 'white' }}>Guardar</Text>
-              </TouchableOpacity>
-            </View>
-            {isEditing ? (
-              selectedActivity?.status === 'completado' ? (
-                console.log('Activity status dentro:', selectedActivity?.status),
-                <ActivityItemComplete
-                  ref={activityItemCompleteRef}
-                  hideModal={hideModal}
-                />
-              ) : (
-                <ActivityItemUpdate
-                  ref={activityItemUpdateRef}
-                  project_id={tracking.project_id}
-                  tracking_id={tracking.id}
-                  activity={selectedActivity as any}
-                  date={selectedDate}
-                  hideModal={hideModal}
-                />
-              )
-              
-            ) : (
-              <ActivityItemCreate
-                ref={activityItemCreateRef}
-                project_id={tracking.project_id}
-                tracking_id={tracking.id}
-                tipo={activityItemCreateType}
-                date={selectedDate}
-                hideModal={hideModal}
-              />
-            )}
-          </Animated.View>
-        </View>
-      </Modal>
+             ) : (
+               <ActivityItemCreate
+                 ref={activityItemCreateRef}
+                 project_id={tracking.project_id}
+                 tracking_id={tracking.id}
+                 tipo={activityItemCreateType}
+                 date={selectedDate}
+                 hideModal={hideModal}
+               />
+             )}
+           </View>
+         </View>
+       </Modal>
 
       <MessageModal
         visible={showDeleteConfirmation}

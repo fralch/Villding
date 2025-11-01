@@ -121,26 +121,7 @@ function Login(): any {
             </Text>
           </TouchableOpacity>
 
-          <Text style={{ color: 'white', textAlign: 'center', marginTop: 20 }}>
-            O
-          </Text>
-          <TouchableOpacity style={{ marginTop: 20 }}>
-            <Text
-              style={{
-                color: 'white',
-                fontWeight: 'bold',
-                fontSize: 16,
-                textAlign: 'center',
-                backgroundColor: '#1C4360',
-                padding: 10,
-                borderRadius: 5,
-                width: '100%',
-              }}
-              onPress={() => navigate('CreacionCuenta')}
-            >
-              Crear cuenta
-            </Text>
-          </TouchableOpacity>
+         
         </View>
       </SafeAreaView>
 
