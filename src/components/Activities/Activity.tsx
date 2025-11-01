@@ -606,15 +606,15 @@ const handleSaveActivity = async () => {
              <View style={{ backgroundColor: '#05222f', flexDirection: 'row', justifyContent: 'space-between' }}>
                <TouchableOpacity
                  onPress={hideModal}
-                 style={{ width: '50%', paddingVertical: 10, paddingLeft: 10 }}
+                 style={{ width: '50%', paddingVertical: 15, paddingLeft: 10 }}
                >
-                 <Text style={{ color: 'white' }}>Cancelar</Text>
+                 <Text style={{ color: 'white', fontSize: 16 }}>Cancelar</Text>
                </TouchableOpacity>
                <TouchableOpacity
                  onPress={handleSaveActivity}
-                 style={{ width: '50%', paddingVertical: 10, paddingRight: 10, alignItems: 'flex-end' }}
+                 style={{ width: '50%', paddingVertical: 15, paddingRight: 10, alignItems: 'flex-end' }}
                >
-                 <Text style={{ color: 'white' }}>Guardar</Text>
+                 <Text style={{ color: 'white', fontSize: 16 }}>Guardar</Text>
                </TouchableOpacity>
              </View>
              {isEditing ? (
