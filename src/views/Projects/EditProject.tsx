@@ -15,7 +15,7 @@ import { useNavigation, NavigationProp } from "@react-navigation/native";
 import { Picker } from "@react-native-picker/picker";
 import * as ImagePicker from "expo-image-picker";
 import * as ImageManipulator from 'expo-image-manipulator';
-import * as FileSystem from 'expo-file-system';
+import { getInfoAsync } from 'expo-file-system/legacy';
 import axios from 'axios';
 import { saveProject, deleteProject } from "../../hooks/localStorageProject";
 import { getSesion } from '../../hooks/localStorageUser';
@@ -476,50 +476,77 @@ useEffect(() => {
 
   // Función para manejar la selección de imágenes
   const handlePickImage = async () => {
+    console.log("Iniciando selección de imagen...");
     const pickerResult = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ['images'],
       allowsEditing: true,
       aspect: [4, 3],
       quality: 0.5,
     });
 
+    console.log("Resultado del picker:", pickerResult);
+
     if (!pickerResult.canceled && pickerResult.assets && pickerResult.assets.length > 0) {
       let selectedImage = pickerResult.assets[0].uri;
+      console.log("Imagen seleccionada:", selectedImage);
       await processImage(selectedImage);
+    } else {
+      console.log("Selección de imagen cancelada o sin resultados");
     }
   };
 
   // Función para procesar la imagen seleccionada
   const processImage = async (imageUri: string) => {
-    let compressLevel = 0.8;
-    let resizedWidth = 800;
+    try {
+      console.log("Procesando imagen:", imageUri);
+      
+      // Obtener información del archivo
+      const fileInfo = await getInfoAsync(imageUri) as any;
+      console.log("Información del archivo:", fileInfo);
 
-    let manipulatedImage = await ImageManipulator.manipulateAsync(
-      imageUri,
-      [{ resize: { width: resizedWidth } }],
-      { compress: compressLevel, format: ImageManipulator.SaveFormat.JPEG }
-    );
+      let processedImageUri = imageUri;
+      let fileSize = fileInfo.size || 0;
+      
+      console.log("Tamaño inicial del archivo:", fileSize);
 
-    let fileInfo = await FileSystem.getInfoAsync(manipulatedImage.uri) as any;
+      // Si el archivo es muy grande, redimensionar y comprimir
+      if (fileSize > MAX_FILE_SIZE) {
+        console.log("Archivo muy grande, redimensionando...");
+        const manipulatedImage = await ImageManipulator.manipulateAsync(
+          imageUri,
+          [{ resize: { width: 800 } }],
+          { compress: 0.7, format: ImageManipulator.SaveFormat.JPEG }
+        );
+        
+        processedImageUri = manipulatedImage.uri;
+        
+        // Verificar el nuevo tamaño
+        const newFileInfo = await getInfoAsync(processedImageUri) as any;
+        fileSize = newFileInfo.size || 0;
+        console.log("Nuevo tamaño después de redimensionar:", fileSize);
+      }
 
-    // Reducir el tamaño de la imagen iterativamente si es necesario
-    while (fileInfo.size > MAX_FILE_SIZE && compressLevel > 0.1) {
-      compressLevel -= 0.1;
-      resizedWidth -= 100;
+      // Si aún es muy grande, comprimir más
+      if (fileSize > MAX_FILE_SIZE) {
+        console.log("Archivo aún muy grande, comprimiendo más...");
+        const compressedImage = await ImageManipulator.manipulateAsync(
+          processedImageUri,
+          [],
+          { compress: 0.5, format: ImageManipulator.SaveFormat.JPEG }
+        );
+        
+        processedImageUri = compressedImage.uri;
+        const finalFileInfo = await getInfoAsync(processedImageUri) as any;
+        fileSize = finalFileInfo.size || 0;
+        console.log("Tamaño final después de comprimir:", fileSize);
+      }
 
-      manipulatedImage = await ImageManipulator.manipulateAsync(
-        imageUri,
-        [{ resize: { width: resizedWidth } }],
-        { compress: compressLevel, format: ImageManipulator.SaveFormat.JPEG }
-      );
-
-      fileInfo = await FileSystem.getInfoAsync(manipulatedImage.uri);
-    }
-
-    if (fileInfo.size <= MAX_FILE_SIZE) {
-      updateFormData("projectImage", manipulatedImage.uri);
-    } else {
-      alert("La imagen seleccionada es demasiado grande incluso después de ser comprimida.");
+      console.log("Imagen procesada exitosamente:", processedImageUri);
+      updateFormData('projectImage', processedImageUri);
+      
+    } catch (error) {
+      console.error("Error procesando imagen:", error);
+      alert("No se pudo procesar la imagen seleccionada");
     }
   };
 
@@ -573,11 +600,14 @@ useEffect(() => {
 
       // Agregar la imagen solo si se ha seleccionado una nueva y no es una URL
       if (formData.projectImage && !formData.projectImage.startsWith('http')) {
+        console.log("Agregando imagen al FormData:", formData.projectImage);
+        
         const uriParts = formData.projectImage.split('.');
         const fileType = uriParts[uriParts.length - 1];
 
         // Get the file info to check size
-        const fileInfo = await FileSystem.getInfoAsync(formData.projectImage);
+        const fileInfo = await getInfoAsync(formData.projectImage);
+        console.log("Información del archivo para envío:", fileInfo);
         
         // Check if file exists and has size info
         if (!fileInfo.exists || !('size' in fileInfo)) {
@@ -591,9 +621,13 @@ useEffect(() => {
 
         form.append('uri', {
           uri: formData.projectImage,
-          name: `project_image_${Date.now()}.${fileType}`,
           type: `image/${fileType}`,
+          name: `project_image.${fileType}`,
         } as any);
+        
+        console.log("Imagen agregada al FormData exitosamente");
+      } else {
+        console.log("No se agregó imagen - imagen existente o no seleccionada:", formData.projectImage);
       }
 
       console.log('Form data to be sent:', {
