@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { View, FlatList, TouchableOpacity, Text, Modal, Pressable, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, NavigationProp, useRoute } from '@react-navigation/native';
@@ -37,6 +37,9 @@ const TrackingCurrent = () => {
   const [confirmModalVisible, setConfirmModalVisible] = useState(false); // Modal de confirmación 
   const [confirmModalMessage, setConfirmModalMessage] = useState(""); // Mensaje del modal de confirmación
 
+  // Evitar doble carga inicial: refresco cuando se abre la app en esta pantalla
+  const initialFetchDoneRef = useRef(false);
+
   // Cargar el proyecto al iniciar el componente
   useEffect(() => {
     loadProject(); // Carga el proyecto al iniciar el componente
@@ -51,6 +54,14 @@ const TrackingCurrent = () => {
       }
     }, [project])
   );
+
+  // Refresco inicial al montar cuando el proyecto está disponible
+  useEffect(() => {
+    if (project?.id && !initialFetchDoneRef.current) {
+      initialFetchDoneRef.current = true;
+      fetchTrackings();
+    }
+  }, [project?.id]);
 
   // Keep your existing useEffect for initial project loading
   useEffect(() => {
