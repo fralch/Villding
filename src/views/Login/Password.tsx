@@ -54,6 +54,25 @@ function Password():any {
           console.log(response.data);
 
           if (response.data.message === "Login successful") {
+            const rawUri: string = response?.data?.user?.uri ?? "";
+
+            // Resolver correctamente la URI de la imagen del perfil
+            // Casos:
+            // - Si ya es una URL completa (http/https), usarla tal cual
+            // - Si es una ruta relativa de S3 (profiles/..., projects/..., activities/...), prefix S3
+            // - Si es solo un nombre de archivo, usar la ruta del backend /images/profile
+            const S3_BASE_URL = "https://villding.s3.us-east-2.amazonaws.com";
+            const isFullUrl = rawUri.startsWith("http://") || rawUri.startsWith("https://");
+            const isLocalFile = rawUri.startsWith("file://") || rawUri.startsWith("content://");
+            const isRelativeS3Path = /^(profiles|projects|activities)\//.test(rawUri);
+            const finalUri = !rawUri
+              ? ""
+              : isFullUrl || isLocalFile
+                ? rawUri
+                : isRelativeS3Path
+                  ? `${S3_BASE_URL}/${rawUri}`
+                  : `${API_BASE_URL}/images/profile/${rawUri}`;
+
             storeSesion({
               id: response.data.user.id,
               nombres: response.data.user.name,
@@ -65,9 +84,7 @@ function Password():any {
               telefono: response.data.user.telefono
                 ? response.data.user.telefono
                 : "",
-              uri: response.data.user.uri
-                ? `${API_BASE_URL}/images/profile/${response.data.user.uri}`
-                : "",
+              uri: finalUri,
               tamano_img: response.data.profile_image_size
             });
             navigation.navigate("HomeProject");
