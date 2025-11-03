@@ -19,6 +19,7 @@ import { useNavigation, NavigationProp } from "@react-navigation/native";
 import { getSesion, removeSesion , updateSesion } from '../../hooks/localStorageUser';
 import axios from "axios";
 import { API_BASE_URL } from '../../config/api';
+import { getImageSource } from '../../utils/imageUtils';
 
 type User = {
   id: string;
@@ -58,6 +59,23 @@ const VistaMiembros: React.FC<any> = (project) => {
   const [ingresado, setIngresado] = useState();
   const [imageErrorMap, setImageErrorMap] = useState<Record<string, boolean>>({});
 
+  // Resuelve correctamente la URI de imagen del perfil del usuario
+  // - URLs completas: se usan tal cual
+  // - Rutas relativas S3 (profiles/projects/activities): se convierten a S3
+  // - Nombres de archivo: se resuelven contra el backend /images/profile
+  const resolveProfileImageUri = (rawUri?: string | null) => {
+    if (!rawUri || typeof rawUri !== 'string' || rawUri.trim() === '') return '';
+    const clean = rawUri.trim();
+    const isFullUrl = clean.startsWith('http://') || clean.startsWith('https://');
+    const isLocalFile = clean.startsWith('file://') || clean.startsWith('content://');
+    const isRelativeS3Path = /^(profiles|projects|activities)\//.test(clean);
+    const S3_BASE_URL = 'https://villding.s3.us-east-2.amazonaws.com';
+
+    if (isFullUrl || isLocalFile) return clean;
+    if (isRelativeS3Path) return `${S3_BASE_URL}/${clean}`;
+    return `${API_BASE_URL}/images/profile/${clean}`;
+  };
+
 
   useEffect(() => {
     const fetchSessionAndUsers = async () => {
@@ -93,35 +111,37 @@ const VistaMiembros: React.FC<any> = (project) => {
 
 
 
-  const renderItem = ({ item, index }: { item: User; index: number }) => (
-   <View>
-    <TouchableOpacity
-      style={styles.itemContainer}
-      onPress={() => {
-        setUserSelected(item);
-        setModalVisible(true);
-      }}
-    >
-      {item.uri && !imageErrorMap[item.id] ? (
-        <Image
-          source={{ uri: `${API_BASE_URL}/images/profile/${item.uri}` }}
-          style={styles.avatar}
-          onError={() =>
-            setImageErrorMap((prev) => ({ ...prev, [item.id]: true }))
-          }
-        />
-      ) : (
-        <View style={[styles.avatar, styles.avatarPlaceholder]}>
-          <MaterialCommunityIcons name="account" size={24} color="#fff" />
-        </View>
-      )}
-      <View style={styles.infoContainer}>
-        <Text style={styles.name}>{item.name}</Text>
-        <Text style={styles.email}>{item.email}</Text>
+  const renderItem = ({ item, index }: { item: User; index: number }) => {
+    // Construir la fuente de la imagen de forma robusta
+    const finalUri = resolveProfileImageUri(item.uri);
+    const resolvedSource = imageErrorMap[item.id]
+      ? require('../../assets/images/user.png')
+      : getImageSource(finalUri);
+
+    return (
+      <View>
+        <TouchableOpacity
+          style={styles.itemContainer}
+          onPress={() => {
+            setUserSelected(item);
+            setModalVisible(true);
+          }}
+        >
+          <Image
+            source={resolvedSource}
+            style={styles.avatar}
+            onError={() =>
+              setImageErrorMap((prev) => ({ ...prev, [item.id]: true }))
+            }
+          />
+          <View style={styles.infoContainer}>
+            <Text style={styles.name}>{item.name}</Text>
+            <Text style={styles.email}>{item.email}</Text>
+          </View>
+        </TouchableOpacity>
       </View>
-    </TouchableOpacity>
-   </View>
-  );
+    );
+  };
 
   const handleAddUser = async () => {
     try {
