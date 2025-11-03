@@ -232,21 +232,37 @@ const EditUser = () => {
       if (Data.email_contact) formData.append('email_contact', Data.email_contact);
 
       // Si hay una imagen seleccionada, la agregamos al FormData
-      if (profileImage && profileImage !== Data.uri) {
+      if (profileImage) {
+        console.log("Preparando imagen para envío:", profileImage);
+        console.log("URI actual en Data:", Data.uri);
+        
         // Verificar que la imagen existe antes de enviarla
         const fileInfo = await FileSystem.getInfoAsync(profileImage);
+        console.log("Info del archivo:", fileInfo);
+        
         if (fileInfo.exists) {
           const uriParts = profileImage.split('.');
-          const fileType = uriParts[uriParts.length - 1];
+          const fileExtensionRaw = uriParts[uriParts.length - 1] || 'jpg';
+          const fileExtension = fileExtensionRaw.toLowerCase();
+          const mimeType = fileExtension === 'jpg' ? 'image/jpeg' : `image/${fileExtension}`;
+
+          console.log("Agregando imagen al FormData:", {
+            uri: profileImage,
+            name: `profile_image.${fileExtension}`,
+            type: mimeType,
+            size: fileInfo.size
+          });
 
           formData.append('uri', {
             uri: profileImage,
-            name: `profile_image.${fileType}`,
-            type: `image/${fileType}`, // Tipo de imagen
+            name: `profile_image.${fileExtension}`,
+            type: mimeType,
           } as any);
         } else {
           throw new Error("La imagen seleccionada no existe o no es válida.");
         }
+      } else {
+        console.log("No hay imagen nueva para enviar");
       }
 
       let reqOptions = {
