@@ -1,5 +1,5 @@
 import React, { forwardRef, useImperativeHandle, useState, useEffect } from 'react';
-import { View, ScrollView, Alert, TouchableOpacity, Text, ActivityIndicator, Modal, StyleSheet, BackHandler } from 'react-native';
+import { View, ScrollView, Alert, TouchableOpacity, Text, ActivityIndicator, Modal, StyleSheet, BackHandler, KeyboardAvoidingView, Platform } from 'react-native';
 import { StatusBar as ExpoStatusBar } from 'expo-status-bar';
 import axios from 'axios';
 import { API_BASE_URL } from '../../config/api';
@@ -589,11 +589,21 @@ const ActivityItemUpdate = forwardRef<ActivityItemUpdateRef, ActivityItemUpdateP
 
     // Renderizado del componente
     return (
-      <View style={{ backgroundColor: "#0a3649", flex: 1 }}>
-        <ExpoStatusBar style="light" />
-        
-        <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-          <View style={{ flex: 1 }}>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
+      >
+        <View style={{ backgroundColor: "#0a3649", flex: 1 }}>
+          <ExpoStatusBar style="light" />
+          
+          <ScrollView
+            contentContainerStyle={{ flexGrow: 1 }}
+            keyboardShouldPersistTaps="handled"
+            keyboardDismissMode="on-drag"
+            contentInsetAdjustmentBehavior="automatic"
+          >
+            <View style={{ flex: 1 }}>
             {/* Sección del título, imágenes y botón de completar */}
             <TitleSection
               titulo={formData.titulo}
@@ -685,9 +695,9 @@ const ActivityItemUpdate = forwardRef<ActivityItemUpdateRef, ActivityItemUpdateP
                 </View>
               </>
             )}
-          </View>
-        </ScrollView>
-        
+            </View>
+          </ScrollView>
+          
         {/* Modal para mensajes de confirmación/error */}
         <MessageModal 
           visible={showModal} 
@@ -723,17 +733,18 @@ const ActivityItemUpdate = forwardRef<ActivityItemUpdateRef, ActivityItemUpdateP
           </View>
         </Modal>
 
-        {/* Overlay de carga durante operaciones asíncronas */}
-        {isLoading && (
-          <LoadingOverlay
-            visible={isLoading}
-            message={formData.images.length > 0 
-              ? `Subiendo ${formData.images.length} ${formData.images.length === 1 ? 'imagen' : 'imágenes'}...` 
-              : 'Procesando...'
-            }
-          />
-        )}
-      </View>
+          {/* Overlay de carga durante operaciones asíncronas */}
+          {isLoading && (
+            <LoadingOverlay
+              visible={isLoading}
+              message={formData.images.length > 0 
+                ? `Subiendo ${formData.images.length} ${formData.images.length === 1 ? 'imagen' : 'imágenes'}...` 
+                : 'Procesando...'
+              }
+            />
+          )}
+        </View>
+      </KeyboardAvoidingView>
     );
   }
 );

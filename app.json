@@ -21,7 +21,7 @@
         }
       }
     },
-    "android": {
+  "android": {
       "newArchEnabled": true,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
@@ -29,7 +29,8 @@
       },
       "package": "com.fralch.Villding",
       "usesCleartextTraffic": true,
-      "networkSecurityConfig": "./network_security_config.xml"
+      "networkSecurityConfig": "./network_security_config.xml",
+      "windowSoftInputMode": "adjustResize"
     },
     "web": {
       "favicon": "./assets/favicon.png"

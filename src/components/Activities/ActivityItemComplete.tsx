@@ -4,7 +4,7 @@
  * Permite visualizar y editar actividades completadas.
  */
 import React, { forwardRef, useImperativeHandle, useState, useEffect } from 'react';
-import { View, ScrollView, Alert, TouchableOpacity, Text, ActivityIndicator } from 'react-native';
+import { View, ScrollView, Alert, TouchableOpacity, Text, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native';
 import { StatusBar as ExpoStatusBar } from 'expo-status-bar';
 import axios from 'axios';
 import { getSesion } from '../../hooks/localStorageUser';
@@ -406,11 +406,21 @@ const ActivityItemComplete = forwardRef<ActivityItemCompleteRef, ActivityItemCom
   }));
 
   return (
-    <View style={{ backgroundColor: "#0a3649", flex: 1 }}>
-      <ExpoStatusBar style="light" />
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
+    >
+      <View style={{ backgroundColor: "#0a3649", flex: 1 }}>
+        <ExpoStatusBar style="light" />
 
-      <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-        <View style={{ flex: 1 }}>
+        <ScrollView
+          contentContainerStyle={{ flexGrow: 1 }}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
+          contentInsetAdjustmentBehavior="automatic"
+        >
+          <View style={{ flex: 1 }}>
           {/* Sección del título, imágenes y botón de completar */}
           <TitleSection
             titulo={formData.titulo}
@@ -502,8 +512,8 @@ const ActivityItemComplete = forwardRef<ActivityItemCompleteRef, ActivityItemCom
               </View>
             </>
           )}
-        </View>
-      </ScrollView>
+          </View>
+        </ScrollView>
 
       {/* Modal para mensajes */}
       <MessageModal
@@ -531,7 +541,8 @@ const ActivityItemComplete = forwardRef<ActivityItemCompleteRef, ActivityItemCom
           }
         />
       )}
-    </View>
+      </View>
+    </KeyboardAvoidingView>
   );
 });
 

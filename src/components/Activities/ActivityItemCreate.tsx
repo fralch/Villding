@@ -11,6 +11,8 @@ import {
   ActivityIndicator,
   StyleSheet,
   BackHandler,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import { StatusBar as ExpoStatusBar } from "expo-status-bar";
 import DateTimePicker, { DateTimePickerEvent } from "@react-native-community/datetimepicker";
@@ -398,10 +400,20 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
     };
   }, [hideModal, showModal, isLoading]);
   return (
-    <View style={{ backgroundColor: "#0a3649", flex: 1 }}>
-      <ExpoStatusBar style="light" />
-      <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-        <View style={{ flex: 1 }}>
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
+    >
+      <View style={{ backgroundColor: "#0a3649", flex: 1 }}>
+        <ExpoStatusBar style="light" />
+        <ScrollView
+          contentContainerStyle={{ flexGrow: 1 }}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
+          contentInsetAdjustmentBehavior="automatic"
+        >
+          <View style={{ flex: 1 }}>
           <TitleSection
             titulo={formData.titulo}
             onTituloChange={(text) => setFormData(prev => ({ ...prev, titulo: text }))}
@@ -430,8 +442,8 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
             selectedIcon={formData.selectedIcon}
             onIconSelect={(icon) => setFormData(prev => ({ ...prev, selectedIcon: icon }))}
           />
-        </View>
-      </ScrollView>
+          </View>
+        </ScrollView>
 
       {/* Modal de Confirmación */}
       <Modal transparent={true} animationType="slide" visible={showModal} onRequestClose={() => { console.log('[Create] Modal onRequestClose fired'); setShowModal(false); }}>
@@ -461,7 +473,8 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
           </View>
         </Modal>
       )}
-    </View>
+      </View>
+    </KeyboardAvoidingView>
   );
 });
 
