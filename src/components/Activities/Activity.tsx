@@ -10,7 +10,8 @@ import {
   Pressable,
   Image,
   TextInput,
-  Alert
+  Alert,
+  StatusBar
 } from 'react-native';
 import { StatusBar as ExpoStatusBar } from 'expo-status-bar';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
@@ -599,24 +600,24 @@ const handleSaveActivity = async () => {
          }}
        >
          <View style={styles.modalBackground} pointerEvents="box-none">
-           <View
-             style={styles.modalContainerInferior}
-             pointerEvents="auto"
-           >
-             <View style={{ backgroundColor: '#05222f', flexDirection: 'row', justifyContent: 'space-between' }}>
-               <TouchableOpacity
-                 onPress={hideModal}
-                 style={{ width: '50%', paddingVertical: 15, paddingLeft: 10 }}
-               >
-                 <Text style={{ color: 'white', fontSize: 16 }}>Cancelar</Text>
-               </TouchableOpacity>
-               <TouchableOpacity
-                 onPress={handleSaveActivity}
-                 style={{ width: '50%', paddingVertical: 15, paddingRight: 10, alignItems: 'flex-end' }}
-               >
-                 <Text style={{ color: 'white', fontSize: 16 }}>Guardar</Text>
-               </TouchableOpacity>
-             </View>
+         <View
+            style={styles.modalContainerInferior}
+            pointerEvents="auto"
+          >
+            <View style={{ backgroundColor: '#05222f', flexDirection: 'row', justifyContent: 'space-between', marginTop: (StatusBar.currentHeight ?? 24) }}>
+              <TouchableOpacity
+                onPress={hideModal}
+                style={{ width: '50%', paddingVertical: 15, paddingLeft: 10 }}
+              >
+                <Text style={{ color: 'white', fontSize: 16 }}>Cancelar</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={handleSaveActivity}
+                style={{ width: '50%', paddingVertical: 15, paddingRight: 10, alignItems: 'flex-end' }}
+              >
+                <Text style={{ color: 'white', fontSize: 16 }}>Guardar</Text>
+              </TouchableOpacity>
+            </View>
              {isEditing ? (
                selectedActivity?.status === 'completado' ? (
                  console.log('Activity status dentro:', selectedActivity?.status),
