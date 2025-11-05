@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { View, Text, Image } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { List, Divider } from 'react-native-paper';
 import { useRoute, RouteProp } from '@react-navigation/native';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
@@ -26,6 +27,7 @@ type RouteParams = {
 
 export default function Hamburguesa(props: any) {
   const { navigate } = useNavigation<NavigationProp<any>>();
+  const insets = useSafeAreaInsets();
 
   // Tipar la ruta para incluir los parámetros
   const route = useRoute<RouteProp<RouteParams, 'params'>>();
@@ -77,7 +79,7 @@ export default function Hamburguesa(props: any) {
   }, [props.route?.params, route.params]);
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#05222F' }}>
+    <View style={{ flex: 1, backgroundColor: '#05222F', paddingBottom: Math.max(insets.bottom, 16) }}>
       {/* Logo */}
       <View
         style={{

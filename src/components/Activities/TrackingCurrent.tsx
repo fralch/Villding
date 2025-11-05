@@ -12,6 +12,7 @@ import DayColumn from './trackingAsset/DayColumn';
 import TrackingSectionComponent from './trackingAsset/TrackingSection';
 import AddTrackingModal from './trackingAsset/AddTrackingModal';
 import { useFocusEffect } from '@react-navigation/native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as FileSystem from 'expo-file-system/legacy';
 import * as Sharing from 'expo-sharing';
 
@@ -561,8 +562,10 @@ const checkAndAdjustCurrentWeek = (startDateStr: string, weekIndex: number, isIn
   };
 
 
+  const insets = useSafeAreaInsets();
+
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingBottom: Math.max(insets.bottom, 2) }]}>
       {/* Selector de semana */}
       <WeekSelector
         currentWeekIndex={currentWeekIndex}
@@ -607,7 +610,7 @@ const checkAndAdjustCurrentWeek = (startDateStr: string, weekIndex: number, isIn
 
       {/* Botón para añadir seguimiento */}
       <TouchableOpacity
-        style={styles.addButton}
+        style={[styles.addButton, { marginBottom: Math.max(insets.bottom, 1) }]}
         onPress={() => setAddTrackingModalVisible(true)}
       >
         <Ionicons name="add-circle-outline" size={24} color="#7bc4c4" />
