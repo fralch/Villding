@@ -216,12 +216,14 @@ export default function Activity(props: any) {
 
       // Convertir arraybuffer a base64
       console.log('Convirtiendo arraybuffer a base64...');
-      const base64 = btoa(
-        new Uint8Array(response.data).reduce(
-          (data, byte) => data + String.fromCharCode(byte),
-          ''
-        )
-      );
+      const uint8Array = new Uint8Array(response.data);
+      let binaryString = '';
+      const chunkSize = 0x8000; // 32KB chunks to avoid stack overflow
+      for (let i = 0; i < uint8Array.length; i += chunkSize) {
+        const chunk = uint8Array.subarray(i, Math.min(i + chunkSize, uint8Array.length));
+        binaryString += String.fromCharCode.apply(null, Array.from(chunk));
+      }
+      const base64 = btoa(binaryString);
 
       console.log('Base64 length:', base64.length);
 
@@ -491,7 +493,7 @@ const handleSaveActivity = async () => {
           <View key={day.dayLabel} style={styles.dayContainer}>
             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%', backgroundColor: '#05222f' }}>
                <TouchableOpacity
-                // onPress={() => downloadDailyReport(day.dayLabel)}
+                onPress={() => downloadDailyReport(day.dayLabel)}
                 style={{ padding: 8, flexDirection: 'row', alignItems: 'center' }}
               >
                 <Ionicons name="download-outline" size={20} color="#7bc4c4" />
