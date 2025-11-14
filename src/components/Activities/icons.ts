@@ -1,7 +1,7 @@
 // Imports estáticos de todos los iconos
+import acarreo from '../../assets/icons-png/acarreo.png';
 import aceros from '../../assets/icons-png/aceros.png';
 import albanileria from '../../assets/icons-png/albanileria.png';
-import alerta from '../../assets/icons-png/alerta.png';
 import brocha from '../../assets/icons-png/brocha.png';
 import camara from '../../assets/icons-png/camara.png';
 import camionDeSuministros from '../../assets/icons-png/camion-de-suministros.png';
@@ -18,15 +18,14 @@ import entregaEpp from '../../assets/icons-png/entrega-epp.png';
 import entregaHerramienta from '../../assets/icons-png/entrega-herramienta.png';
 import escoba from '../../assets/icons-png/escoba.png';
 import escudo from '../../assets/icons-png/escudo.png';
+import esmeril from '../../assets/icons-png/esmeril.png';
 import grua from '../../assets/icons-png/grua.png';
+import iieeiiss from '../../assets/icons-png/iieeiiss.png';
 import levantamientoDeObs from '../../assets/icons-png/levantamiento-de-obs.png';
 import muebles from '../../assets/icons-png/muebles.png';
 import paisajismo from '../../assets/icons-png/paisajismo.png';
 import pala from '../../assets/icons-png/pala.png';
 import piedraNatural from '../../assets/icons-png/piedra-natural.png';
-import pruebasConcreto from '../../assets/icons-png/pruebas-concreto.png';
-import pruebasElectricas from '../../assets/icons-png/pruebas-electricas.png';
-import pruebasSanitarias from '../../assets/icons-png/pruebas-sanitarias.png';
 import puerta from '../../assets/icons-png/puerta.png';
 import reporte from '../../assets/icons-png/reporte.png';
 import retiroDesmonte from '../../assets/icons-png/retiro-desmonte.png';
@@ -36,6 +35,7 @@ import rotomartillo from '../../assets/icons-png/rotomartillo.png';
 import sci from '../../assets/icons-png/sci.png';
 import senaleticas from '../../assets/icons-png/senaleticas.png';
 import tabiqueriaDrywall from '../../assets/icons-png/tabiqueria-drywall.png';
+import topografia from '../../assets/icons-png/topografia.png';
 import trabajosElectricos from '../../assets/icons-png/trabajos-electricos.png';
 import trabajosEnCaliente from '../../assets/icons-png/trabajos-en-caliente.png';
 import trabajosHumedos from '../../assets/icons-png/trabajos-humedos.png';
@@ -44,9 +44,9 @@ import trabajosSanitarios from '../../assets/icons-png/trabajos-sanitarios.png';
 
 // Mapa de iconos usando los imports estáticos
 const iconImports: Record<string, any> = {
+  'acarreo.png': acarreo,
   'aceros.png': aceros,
   'albanileria.png': albanileria,
-  'alerta.png': alerta,
   'brocha.png': brocha,
   'camara.png': camara,
   'camion-de-suministros.png': camionDeSuministros,
@@ -63,15 +63,14 @@ const iconImports: Record<string, any> = {
   'entrega-herramienta.png': entregaHerramienta,
   'escoba.png': escoba,
   'escudo.png': escudo,
+  'esmeril.png': esmeril,
   'grua.png': grua,
+  'iieeiiss.png': iieeiiss,
   'levantamiento-de-obs.png': levantamientoDeObs,
   'muebles.png': muebles,
   'paisajismo.png': paisajismo,
   'pala.png': pala,
   'piedra-natural.png': piedraNatural,
-  'pruebas-concreto.png': pruebasConcreto,
-  'pruebas-electricas.png': pruebasElectricas,
-  'pruebas-sanitarias.png': pruebasSanitarias,
   'puerta.png': puerta,
   'reporte.png': reporte,
   'retiro-desmonte.png': retiroDesmonte,
@@ -81,6 +80,7 @@ const iconImports: Record<string, any> = {
   'sci.png': sci,
   'senaleticas.png': senaleticas,
   'tabiqueria-drywall.png': tabiqueriaDrywall,
+  'topografia.png': topografia,
   'trabajos-electricos.png': trabajosElectricos,
   'trabajos-en-caliente.png': trabajosEnCaliente,
   'trabajos-humedos.png': trabajosHumedos,
@@ -91,9 +91,9 @@ const iconImports: Record<string, any> = {
 // Array con los nombres de archivos en orden
 const iconsFiles = [
   'trabajos-sanitarios.png',
+  'acarreo.png',
   'aceros.png',
   'albanileria.png',
-  'alerta.png',
   'brocha.png',
   'camara.png',
   'camion-de-suministros.png',
@@ -110,15 +110,14 @@ const iconsFiles = [
   'entrega-herramienta.png',
   'escoba.png',
   'escudo.png',
+  'esmeril.png',
   'grua.png',
+  'iieeiiss.png',
   'levantamiento-de-obs.png',
   'muebles.png',
   'paisajismo.png',
   'pala.png',
   'piedra-natural.png',
-  'pruebas-concreto.png',
-  'pruebas-electricas.png',
-  'pruebas-sanitarias.png',
   'puerta.png',
   'reporte.png',
   'retiro-desmonte.png',
@@ -128,6 +127,7 @@ const iconsFiles = [
   'sci.png',
   'senaleticas.png',
   'tabiqueria-drywall.png',
+  'topografia.png',
   'trabajos-electricos.png',
   'trabajos-en-caliente.png',
   'trabajos-humedos.png',
