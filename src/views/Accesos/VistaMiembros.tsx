@@ -112,11 +112,10 @@ const VistaMiembros: React.FC<any> = (project) => {
 
 
   const renderItem = ({ item, index }: { item: User; index: number }) => {
-    // Construir la fuente de la imagen de forma robusta
     const finalUri = resolveProfileImageUri(item.uri);
-    const resolvedSource = imageErrorMap[item.id]
-      ? require('../../assets/images/user.png')
-      : getImageSource(finalUri);
+    const hasNoPhoto = !finalUri || finalUri.trim() === '';
+    const isPlaceholder = hasNoPhoto || imageErrorMap[item.id];
+    const placeholderSource = require('../../assets/images/logo-icon_white.png');
 
     return (
       <View>
@@ -127,13 +126,19 @@ const VistaMiembros: React.FC<any> = (project) => {
             setModalVisible(true);
           }}
         >
-          <Image
-            source={resolvedSource}
-            style={styles.avatar}
-            onError={() =>
-              setImageErrorMap((prev) => ({ ...prev, [item.id]: true }))
-            }
-          />
+          {isPlaceholder ? (
+            <View style={[styles.avatar, styles.avatarPlaceholder]}>
+              <Image source={placeholderSource} style={styles.avatarLogo} resizeMode="contain" />
+            </View>
+          ) : (
+            <Image
+              source={getImageSource(finalUri)}
+              style={styles.avatar}
+              onError={() =>
+                setImageErrorMap((prev) => ({ ...prev, [item.id]: true }))
+              }
+            />
+          )}
           <View style={styles.infoContainer}>
             <Text style={styles.name}>{item.name}</Text>
             <Text style={styles.email}>{item.email}</Text>
@@ -301,6 +306,10 @@ const styles = StyleSheet.create({
     backgroundColor: "#0D465E",
     justifyContent: "center",
     alignItems: "center",
+  },
+  avatarLogo: {
+    width: 24,
+    height: 24,
   },
   infoContainer: {
     flex: 1,
