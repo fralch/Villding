@@ -32,20 +32,15 @@ const FullScreenImageViewer: React.FC<FullScreenImageViewerProps> = ({
   onDeleteImage,
   canDelete = false
 }) => {
-  const [currentIndex, setCurrentIndex] = useState(initialIndex);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-
   // Filtrando imágenes vacías o undefined antes de usarlas
-  const validImages = images.filter(img => 
-    img && 
-    typeof img === 'string' && 
+  const validImages = images.filter(img =>
+    img &&
+    typeof img === 'string' &&
     img.trim() !== ''
   );
 
-  // Verificar si hay imágenes válidas para mostrar
-  if (validImages.length === 0) {
-    return null; // No renderizar si no hay imágenes válidas
-  }
+  const [currentIndex, setCurrentIndex] = useState(initialIndex);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   // Asegurar que el índice actual es válido
   const safeIndex = Math.max(0, Math.min(currentIndex, validImages.length - 1));
@@ -85,6 +80,13 @@ const FullScreenImageViewer: React.FC<FullScreenImageViewerProps> = ({
     setShowDeleteModal(false);
   };
 
+  const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
+
+  // Verificar si hay imágenes válidas para mostrar
+  if (validImages.length === 0) {
+    return null; // No renderizar si no hay imágenes válidas
+  }
+
   return (
     <Modal visible={visible} transparent={true} animationType="fade">
       <StatusBar hidden={true} />
@@ -92,7 +94,10 @@ const FullScreenImageViewer: React.FC<FullScreenImageViewerProps> = ({
         <View style={styles.imageContainer}>
           <Image
             source={getImageSource(validImages[safeIndex])}
-            style={styles.fullScreenImage}
+            style={{
+              width: screenWidth,
+              height: screenHeight,
+            }}
             resizeMode="contain"
           />
         </View>
@@ -214,8 +219,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   fullScreenImage: {
-    width: '100%',
-    height: '100%',
   },
   closeButton: {
     position: 'absolute',
@@ -352,7 +355,7 @@ const styles = StyleSheet.create({
   modalButtons: {
     flexDirection: 'row',
     width: '100%',
-    gap: 12,
+    justifyContent: 'space-between',
   },
   modalButton: {
     flex: 1,
@@ -361,6 +364,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
+    marginHorizontal: 6,
   },
   cancelButton: {
     backgroundColor: '#f5f5f5',

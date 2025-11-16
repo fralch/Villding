@@ -180,7 +180,7 @@ const TitleSection: React.FC<TitleSectionProps> = ({
                 width: '100%',
                 height: '100%',
               }}
-              resizeMode="cover"
+              resizeMode="contain"
             />
 
             <TouchableOpacity
@@ -281,7 +281,7 @@ const TitleSection: React.FC<TitleSectionProps> = ({
                 <Image
                   source={getImageSource(imageUri)}
                   style={{ width: 100, height: 100, borderRadius: 5 }}
-                  resizeMode="cover"
+                  resizeMode="contain"
                 />
                 {esEditable && (
                   <TouchableOpacity

@@ -603,7 +603,7 @@ const TitleSection: React.FC<TitleSectionProps> = ({
                 height: '100%',
                 borderRadius: 10
               }}
-              resizeMode="cover"
+              resizeMode="contain"
             />
 
             <TouchableOpacity
@@ -686,7 +686,7 @@ const TitleSection: React.FC<TitleSectionProps> = ({
                         : `${API_BASE_URL}/images/activities/${imageUri}`
                   }}
                   style={{ width: 100, height: 100, borderRadius: 5 }}
-                  resizeMode="cover"
+                  resizeMode="contain"
                 />
                 <TouchableOpacity
                   style={{
