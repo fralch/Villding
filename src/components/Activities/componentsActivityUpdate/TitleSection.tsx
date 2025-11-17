@@ -180,7 +180,7 @@ const TitleSection: React.FC<TitleSectionProps> = ({
                 width: '100%',
                 height: '100%',
               }}
-              resizeMode="contain"
+              resizeMode="cover"
             />
 
             <TouchableOpacity
