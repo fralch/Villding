@@ -61,7 +61,12 @@ const ProjectListItem: React.FC<ProjectListItemProps> = ({
         onError={() => setHasImageError(true)}
       />
       <View style={styles.infoContainer}>
-        <Text style={styles.title}>{title}</Text>
+        <View style={styles.titleRow}>
+          <Text style={styles.title} numberOfLines={2} ellipsizeMode="tail">{title}</Text>
+          <View style={styles.weekBadge}>
+            <Text style={styles.weekText}>Semana {week}</Text>
+          </View>
+        </View>
         <Text style={styles.subtitle}>{location}</Text>
         <Text style={styles.subtitle}>{company}</Text>
       </View>
@@ -70,9 +75,6 @@ const ProjectListItem: React.FC<ProjectListItemProps> = ({
         size={30}
         color='white'
       /> */}
-      <View style={styles.weekBadge}>
-        <Text style={styles.weekText}>Semana {week}</Text>
-      </View>
     </TouchableOpacity>
   );
 };
@@ -95,23 +97,27 @@ const styles = StyleSheet.create({
   infoContainer: {
     flex: 1,
   },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+  },
   title: {
     fontSize: 16,
     fontWeight: 'bold',
     color: 'white',
+    flex: 1,
+    marginRight: 8,
   },
   subtitle: {
     fontSize: 14,
     color: 'white',
   },
   weekBadge: {
-    position: 'absolute',
-    top: 16,
-    right: 16,
     backgroundColor: '#0A3649',
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 4,
+    alignSelf: 'flex-start',
   },
   weekText: {
     color: 'white',

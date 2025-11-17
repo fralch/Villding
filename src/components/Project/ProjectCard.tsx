@@ -46,13 +46,15 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
           navigate('Project', { project });
         }}
       >
-        <Text style={styles.cardTitle}>{project.title}</Text>
+        <View style={styles.titleRow}>
+          <Text style={styles.cardTitle} numberOfLines={2} ellipsizeMode="tail">{project.title}</Text>
+          <View style={styles.weekBadge}>
+            <Text style={styles.weekText}>Semana {project.week_current}</Text>
+          </View>
+        </View>
         <Text style={styles.cardSubtitle}>{project.subtitle}</Text>
         <Text style={styles.cardCompany}>{project.company}</Text>
         <Text style={[styles.cardCompany, { fontWeight: 'bold', fontSize: 12, color: '#8AA4A5'}]}>{project.start_date} - {project.end_date}</Text>
-        <View style={styles.weekBadge}>
-          <Text style={styles.weekText}>Semana {project.week_current}</Text>
-        </View>
       </TouchableOpacity>
     </View>
   );
@@ -85,10 +87,16 @@ const styles = StyleSheet.create({
   cardContent: {
     padding: 16,
   },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+  },
   cardTitle: {
     color: 'white',
     fontSize: 18,
     fontWeight: 'bold',
+    flex: 1,
+    marginRight: 8,
   },
   cardSubtitle: {
     color: 'white',
@@ -101,13 +109,11 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   weekBadge: {
-    position: 'absolute',
-    top: 16,
-    right: 16,
     backgroundColor: '#0A3649',
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 4,
+    alignSelf: 'flex-start',
   },
   weekText: {
     color: 'white',
