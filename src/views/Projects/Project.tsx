@@ -2,7 +2,7 @@ import React, { useMemo, useEffect, useCallback } from 'react';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import { useRoute, RouteProp } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
-import { TouchableOpacity, Image, StyleSheet, Dimensions, StatusBar } from 'react-native';
+import { TouchableOpacity, Image, StyleSheet, Dimensions, StatusBar, Text } from 'react-native';
 import Hamburguesa from '../../components/Hamburguesa';
 import TrackingCurrent from '../../components/Activities/TrackingCurrent';
 import { storeProject } from '../../hooks/localStorageCurrentProject';
@@ -162,6 +162,24 @@ export default function Project(props: any) {
         <Drawer.Screen
           name={ProyectoActual?.title || 'Project'}
           component={TrackingCurrent}
+          options={{
+            headerTitle: () => (
+              <Text
+                numberOfLines={2}
+                adjustsFontSizeToFit={false}
+                style={{
+                  color: '#fff',
+                  fontSize: 20,
+                  fontWeight: 'bold',
+                  textAlign: 'left',
+                  lineHeight: 24,
+                  maxWidth: Dimensions.get('window').width - 120,
+                }}
+              >
+                {ProyectoActual?.title || 'Project'}
+              </Text>
+            ),
+          }}
         /> 
       </Drawer.Navigator>
     </>
