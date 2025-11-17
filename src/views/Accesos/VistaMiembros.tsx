@@ -58,6 +58,7 @@ const VistaMiembros: React.FC<any> = (project) => {
   const [codeUser, setCodeUser] = useState("");
   const [ingresado, setIngresado] = useState();
   const [imageErrorMap, setImageErrorMap] = useState<Record<string, boolean>>({});
+  const [isAdmin, setIsAdmin] = useState(false);
 
   // Resuelve correctamente la URI de imagen del perfil del usuario
   // - URLs completas: se usan tal cual
@@ -97,7 +98,13 @@ const VistaMiembros: React.FC<any> = (project) => {
         const apiResponse: ApiResponse = response.data;
         console.log(apiResponse.users);
 
+        const isUserAdmin = apiResponse.users.some(user =>
+          user.id === session?.id && (user.is_admin === 1 || session?.is_admin === 1)
+        );
+
+        setIsAdmin(isUserAdmin);
         setUsers(apiResponse.users);
+        console.log(`isAdmin: ${isUserAdmin}`);
       } catch (error) {
         console.error(error);
       }
@@ -141,8 +148,11 @@ const VistaMiembros: React.FC<any> = (project) => {
           )}
           <View style={styles.infoContainer}>
             <Text style={styles.name}>{item.name}</Text>
-            <Text style={styles.email}>{item.email}</Text>
+            <Text style={styles.email}>
+              {item.email} | {item.is_admin ? "Admin" : "User"}
+            </Text>
           </View>
+          {item.is_admin ? <Text style={styles.adminBadge}>Admin</Text> : null}
         </TouchableOpacity>
       </View>
     );
@@ -163,7 +173,6 @@ const VistaMiembros: React.FC<any> = (project) => {
       const data = {
         user_id: userId,
         project_id: idProject,
-        is_admin: 1,
       };
 
       const response = await axios.post(
@@ -213,6 +222,7 @@ const VistaMiembros: React.FC<any> = (project) => {
       </View>
       <MemberModal
         visible={isModalVisible}
+        admin={isAdmin}
         user={userSelected}
         project={idProject}
         onClose={() => setModalVisible(false)}
@@ -322,6 +332,14 @@ const styles = StyleSheet.create({
   email: {
     color: "#b0c4de",
     fontSize: 12,
+  },
+  adminBadge: {
+    backgroundColor: "#05222f",
+    color: "white",
+    fontSize: 12,
+    paddingVertical: 2,
+    paddingHorizontal: 8,
+    borderRadius: 4,
   },
   inviteButton: {
     backgroundColor: "#eee",
