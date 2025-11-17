@@ -88,7 +88,7 @@ const FullScreenImageViewer: React.FC<FullScreenImageViewerProps> = ({
   }
 
   return (
-    <Modal visible={visible} transparent={true} animationType="fade">
+    <Modal visible={visible} transparent={true} animationType="fade" onRequestClose={onClose}>
       <StatusBar hidden={true} />
       <View style={styles.container}>
         <View style={styles.imageContainer}>
