@@ -159,6 +159,17 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
         return uri;
       }
 
+      // Obtener dimensiones originales de la imagen
+      const { width: originalWidth, height: originalHeight } = await new Promise<{ width: number; height: number }>((resolve, reject) => {
+        Image.getSize(
+          uri,
+          (width, height) => resolve({ width, height }),
+          (error) => reject(error)
+        );
+      });
+
+      console.log(`Dimensiones originales: ${originalWidth}x${originalHeight}`);
+
       // Comprimir la imagen iterativamente hasta que sea menor a 0.5 MB
       let compressedUri = uri;
       let quality = 0.8; // Comenzar con 80% de calidad
@@ -168,7 +179,7 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
       while (attempts < MAX_ATTEMPTS) {
         attempts++;
 
-        // Comprimir la imagen
+        // Comprimir la imagen manteniendo las dimensiones originales
         const manipulatedImage = await ImageManipulator.manipulateAsync(
           compressedUri,
           [], // No realizar transformaciones, solo comprimir
@@ -201,12 +212,34 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
         // Reducir la calidad para el próximo intento
         quality -= 0.1;
 
-        // Si la calidad es muy baja, intentar reducir las dimensiones
+        // Si la calidad es muy baja, intentar reducir las dimensiones manteniendo proporción
         if (quality < 0.3) {
-          console.log('Calidad muy baja, reduciendo dimensiones de la imagen...');
+          console.log('Calidad muy baja, reduciendo dimensiones de la imagen manteniendo proporción...');
+          
+          // Calcular nuevas dimensiones manteniendo el aspect ratio
+          const maxDimension = 1920; // Máxima dimensión permitida
+          let newWidth = originalWidth;
+          let newHeight = originalHeight;
+          
+          if (originalWidth > originalHeight) {
+            // Imagen horizontal
+            if (originalWidth > maxDimension) {
+              newWidth = maxDimension;
+              newHeight = Math.round((originalHeight * maxDimension) / originalWidth);
+            }
+          } else {
+            // Imagen vertical o cuadrada
+            if (originalHeight > maxDimension) {
+              newHeight = maxDimension;
+              newWidth = Math.round((originalWidth * maxDimension) / originalHeight);
+            }
+          }
+
+          console.log(`Redimensionando a: ${newWidth}x${newHeight}`);
+
           const resizedImage = await ImageManipulator.manipulateAsync(
             uri,
-            [{ resize: { width: 1024 } }], // Reducir a ancho de 1024px manteniendo proporción
+            [{ resize: { width: newWidth, height: newHeight } }],
             {
               compress: 0.7,
               format: ImageManipulator.SaveFormat.JPEG
