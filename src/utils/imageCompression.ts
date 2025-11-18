@@ -4,6 +4,7 @@
  */
 
 import { manipulateAsync, SaveFormat } from 'expo-image-manipulator';
+import { Image } from 'react-native';
 import * as FileSystem from 'expo-file-system';
 
 export interface CompressionOptions {
@@ -159,13 +160,35 @@ export const compressImage = async (
       throw new Error(validation.message);
     }
 
+    let originalWidth = 0;
+    let originalHeight = 0;
+    try {
+      const dims = await new Promise<{ width: number; height: number }>((resolve, reject) => {
+        Image.getSize(
+          imageUri,
+          (width, height) => resolve({ width, height }),
+          (error) => reject(error)
+        );
+      });
+      originalWidth = dims.width;
+      originalHeight = dims.height;
+    } catch {}
+
+    let targetWidth = maxWidth;
+    let targetHeight = maxHeight;
+    if (originalWidth > 0 && originalHeight > 0) {
+      const scale = Math.min(maxWidth / originalWidth, maxHeight / originalHeight, 1);
+      targetWidth = Math.round(originalWidth * scale);
+      targetHeight = Math.round(originalHeight * scale);
+    }
+
     const result = await manipulateAsync(
       imageUri,
       [
         {
           resize: {
-            width: maxWidth,
-            height: maxHeight,
+            width: targetWidth,
+            height: targetHeight,
           }
         }
       ],
@@ -184,13 +207,20 @@ export const compressImage = async (
       console.warn('Imagen comprimida aún muy grande, aplicando compresión adicional');
       
       // Aplicar compresión más agresiva
+      let aggressiveWidth = 512;
+      let aggressiveHeight = 512;
+      if (originalWidth > 0 && originalHeight > 0) {
+        const aggressiveScale = Math.min(512 / originalWidth, 512 / originalHeight, 1);
+        aggressiveWidth = Math.round(originalWidth * aggressiveScale);
+        aggressiveHeight = Math.round(originalHeight * aggressiveScale);
+      }
       const secondResult = await manipulateAsync(
         result.uri,
         [
           {
             resize: {
-              width: 512,
-              height: 512,
+              width: aggressiveWidth,
+              height: aggressiveHeight,
             }
           }
         ],
