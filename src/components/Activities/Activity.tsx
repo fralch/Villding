@@ -685,7 +685,13 @@ const ActivityCard: React.FC<{
 
   // Función para convertir hora de 24h a 12h con am/pm
   const convertTo12Hour = (time: string) => {
-    const [hours, minutes] = time.split(':').map(Number);
+    if (!time) return "";
+    const parts = time.split(':');
+    if (parts.length < 2) return time;
+
+    const [hours, minutes] = parts.map(Number);
+    if (isNaN(hours) || isNaN(minutes)) return time;
+
     const period = hours >= 12 ? 'pm' : 'am';
     const hours12 = hours % 12 || 12;
     return `${hours12}:${minutes.toString().padStart(2, '0')} ${period}`;
@@ -700,7 +706,10 @@ const ActivityCard: React.FC<{
     // Si tiene formato "HH:MM - HH:MM" convierte ambas horas
     if (horas.includes(" - ")) {
       const [horaInicio, horaFin] = horas.split(" - ");
-      return `${convertTo12Hour(horaInicio)} - ${convertTo12Hour(horaFin)}`;
+      if (horaFin && horaFin.trim()) {
+        return `${convertTo12Hour(horaInicio)} - ${convertTo12Hour(horaFin)}`;
+      }
+      return convertTo12Hour(horaInicio);
     }
 
     // Si solo tiene hora de inicio, convertirla a formato 12 horas

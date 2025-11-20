@@ -344,7 +344,7 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
       name: formData.titulo,
       description: formData.description,
       location: formData.location,
-      horas: formData.horaInicio && formData.horaFin ? `${formData.horaInicio} - ${formData.horaFin}` : "",
+      horas: `${formData.horaInicio || "07:30"} - ${formData.horaFin || ""}`,
       status,
       icon: formData.selectedIcon,
       comments: formData.comments || "",
