@@ -1,8 +1,10 @@
 // components/TitleSection.tsx
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Image, ScrollView, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Image, ScrollView, Alert, Modal, ActivityIndicator, StyleSheet } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
+import * as ImageManipulator from 'expo-image-manipulator';
+import * as FileSystem from 'expo-file-system/legacy';
 import { getActivity } from '../../../hooks/localStorageCurrentActvity';
 import { styles } from '../styles/ActivityItemCreateStyles';
 import StatusIndicator from './StatusIndicator';
@@ -37,6 +39,8 @@ const TitleSection: React.FC<TitleSectionProps> = ({
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [localImages, setLocalImages] = useState<string[]>(images);
   const [esEditable, setEsEditable] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState('');
   const maxImages = 6;
   
   // Estado para el visor de imágenes a pantalla completa
@@ -75,6 +79,70 @@ const TitleSection: React.FC<TitleSectionProps> = ({
   }, []);
 
 
+  const compressImageIfNeeded = async (uri: string): Promise<string> => {
+    const MAX_SIZE_MB = 0.5;
+    const MAX_SIZE_BYTES = MAX_SIZE_MB * 1024 * 1024;
+    try {
+      const fileInfo = await FileSystem.getInfoAsync(uri);
+      if (!fileInfo.exists || !fileInfo.size) {
+        return uri;
+      }
+      if (fileInfo.size <= MAX_SIZE_BYTES) {
+        return uri;
+      }
+      const { width: originalWidth, height: originalHeight } = await new Promise<{ width: number; height: number }>((resolve, reject) => {
+        Image.getSize(uri, (width, height) => resolve({ width, height }), (error) => reject(error));
+      });
+      let compressedUri = uri;
+      let quality = 0.8;
+      let attempts = 0;
+      const MAX_ATTEMPTS = 10;
+      while (attempts < MAX_ATTEMPTS) {
+        attempts++;
+        const manipulatedImage = await ImageManipulator.manipulateAsync(
+          compressedUri,
+          [],
+          { compress: quality, format: ImageManipulator.SaveFormat.JPEG }
+        );
+        compressedUri = manipulatedImage.uri;
+        const compressedFileInfo = await FileSystem.getInfoAsync(compressedUri);
+        if (!compressedFileInfo.exists || !compressedFileInfo.size) {
+          break;
+        }
+        if (compressedFileInfo.size <= MAX_SIZE_BYTES) {
+          break;
+        }
+        quality -= 0.1;
+        if (quality < 0.3) {
+          const maxDimension = 1920;
+          let newWidth = originalWidth;
+          let newHeight = originalHeight;
+          if (originalWidth > originalHeight) {
+            if (originalWidth > maxDimension) {
+              newWidth = maxDimension;
+              newHeight = Math.round((originalHeight * maxDimension) / originalWidth);
+            }
+          } else {
+            if (originalHeight > maxDimension) {
+              newHeight = maxDimension;
+              newWidth = Math.round((originalWidth * maxDimension) / originalHeight);
+            }
+          }
+          const resizedImage = await ImageManipulator.manipulateAsync(
+            uri,
+            [{ resize: { width: newWidth, height: newHeight } }],
+            { compress: 0.7, format: ImageManipulator.SaveFormat.JPEG }
+          );
+          compressedUri = resizedImage.uri;
+          break;
+        }
+      }
+      return compressedUri;
+    } catch (error) {
+      return uri;
+    }
+  };
+
   // Función para manejar la selección de imágenes de la galería
   const handlePickImages = async () => {
     const remaining = maxImages - localImages.length;
@@ -89,22 +157,38 @@ const TitleSection: React.FC<TitleSectionProps> = ({
       return;
     }
 
-    const result = await ImagePicker.launchImageLibraryAsync({
-      // Instead of using MediaTypeOptions enum
-      // Try using the string value directly
-      mediaTypes: ["images"],  // or ["image"] depending on the expected format
-      allowsMultipleSelection: true,
-      quality: 0.5
-    })
+    const options: ImagePicker.ImagePickerOptions = {
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8
+    };
+
+    setIsLoading(true);
+    setLoadingMessage('Procesando imágenes...');
+    const result = await ImagePicker.launchImageLibraryAsync(options);
 
     if (!result.canceled && result.assets) {
-      const newImages = result.assets.map(asset => asset.uri).slice(0, remaining);
-      const updatedImages = [...localImages, ...newImages].slice(0, maxImages);
+      const remainingSlots = maxImages - localImages.length;
+      const assetsToProcess = result.assets.slice(0, remainingSlots);
+      const processedImages = await Promise.all(
+        assetsToProcess.map(async (asset) => {
+          const compressedUri = await compressImageIfNeeded(asset.uri);
+          return compressedUri;
+        })
+      );
+      const updatedImages = [...localImages, ...processedImages].slice(0, maxImages);
       setLocalImages(updatedImages);
       onImagesUpdate(updatedImages);
-      if (result.assets.length > remaining) {
-        Alert.alert("Límite de selección", `Solo puede agregar ${remaining} imagen${remaining === 1 ? '' : 'es'} más (máximo ${maxImages}).`);
+      setIsLoading(false);
+      setLoadingMessage('');
+      if (result.assets.length > remainingSlots) {
+        Alert.alert("Límite de selección", `Solo puede agregar ${remainingSlots} imagen${remainingSlots === 1 ? '' : 'es'} más (máximo ${maxImages}).`);
       }
+    }
+    else {
+      setIsLoading(false);
+      setLoadingMessage('');
     }
   };
 
@@ -122,13 +206,34 @@ const TitleSection: React.FC<TitleSectionProps> = ({
       return;
     }
 
-    const result = await ImagePicker.launchCameraAsync({ quality: 0.8 });
+    const cameraOptions: ImagePicker.ImagePickerOptions = {
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8
+    };
+
+    setIsLoading(true);
+    setLoadingMessage('Procesando imágenes...');
+    const result = await ImagePicker.launchCameraAsync(cameraOptions);
 
     if (!result.canceled && result.assets) {
-      const newImages = result.assets.map(asset => asset.uri).slice(0, remaining);
-      const updatedImages = [...localImages, ...newImages].slice(0, maxImages);
+      const remainingSlots = maxImages - localImages.length;
+      const assetsToProcess = result.assets.slice(0, remainingSlots);
+      const processedImages = await Promise.all(
+        assetsToProcess.map(async (asset) => {
+          const compressedUri = await compressImageIfNeeded(asset.uri);
+          return compressedUri;
+        })
+      );
+      const updatedImages = [...localImages, ...processedImages].slice(0, maxImages);
       setLocalImages(updatedImages);
       onImagesUpdate(updatedImages);
+      setIsLoading(false);
+      setLoadingMessage('');
+    }
+    else {
+      setIsLoading(false);
+      setLoadingMessage('');
     }
   };
 
@@ -388,8 +493,41 @@ const TitleSection: React.FC<TitleSectionProps> = ({
         </>
       )}
 
+      {isLoading && (
+        <Modal transparent={true} visible={true} onRequestClose={() => {}}>
+          <View style={loadingStyles.overlay}>
+            <View style={loadingStyles.loadingContainer}>
+              <ActivityIndicator size="large" color="#33baba" />
+              <Text style={loadingStyles.loadingText}>{loadingMessage || 'Procesando...'}</Text>
+            </View>
+          </View>
+        </Modal>
+      )}
+
     </View>
   );
 };
 
 export default TitleSection;
+
+const loadingStyles = StyleSheet.create({
+  overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingContainer: {
+    backgroundColor: '#0A3649',
+    borderRadius: 10,
+    padding: 20,
+    alignItems: 'center',
+    minWidth: 200,
+  },
+  loadingText: {
+    color: 'white',
+    marginTop: 15,
+    fontSize: 16,
+    textAlign: 'center',
+  }
+});
