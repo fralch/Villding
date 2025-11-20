@@ -37,6 +37,7 @@ const TitleSection: React.FC<TitleSectionProps> = ({
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [localImages, setLocalImages] = useState<string[]>(images);
   const [esEditable, setEsEditable] = useState(false);
+  const maxImages = 6;
   
   // Estado para el visor de imágenes a pantalla completa
   const [fullScreenVisible, setFullScreenVisible] = useState(false);
@@ -76,6 +77,11 @@ const TitleSection: React.FC<TitleSectionProps> = ({
 
   // Función para manejar la selección de imágenes de la galería
   const handlePickImages = async () => {
+    const remaining = maxImages - localImages.length;
+    if (remaining <= 0) {
+      Alert.alert("Límite alcanzado", "Ha alcanzado el límite de 6 imágenes. Elimine algunas para poder agregar más.");
+      return;
+    }
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
     if (status !== 'granted') {
@@ -92,15 +98,23 @@ const TitleSection: React.FC<TitleSectionProps> = ({
     })
 
     if (!result.canceled && result.assets) {
-      const newImages = result.assets.map(asset => asset.uri);
-      const updatedImages = [...localImages, ...newImages];
+      const newImages = result.assets.map(asset => asset.uri).slice(0, remaining);
+      const updatedImages = [...localImages, ...newImages].slice(0, maxImages);
       setLocalImages(updatedImages);
       onImagesUpdate(updatedImages);
+      if (result.assets.length > remaining) {
+        Alert.alert("Límite de selección", `Solo puede agregar ${remaining} imagen${remaining === 1 ? '' : 'es'} más (máximo ${maxImages}).`);
+      }
     }
   };
 
   // Función para manejar la toma de fotos con la cámara
   const handleTakePhoto = async () => {
+    const remaining = maxImages - localImages.length;
+    if (remaining <= 0) {
+      Alert.alert("Límite alcanzado", "Ha alcanzado el límite de 6 imágenes. Elimine algunas para poder agregar más.");
+      return;
+    }
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
 
     if (status !== 'granted') {
@@ -111,8 +125,8 @@ const TitleSection: React.FC<TitleSectionProps> = ({
     const result = await ImagePicker.launchCameraAsync({ quality: 0.8 });
 
     if (!result.canceled && result.assets) {
-      const newImages = result.assets.map(asset => asset.uri);
-      const updatedImages = [...localImages, ...newImages];
+      const newImages = result.assets.map(asset => asset.uri).slice(0, remaining);
+      const updatedImages = [...localImages, ...newImages].slice(0, maxImages);
       setLocalImages(updatedImages);
       onImagesUpdate(updatedImages);
     }
@@ -266,7 +280,7 @@ const TitleSection: React.FC<TitleSectionProps> = ({
       {localImages.length > 0 && !itemData && (
         <View style={{ marginVertical: 10 }}>
           <Text style={{ color: '#dedede', marginBottom: 8, fontSize: 16 }}>
-            Imágenes ({localImages.length})
+            Imágenes ({localImages.length}/{maxImages})
           </Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             {localImages.map((imageUri, index) => (
@@ -337,13 +351,23 @@ const TitleSection: React.FC<TitleSectionProps> = ({
                   justifyContent: "center",
                   alignItems: "center",
                   marginTop: 10,
-                  backgroundColor: "#dedede",
+                  backgroundColor: localImages.length >= maxImages ? "#999" : "#dedede",
                   borderRadius: 5,
+                  opacity: localImages.length >= maxImages ? 0.7 : 1,
                 }}
                 onPress={() => {
+                  const remaining = maxImages - localImages.length;
+                  if (remaining <= 0) {
+                    Alert.alert(
+                      "Límite alcanzado",
+                      "Ha alcanzado el límite de 6 imágenes. Elimine algunas para poder agregar más.",
+                      [{ text: "Entendido", style: "cancel" }]
+                    );
+                    return;
+                  }
                   Alert.alert(
                     "Subir Imágenes",
-                    "Seleccione una opción",
+                    `Seleccione una opción (${remaining} imágenes restantes)`,
                     [
                       { text: "Tomar Foto", onPress: handleTakePhoto },
                       { text: "Elegir de Galería", onPress: handlePickImages },
@@ -353,9 +377,9 @@ const TitleSection: React.FC<TitleSectionProps> = ({
                 }}
               >
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
-                  <MaterialIcons name="photo-camera" size={20} color={"#0a455e"} />
+            
                   <Text style={{ fontSize: 14, color: "#0a455e", padding: 15 }}>
-                    Subir Imágenes
+                    {localImages.length >= maxImages ? "Límite de imágenes alcanzado (6/6)" : `Subir Imágenes (${localImages.length}/6)`}
                   </Text>
                 </View>
               </TouchableOpacity>
