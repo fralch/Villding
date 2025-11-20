@@ -473,9 +473,11 @@ const handleSaveActivity = async () => {
           <MaterialIcons name='arrow-back' size={24} color='white' />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>{titleTracking}</Text>
+        {isAdmin && (
         <TouchableOpacity onPress={() => setModalOptionsVisible(true)}>
           <Ionicons name='settings' size={24} color='white' />
         </TouchableOpacity>
+        )}
       </View>
       
       <ScrollView style={styles.scrollContainer}>
@@ -511,6 +513,7 @@ const handleSaveActivity = async () => {
                   showModal={() => showModal(activity, day.dayLabel)}
                   setActivityItemCreateType={setActivityItemCreateType}
                   isToday={day.dayLabel === todayFormatted}
+                  isAdmin={isAdmin}
                 />
               ))
             ) : (
@@ -523,6 +526,7 @@ const handleSaveActivity = async () => {
               <Text style={{ color: '#aaa', textAlign: 'center', marginVertical: 10 }}>No hay actividades para este día</Text> 
               </View>
             )}
+            {isAdmin && (
             <TouchableOpacity 
               style={[
                 styles.addNewTaskButton,
@@ -532,6 +536,7 @@ const handleSaveActivity = async () => {
             >
               <Text style={styles.addNewTaskText}>+ Nuevo</Text>
             </TouchableOpacity>
+            )}
           </View>
         ))}
       </ScrollView>
@@ -668,7 +673,8 @@ const ActivityCard: React.FC<{
   showModal: () => void;
   setActivityItemCreateType: (type: string) => void;
   isToday: boolean;
-}> = ({ activity, showModal, setActivityItemCreateType, isToday }) => {
+  isAdmin: boolean;
+}> = ({ activity, showModal, setActivityItemCreateType, isToday, isAdmin }) => {
   const getStatusLabel = (status: string) => {
     switch (status.toLowerCase()) {
       case 'completado': return 'Completado';

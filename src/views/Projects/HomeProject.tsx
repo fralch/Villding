@@ -43,6 +43,7 @@ export default function HomeProject() {
   const [filteredProjects, setFilteredProjects] = React.useState<Project[]>([]);
   const [imageUserSesion, setImageUserSesion] = React.useState<string>();
   const [user, setUser] = React.useState<any>();
+  const [isAdmin, setIsAdmin] = React.useState<boolean>(false);
 
   const screenWidth = Dimensions.get("window").width;
   const headerWidth = Dimensions.get("window").width;
@@ -53,6 +54,7 @@ export default function HomeProject() {
       // console.log(sesion.id);
       setImageUserSesion(sesion.uri);
       setUser(sesion);
+      setIsAdmin(sesion.is_admin === 1);
     });
   }, []);
 
@@ -64,6 +66,7 @@ export default function HomeProject() {
         // console.log(sesion.uri);
         setImageUserSesion(sesion.uri);
         setUser(sesion);
+        setIsAdmin(sesion.is_admin === 1);
       });
 
       return () => {
@@ -283,7 +286,7 @@ export default function HomeProject() {
       ) : null}
 
       {!viewSearch ? (
-        <ProjectList projects={filteredProjects} />
+        <ProjectList projects={filteredProjects} isAdmin={isAdmin} />
       ) : (
         <ProjectListSearch projects={filteredProjects} />
       )}

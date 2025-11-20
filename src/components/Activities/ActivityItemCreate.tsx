@@ -758,6 +758,7 @@ const TitleSection: React.FC<TitleSectionProps> = ({
 
         {/* Menú de opciones de imagen - Ahora ocupa todo el ancho */}
         <View style={{ flex: 1 }}>
+          {isAdmin && (
           <TouchableOpacity 
            onPress={() => handleSubmit('completado')}
            style={{
@@ -775,6 +776,8 @@ const TitleSection: React.FC<TitleSectionProps> = ({
               </Text>
             </View>
           </TouchableOpacity>
+          )}
+          {isAdmin && (
           <TouchableOpacity
             style={{
               justifyContent: "center",
@@ -811,6 +814,7 @@ const TitleSection: React.FC<TitleSectionProps> = ({
               </Text>
             </View>
           </TouchableOpacity>
+          )}
         </View>
       </View>
     </View>

@@ -24,9 +24,10 @@ interface Project {
 
 interface ProjectListProps {
   projects: Project[];
+  isAdmin: boolean;
 }
 
-const ProjectList: React.FC<ProjectListProps> = ({ projects }) => {
+const ProjectList: React.FC<ProjectListProps> = ({ projects, isAdmin }) => {
   const { navigate } = useNavigation<NavigationProp<any>>();
   const [projectsWithCurrentWeek, setProjectsWithCurrentWeek] = useState<Project[]>([]);
 
@@ -79,11 +80,13 @@ const ProjectList: React.FC<ProjectListProps> = ({ projects }) => {
           />
         </TouchableOpacity>
       ))}
-      <View style={styles.content}>
-        <TouchableOpacity onPress={handleNewProject}>
-          <Text style={styles.newProjectText}>+ Nuevo proyecto</Text>
-        </TouchableOpacity>
-      </View>
+      {isAdmin && (
+        <View style={styles.content}>
+          <TouchableOpacity onPress={handleNewProject}>
+            <Text style={styles.newProjectText}>+ Nuevo proyecto</Text>
+          </TouchableOpacity>
+        </View>
+      )}
     </ScrollView>
   );
 };

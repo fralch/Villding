@@ -257,6 +257,11 @@ const ActivityItemUpdate = forwardRef<ActivityItemUpdateRef, ActivityItemUpdateP
       console.log("Actualizando actividad con IMAGEN... FUNCIONANDO!!!");
       // Validación básica
       if (!activity?.id) return false; // verifica si hay un id
+      
+      if (!isAdmin) {
+        showMessage('No tienes permisos para actualizar esta actividad.');
+        return false;
+      }
     
       if (!formData.titulo.trim()) {
         showMessage('Por favor ingrese un título para la actividad.');
@@ -491,6 +496,10 @@ const ActivityItemUpdate = forwardRef<ActivityItemUpdateRef, ActivityItemUpdateP
      * Guarda la actividad en localStorage con la bandera editMode
      */
     const handleEditableChange = async () => {
+      if (!isAdmin) {
+        showMessage('No tienes permisos para editar esta actividad.');
+        return;
+      }
       setIsEditLoading(true);
       
       try {
@@ -525,6 +534,10 @@ const ActivityItemUpdate = forwardRef<ActivityItemUpdateRef, ActivityItemUpdateP
 
     // Función que realiza la eliminación después de confirmar
     const handleDeleteActivity = async () => {
+      if (!isAdmin) {
+        showMessage('No tienes permisos para eliminar esta actividad.');
+        return;
+      }
       try {
         setIsLoading(true);
         await removeActivity();
@@ -635,7 +648,7 @@ const ActivityItemUpdate = forwardRef<ActivityItemUpdateRef, ActivityItemUpdateP
             />
 
             {/* Sección para el botón "Volver a editar" */}
-            {!isEditing && (
+            {!isEditing && isAdmin && (
               <>
                 <View style={{borderBottomColor: "#ccc", borderBottomWidth: 1, marginVertical: 10 }} />
                 <View style={{

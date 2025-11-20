@@ -4,6 +4,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { List, Divider } from 'react-native-paper';
 import { useRoute, RouteProp } from '@react-navigation/native';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
+import { getSesion } from '../hooks/localStorageUser';
+import axios from 'axios';
+import { API_BASE_URL } from '../config/api';
 
 
 interface Project {
@@ -31,6 +34,7 @@ export default function Hamburguesa(props: any) {
 
   // Tipar la ruta para incluir los parámetros
   const route = useRoute<RouteProp<RouteParams, 'params'>>();
+  const [isAdmin, setIsAdmin] = useState(false);
 
   const hasExactProjectStructure = (obj: any): obj is Project => {
     if (!obj) {
@@ -77,6 +81,32 @@ export default function Hamburguesa(props: any) {
     console.log("No valid project found, returning null");
     return null;
   }, [props.route?.params, route.params]);
+
+  useEffect(() => {
+    const checkAdminStatus = async () => {
+      if (!recibiendoProyecto?.id) return;
+
+      const session = JSON.parse(await getSesion() || "{}");
+      
+      if (session?.is_admin === 1) {
+        setIsAdmin(true);
+        return;
+      }
+
+      try {
+        const response = await axios.post(`${API_BASE_URL}/project/check-attachment`, { 
+          project_id: recibiendoProyecto.id 
+        });
+        setIsAdmin(response.data.users.some((user: any) => 
+          user.id === session?.id && user.is_admin === 1 
+        ));
+      } catch (error) {
+        console.error("Error checking admin status:", error);
+      }
+    };
+
+    checkAdminStatus();
+  }, [recibiendoProyecto]);
 
   return (
     <View style={{ flex: 1, backgroundColor: '#05222F', paddingBottom: Math.max(insets.bottom, 16) }}>
@@ -140,38 +170,42 @@ export default function Hamburguesa(props: any) {
         </Text>
       </View>
       {/* Opciones de administración */}
-      <List.Item
-        title='Editar proyecto'
-        titleStyle={{ color: '#FFF' }}
-        right={(props) => (
-          <List.Icon
-            {...props}
-            icon='pencil'
-            color='#FFF'
+      {isAdmin && (
+        <>
+          <List.Item
+            title='Editar proyecto'
+            titleStyle={{ color: '#FFF' }}
+            right={(props) => (
+              <List.Icon
+                {...props}
+                icon='pencil'
+                color='#FFF'
+              />
+            )}
+            onPress={() => {
+              navigate('EditProject', {
+                project: recibiendoProyecto,
+              });
+            }}
           />
-        )}
-        onPress={() => {
-          navigate('EditProject', {
-            project: recibiendoProyecto,
-          });
-        }}
-      />
-      <List.Item
-        title='Administrar miembros'
-        titleStyle={{ color: '#FFF' }}
-        right={(props) => (
-          <List.Icon
-            {...props}
-            icon='account'
-            color='#FFF'
+          <List.Item
+            title='Administrar miembros'
+            titleStyle={{ color: '#FFF' }}
+            right={(props) => (
+              <List.Icon
+                {...props}
+                icon='account'
+                color='#FFF'
+              />
+            )}
+            onPress={() => {
+              navigate('VistaMiembros', {
+                id_project: recibiendoProyecto.id,
+              });
+            }}
           />
-        )}
-        onPress={() => {
-          navigate('VistaMiembros', {
-            id_project: recibiendoProyecto.id,
-          });
-        }}
-      />
+        </>
+      )}
      
      
       <Divider style={{ backgroundColor: '#0A455E' }} />

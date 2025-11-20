@@ -233,6 +233,10 @@ const NewProject: React.FC = () => {
   };
 
   const handleCreateProject = async () => {
+    if (userData?.is_admin !== 1) {
+      alert("No tienes permisos para crear proyectos.");
+      return;
+    }
     setShowModalLoading(true);
     console.log("[handleCreateProject] Iniciando flujo de guardado");
     console.log("[handleCreateProject] Estado actual", {
@@ -434,9 +438,11 @@ const NewProject: React.FC = () => {
           <Text style={{ color: "white", fontSize: 18, fontWeight: "bold" }}>
             Nuevo proyecto
           </Text>
+          {userData?.is_admin === 1 && (
           <TouchableOpacity onPress={handleCreateProject}>
             <Text style={{ color: "white", fontSize: 18 }}>Crear</Text>
           </TouchableOpacity>
+          )}
         </View>
       </View>
       <View style={styles.formContainer}>

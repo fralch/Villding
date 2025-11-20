@@ -207,6 +207,7 @@ const VistaMiembros: React.FC<any> = (project) => {
           renderItem={renderItem}
         />
 
+        {isAdmin && (
         <TouchableOpacity
           style={[
             styles.inviteButton,
@@ -219,6 +220,7 @@ const VistaMiembros: React.FC<any> = (project) => {
             Agregar usuario
           </Text>
         </TouchableOpacity>
+        )}
       </View>
       <MemberModal
         visible={isModalVisible}

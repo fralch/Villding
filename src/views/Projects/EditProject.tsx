@@ -121,6 +121,7 @@ const EditProject: React.FC = () => {
   const [subtypeProyecto, setSubtypeProyecto] = useState<{ name: string; id: string; project_type_id: string }[]>([]);
 
   const [ModalDelete, setModalDelete] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   // Estados para los datos del formulario
   const [formData, setFormData] = useState({
@@ -198,7 +199,35 @@ const EditProject: React.FC = () => {
   useEffect(() => {
     const endDate = calculateEndDate();
     updateFormData("endDate", endDate);
-  }, [formData.startDate, formData.duration, formData.durationUnit]);;
+  }, [formData.startDate, formData.duration, formData.durationUnit]);
+
+  // Check admin status
+  useEffect(() => {
+    const checkAdminStatus = async () => {
+      const project = route.params?.project;
+      if (!project?.id) return;
+
+      const session = JSON.parse(await getSesion() || "{}");
+      
+      if (session?.is_admin === 1) {
+        setIsAdmin(true);
+        return;
+      }
+
+      try {
+        const response = await axios.post(`${API_BASE_URL}/project/check-attachment`, { 
+          project_id: project.id 
+        });
+        setIsAdmin(response.data.users.some((user: any) => 
+          user.id === session?.id && user.is_admin === 1 
+        ));
+      } catch (error) {
+        console.error("Error checking admin status:", error);
+      }
+    };
+
+    checkAdminStatus();
+  }, [route.params?.project]);
 
   // Cargar los datos del proyecto
   // In your useEffect for loading project data
@@ -765,11 +794,13 @@ useEffect(() => {
           <Text style={{ color: "white", fontSize: 18, fontWeight: "bold" }}>
             Editar proyecto
           </Text>
+          {isAdmin && (
           <TouchableOpacity onPress={handleUpdateProject}>
             <Text style={{ color: "white", fontSize: 18 }}>
               Guardar
             </Text>
           </TouchableOpacity>
+          )}
         </View>
       </View>
 
@@ -927,6 +958,7 @@ useEffect(() => {
           </Text>
         )}
 
+        {isAdmin && (
         <TouchableOpacity
           style={{
             backgroundColor: "#0A3649",
@@ -950,6 +982,7 @@ useEffect(() => {
             Eliminar proyecto
           </Text>
         </TouchableOpacity>
+        )}
       </View>
 
       <ConfirmModal
