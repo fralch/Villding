@@ -104,6 +104,7 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
   const [modalMessage, setModalMessage] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState("");
   
   // Efecto para verificar el estado de administrador al montar el componente
   useEffect(() => {
@@ -293,6 +294,8 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
     );
 
     if (!result.canceled && result.assets) {
+      setLoadingMessage('Procesando imágenes...');
+      setIsLoading(true);
       // Calcular cuántas imágenes podemos agregar sin exceder el límite
       const remainingSlots = 6 - formData.images.length;
       const assetsToProcess = result.assets.slice(0, remainingSlots);
@@ -309,6 +312,8 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
         ...prev,
         images: [...prev.images, ...compressedImages]
       }));
+      setIsLoading(false);
+      setLoadingMessage("");
 
       // Si se seleccionaron más imágenes de las permitidas (raro sin multiselect, pero por seguridad)
       if (result.assets.length > remainingSlots) {
@@ -348,6 +353,11 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
     };
 
     try {
+      setLoadingMessage(
+        formData.images.length > 0
+          ? `Subiendo ${formData.images.length} ${formData.images.length === 1 ? 'imagen' : 'imágenes'}...`
+          : 'Procesando...'
+      );
       setIsLoading(true);
 
       const url = `${API_BASE_URL}/activities/create`;
@@ -389,12 +399,14 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
       }
 
       setIsLoading(false);
+      setLoadingMessage("");
       showMessage("Éxito", "Actividad creada correctamente");
       if (hideModal) setTimeout(hideModal, 2000);
       return true;
     } catch (error) {
       console.error('Error:', error);
       setIsLoading(false);
+      setLoadingMessage("");
       showMessage("Error", "No se pudo crear la actividad");
       return false;
     }
@@ -499,10 +511,9 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
             <View style={loadingStyles.loadingContainer}>
               <ActivityIndicator size="large" color="#33baba" />
               <Text style={loadingStyles.loadingText}>
-                {formData.images.length > 0
+                {loadingMessage || (formData.images.length > 0
                   ? `Subiendo ${formData.images.length} ${formData.images.length === 1 ? 'imagen' : 'imágenes'}...`
-                  : 'Procesando...'
-                }
+                  : 'Procesando...')}
               </Text>
             </View>
           </View>
