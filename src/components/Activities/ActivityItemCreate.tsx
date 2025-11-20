@@ -264,8 +264,8 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
   // Modificación en la función handleImagePicker para permitir edición (recorte cuadrado)
   const handleImagePicker = async (useCamera = false) => {
     // Verificar primero si ya se alcanzó el límite de imágenes
-    if (formData.images.length >= 5) {
-      showMessage("Límite alcanzado", "Solo se permite un máximo de 5 imágenes");
+    if (formData.images.length >= 6) {
+      showMessage("Límite alcanzado", "Solo se permite un máximo de 6 imágenes");
       return;
     }
 
@@ -294,7 +294,7 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
 
     if (!result.canceled && result.assets) {
       // Calcular cuántas imágenes podemos agregar sin exceder el límite
-      const remainingSlots = 5 - formData.images.length;
+      const remainingSlots = 6 - formData.images.length;
       const assetsToProcess = result.assets.slice(0, remainingSlots);
 
       // Comprimir cada imagen antes de agregarla
@@ -314,7 +314,7 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
       if (result.assets.length > remainingSlots) {
         showMessage(
           "Límite alcanzado",
-          `Se han agregado ${compressedImages.length} de ${result.assets.length} imágenes seleccionadas. Máximo permitido: 5`
+          `Se han agregado ${compressedImages.length} de ${result.assets.length} imágenes seleccionadas. Máximo permitido: 6`
         );
       }
     }
@@ -596,8 +596,8 @@ const TitleSection: React.FC<TitleSectionProps> = ({
 }) => {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   // Calcular imágenes restantes
-  const remainingImages = 5 - images.length;
-  const buttonDisabled = images.length >= 5;
+  const remainingImages = 6 - images.length;
+  const buttonDisabled = images.length >= 6;
   return (
     <View style={{ backgroundColor: "#0a3649", padding: 20 }}>
       {/* Image Slider - solo se muestra cuando hay imágenes para mostrar */}
@@ -707,7 +707,7 @@ const TitleSection: React.FC<TitleSectionProps> = ({
       {images.length > 0 && (
         <View style={{ marginVertical: 10 }}>
           <Text style={{ color: '#dedede', marginBottom: 8, fontSize: 16 }}>
-            Imágenes ({images.length}/5)
+            Imágenes ({images.length}/6)
           </Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             {images.map((imageUri, index) => (
@@ -787,7 +787,7 @@ const TitleSection: React.FC<TitleSectionProps> = ({
               } else {
                 Alert.alert(
                   "Límite alcanzado",
-                  "Ha alcanzado el límite de 5 imágenes. Elimine algunas para poder agregar más.",
+                  "Ha alcanzado el límite de 6 imágenes. Elimine algunas para poder agregar más.",
                   [{ text: "Entendido", style: "cancel" }]
                 );
               }
@@ -796,7 +796,7 @@ const TitleSection: React.FC<TitleSectionProps> = ({
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
               <MaterialIcons name="photo-camera" size={20} color="#0a455e" />
               <Text style={{ fontSize: 14, color: "#0a455e", padding: 15 }}>
-                {buttonDisabled ? "Límite de imágenes alcanzado (5/5)" : `Subir Imágenes (${images.length}/5)`}
+                {buttonDisabled ? "Límite de imágenes alcanzado (6/6)" : `Subir Imágenes (${images.length}/6)`}
               </Text>
             </View>
           </TouchableOpacity>
