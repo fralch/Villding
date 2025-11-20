@@ -697,23 +697,25 @@ const ActivityCard: React.FC<{
     return `${hours12}:${minutes.toString().padStart(2, '0')} ${period}`;
   };
 
-  // Función para formatear la hora según si tiene inicio y fin
   const formatTimeDisplay = (horas: string) => {
     if (!horas || horas === "0") {
       return "7:30 am";
     }
 
-    // Si tiene formato "HH:MM - HH:MM" convierte ambas horas
-    if (horas.includes(" - ")) {
-      const [horaInicio, horaFin] = horas.split(" - ");
-      if (horaFin && horaFin.trim()) {
+    const normalized = horas.trim();
+
+    if (normalized.includes("-")) {
+      const [horaInicioRaw, horaFinRaw] = normalized.split("-");
+      const horaInicio = (horaInicioRaw || "").trim();
+      const horaFin = (horaFinRaw || "").trim();
+
+      if (horaFin) {
         return `${convertTo12Hour(horaInicio)} - ${convertTo12Hour(horaFin)}`;
       }
       return convertTo12Hour(horaInicio);
     }
 
-    // Si solo tiene hora de inicio, convertirla a formato 12 horas
-    return convertTo12Hour(horas);
+    return convertTo12Hour(normalized);
   };
 
   const statusLabel = getStatusLabel(activity.status);
