@@ -261,7 +261,7 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
     }
   };
 
-  // Modificación en la función handleImagePicker para limitar a 5 imágenes
+  // Modificación en la función handleImagePicker para permitir edición (recorte cuadrado)
   const handleImagePicker = async (useCamera = false) => {
     // Verificar primero si ya se alcanzó el límite de imágenes
     if (formData.images.length >= 5) {
@@ -278,17 +278,19 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
       return;
     }
 
-    // In your handleImagePicker function:
+    // Configuración para permitir edición y recorte cuadrado (1:1)
+    // Nota: allowsEditing no suele ser compatible con allowsMultipleSelection
+    const options: ImagePicker.ImagePickerOptions = {
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    };
+
     const result = await (useCamera
-      ? ImagePicker.launchCameraAsync({ quality: 0.8 })
-      : ImagePicker.launchImageLibraryAsync({
-          // Instead of using MediaTypeOptions enum
-          // Try using the string value directly
-          mediaTypes: ["images"],  // or ["image"] depending on the expected format
-          allowsMultipleSelection: true,
-          quality: 0.5
-        })
-      );
+      ? ImagePicker.launchCameraAsync(options)
+      : ImagePicker.launchImageLibraryAsync(options)
+    );
 
     if (!result.canceled && result.assets) {
       // Calcular cuántas imágenes podemos agregar sin exceder el límite
@@ -308,7 +310,7 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
         images: [...prev.images, ...compressedImages]
       }));
 
-      // Si se seleccionaron más imágenes de las permitidas, mostrar un mensaje
+      // Si se seleccionaron más imágenes de las permitidas (raro sin multiselect, pero por seguridad)
       if (result.assets.length > remainingSlots) {
         showMessage(
           "Límite alcanzado",
@@ -636,7 +638,7 @@ const TitleSection: React.FC<TitleSectionProps> = ({
                 height: '100%',
                 borderRadius: 10
               }}
-              resizeMode="contain"
+              resizeMode="cover"
             />
 
             <TouchableOpacity
