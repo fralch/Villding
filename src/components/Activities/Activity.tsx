@@ -726,7 +726,7 @@ const ActivityCard: React.FC<{
         showModal();
       }}
     >
-      <View>
+      <View style={{ flex: 1, marginRight: 10 }}>
         <View style={styles.taskHeader}>
           <Text style={[styles.taskStatus, {
             backgroundColor: statusLabel === 'Pendiente' ? '#F4C724'
@@ -751,7 +751,8 @@ const ActivityCard: React.FC<{
             height: 44, 
             marginRight: 10, 
             resizeMode: 'contain',
-            alignSelf: 'center'
+            alignSelf: 'center',
+            flexShrink: 0
           }} 
         />
     </TouchableOpacity>
