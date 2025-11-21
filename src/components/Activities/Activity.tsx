@@ -106,11 +106,20 @@ export default function Activity(props: any) {
     }
     
     try {
-      await axios.post(`${API_BASE_URL}/tracking/delete/${tracking.id}`);
+      await axios.delete(`${API_BASE_URL}/tracking/force-delete/${tracking.id}`);
       // Navigate back to the Project screen instead of directly to TrackingCurrent
       navigation.navigate('Project');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error al eliminar el seguimiento:', error);
+      if (error.response) {
+        console.error('Data:', error.response.data);
+        console.error('Status:', error.response.status);
+        console.error('Headers:', error.response.headers);
+      } else if (error.request) {
+        console.error('Request:', error.request);
+      } else {
+        console.error('Error Message:', error.message);
+      }
       Alert.alert('Error', 'No se pudo eliminar el seguimiento');
     } finally {
       setShowDeleteConfirmation(false);
