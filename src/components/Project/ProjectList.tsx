@@ -80,13 +80,11 @@ const ProjectList: React.FC<ProjectListProps> = ({ projects, isAdmin }) => {
           />
         </TouchableOpacity>
       ))}
-      {isAdmin && (
         <View style={styles.content}>
           <TouchableOpacity onPress={handleNewProject}>
             <Text style={styles.newProjectText}>+ Nuevo proyecto</Text>
           </TouchableOpacity>
         </View>
-      )}
     </ScrollView>
   );
 };
