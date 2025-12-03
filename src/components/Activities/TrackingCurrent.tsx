@@ -38,6 +38,82 @@ const TrackingCurrent = () => {
   const [confirmModalVisible, setConfirmModalVisible] = useState(false); // Modal de confirmación 
   const [confirmModalMessage, setConfirmModalMessage] = useState(""); // Mensaje del modal de confirmación
 
+  // Selection Mode State
+  const [isSelectionMode, setIsSelectionMode] = useState(false);
+  const [selectedReportItems, setSelectedReportItems] = useState<Set<string>>(new Set());
+
+  // Toggle selection of a tracking item (trackingId + date)
+  const toggleReportItem = (trackingId: string, date: string) => {
+    const key = `${trackingId}|${date}`;
+    setSelectedReportItems(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(key)) {
+        newSet.delete(key);
+      } else {
+        newSet.add(key);
+      }
+      return newSet;
+    });
+  };
+
+  // Generate report for selected items
+  const generateMultipleReport = async () => {
+    if (selectedReportItems.size === 0) {
+      Alert.alert("Error", "Seleccione al menos un seguimiento para generar el reporte.");
+      return;
+    }
+
+    try {
+      const reportData = Array.from(selectedReportItems).map(key => {
+        const [trackingId, date] = key.split('|');
+        return { tracking_id: parseInt(trackingId), date };
+      });
+
+      Alert.alert('Descargando', `Generando reporte para ${reportData.length} elemento(s)...`);
+
+      const response = await axios.post(
+        `${API_BASE_URL}/tracking/report/multi`,
+        { report_data: reportData },
+        {
+          responseType: 'arraybuffer',
+          headers: { 'Content-Type': 'application/json' }
+        }
+      );
+
+      // Generate filename
+      const now = new Date();
+      const timestamp = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}_${String(now.getHours()).padStart(2,'0')}-${String(now.getMinutes()).padStart(2,'0')}`;
+      const fileName = `reporte_multiple_${timestamp}.pdf`;
+      const fileUri = FileSystem.documentDirectory + fileName;
+
+      const base64 = btoa(
+        new Uint8Array(response.data).reduce(
+          (data, byte) => data + String.fromCharCode(byte),
+          ''
+        )
+      );
+
+      await FileSystem.writeAsStringAsync(fileUri, base64, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+
+      if (await Sharing.isAvailableAsync()) {
+        await Sharing.shareAsync(fileUri, {
+          mimeType: 'application/pdf',
+          dialogTitle: `Reporte Múltiple`,
+        });
+      }
+
+      // Clear selection after success
+      setIsSelectionMode(false);
+      setSelectedReportItems(new Set());
+
+    } catch (error) {
+      console.error("Error generating multiple report:", error);
+      Alert.alert("Error", "No se pudo generar el reporte múltiple.");
+    }
+  };
+
   // Evitar doble carga inicial: refresco cuando se abre la app en esta pantalla
   const initialFetchDoneRef = useRef(false);
 
@@ -602,6 +678,9 @@ const checkAndAdjustCurrentWeek = (startDateStr: string, weekIndex: number, isIn
               setSelectedTracking(tracking);
               setFinishTrackingModalVisible(true);
             }}
+            isSelectionMode={isSelectionMode}
+            selectedItems={selectedReportItems}
+            onToggleItem={toggleReportItem}
           />
         )}
         ListEmptyComponent={() => (
@@ -611,14 +690,44 @@ const checkAndAdjustCurrentWeek = (startDateStr: string, weekIndex: number, isIn
         )}
       />
 
-      {/* Botón para añadir seguimiento */}
-      <TouchableOpacity
-        style={[styles.addButton, { marginBottom: Math.max(insets.bottom, 1) }]}
-        onPress={() => setAddTrackingModalVisible(true)}
-      >
-        <Ionicons name="add-circle-outline" size={24} color="#7bc4c4" />
-        <Text style={styles.addButtonText}>Añadir seguimiento</Text>
-      </TouchableOpacity>
+      {/* Botones de Acción */}
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginHorizontal: 10, marginBottom: Math.max(insets.bottom, 1) }}>
+        
+
+        {isSelectionMode ? (
+          /* Generate Report Button */
+          <TouchableOpacity
+            style={[styles.addButton, { flex: 1, marginLeft: 5, backgroundColor: selectedReportItems.size > 0 ? '#07374a' : '#2a3b45' }]}
+            onPress={generateMultipleReport}
+            disabled={selectedReportItems.size === 0}
+          >
+            <Ionicons name="download-outline" size={24} color={selectedReportItems.size > 0 ? "#7bc4c4" : "#555"} />
+            <Text style={[styles.addButtonText, { color: selectedReportItems.size > 0 ? "#7bc4c4" : "#555" }]}>
+              Generar ({selectedReportItems.size})
+            </Text>
+          </TouchableOpacity>
+        ) : (
+          /* Add Tracking Button */
+          <TouchableOpacity
+            style={[styles.addButton, { flex: 1, marginLeft: 5 }]}
+            onPress={() => setAddTrackingModalVisible(true)}
+          >
+            <Ionicons name="add-circle-outline" size={24} color="#7bc4c4" />
+            <Text style={styles.addButtonText}>Añadir</Text>
+          </TouchableOpacity>
+        )}
+        {/* Toggle Selection Mode */}
+        <TouchableOpacity
+          style={[styles.addButton, { flex: 1, marginRight: 5, backgroundColor: isSelectionMode ? '#6c757d' : '#07374a' }]}
+          onPress={() => {
+            setIsSelectionMode(!isSelectionMode);
+            if (isSelectionMode) setSelectedReportItems(new Set());
+          }}
+        >
+          <Ionicons name={isSelectionMode ? "close-circle-outline" : "documents-outline"} size={24} color="#7bc4c4" />
+          <Text style={styles.addButtonText}>{isSelectionMode ? "Cancelar" : "Reporte"}</Text>
+        </TouchableOpacity>
+      </View>
 
       {/* Modal para añadir seguimiento */}
       <AddTrackingModal
