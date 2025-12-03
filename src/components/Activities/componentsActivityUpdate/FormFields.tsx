@@ -33,6 +33,7 @@ const FormFields: React.FC<FormFieldsProps> = ({
   const [horaInicio, setHoraInicio] = useState("");
   const [horaFin, setHoraFin] = useState("");
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
+  const [showReadMore, setShowReadMore] = useState(false);
 
   // Verificar la editabilidad al cargar el componente
   useEffect(() => {
@@ -153,6 +154,23 @@ const FormFields: React.FC<FormFieldsProps> = ({
               <View style={[styles.inputContainer, { backgroundColor: "#0a3649" }]}>
                 {inputConfig.icon}
                 <View style={{ flex: 1 }}>
+                  {/* Texto oculto para medir líneas */}
+                  {inputConfig.field === 'description' && (
+                    <Text
+                      style={[
+                        styles.input,
+                        { position: 'absolute', opacity: 0, height: 0, width: '100%' }
+                      ]}
+                      onTextLayout={(e) => {
+                        if (e.nativeEvent.lines.length > 3) {
+                          setShowReadMore(true);
+                        }
+                      }}
+                    >
+                      {inputConfig.value || 'Sin descripción'}
+                    </Text>
+                  )}
+
                   <Text
                     style={[
                       styles.input,
@@ -167,7 +185,7 @@ const FormFields: React.FC<FormFieldsProps> = ({
                     {inputConfig.value || (inputConfig.field === 'description' ? 'Sin descripción' : '')}
                   </Text>
                   {/* Botón "Ver más" solo para descripción con contenido */}
-                  {inputConfig.field === 'description' && inputConfig.value && (
+                  {inputConfig.field === 'description' && inputConfig.value && showReadMore && (
                     <TouchableOpacity
                       onPress={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
                       style={{ paddingTop: 5 }}
