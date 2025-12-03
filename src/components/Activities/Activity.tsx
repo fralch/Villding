@@ -108,7 +108,7 @@ export default function Activity(props: any) {
     try {
       await axios.delete(`${API_BASE_URL}/tracking/force-delete/${tracking.id}`);
       // Navigate back to the Project screen instead of directly to TrackingCurrent
-      navigation.navigate('Project');
+      navigation.navigate('Project', { project: props.route.params.project });
     } catch (error: any) {
       console.error('Error al eliminar el seguimiento:', error);
       if (error.response) {

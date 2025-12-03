@@ -410,7 +410,10 @@ const checkAndAdjustCurrentWeek = (startDateStr: string, weekIndex: number, isIn
       days: weekDates
     };
 
-    navigation.navigate('Activity', { tracking: trackingWithContext });
+    navigation.navigate('Activity', { 
+      tracking: trackingWithContext,
+      project: project 
+    });
   };
 
   // Verificar si la fecha es hoy
