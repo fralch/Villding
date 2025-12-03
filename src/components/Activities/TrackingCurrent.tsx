@@ -3,6 +3,7 @@ import { View, FlatList, TouchableOpacity, Text, Modal, Pressable, Alert } from 
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, NavigationProp, useRoute } from '@react-navigation/native';
 import { getProject } from '../../hooks/localStorageCurrentProject';
+import { getSesion } from '../../hooks/localStorageUser';
 import ConfirmModal from '../Alerta/ConfirmationModal';
 import axios from 'axios';
 import { Tracking, TrackingSection, Project } from '../../types/interfaces';
@@ -30,6 +31,7 @@ const TrackingCurrent = () => {
   const [currentWeekIndex, setCurrentWeekIndex] = useState(0); // Índice de la semana actual 0 es la primera semana
   const [totalWeeks, setTotalWeeks] = useState(0); // Número total de semanas del proyecto (desde start_date hasta end_date)
   const [titleTracking, setTitleTracking] = useState(""); // Título del nuevo seguimiento 
+  const [isAdmin, setIsAdmin] = useState(false); // Estado para verificar si el usuario es administrador
 
   // Estados para controlar la visibilidad de los modales
   const [addTrackingModalVisible, setAddTrackingModalVisible] = useState(false); // Modal para añadir seguimiento 
@@ -164,6 +166,45 @@ const TrackingCurrent = () => {
     
     return () => clearInterval(intervalId);
   }, [project, currentWeekIndex]);
+
+  // Verificar si el usuario es administrador
+  const checkAdminStatus = async () => {
+    if (!project?.id) return;
+
+    try {
+      const sessionStr = await getSesion();
+      if (!sessionStr) return;
+
+      const session = JSON.parse(sessionStr);
+
+      // Check if user is super admin (global admin)
+      if (session.is_admin === 1) {
+        setIsAdmin(true);
+        return;
+      }
+
+      // Check project specific admin status
+      const response = await axios.post(
+        `${API_BASE_URL}/project/check-attachment`,
+        { project_id: project.id }
+      );
+
+      const isProjectAdmin = response.data.users.some((user: any) =>
+        user.id === session.id && user.is_admin === 1
+      );
+
+      setIsAdmin(isProjectAdmin);
+    } catch (error) {
+      console.error("Error checking admin status:", error);
+    }
+  };
+
+  // Ejecutar checkAdminStatus cuando cambia el proyecto
+  useEffect(() => {
+    if (project?.id) {
+      checkAdminStatus();
+    }
+  }, [project?.id]);
 
   // Función para cargar el proyecto desde el almacenamiento local
   
@@ -675,8 +716,10 @@ const checkAndAdjustCurrentWeek = (startDateStr: string, weekIndex: number, isIn
             onPress={navigateToTracking}
             weekDates={weekDates}
             onLongPress={(tracking) => {
-              setSelectedTracking(tracking);
-              setFinishTrackingModalVisible(true);
+              if (isAdmin) {
+                setSelectedTracking(tracking);
+                setFinishTrackingModalVisible(true);
+              }
             }}
             isSelectionMode={isSelectionMode}
             selectedItems={selectedReportItems}
@@ -708,6 +751,7 @@ const checkAndAdjustCurrentWeek = (startDateStr: string, weekIndex: number, isIn
           </TouchableOpacity>
         ) : (
           /* Add Tracking Button */
+          isAdmin ? (
           <TouchableOpacity
             style={[styles.addButton, { flex: 1, marginLeft: 5 }]}
             onPress={() => setAddTrackingModalVisible(true)}
@@ -715,6 +759,7 @@ const checkAndAdjustCurrentWeek = (startDateStr: string, weekIndex: number, isIn
             <Ionicons name="add-circle-outline" size={24} color="#7bc4c4" />
             <Text style={styles.addButtonText}>Añadir</Text>
           </TouchableOpacity>
+          ) : null
         )}
         {/* Toggle Selection Mode */}
         <TouchableOpacity

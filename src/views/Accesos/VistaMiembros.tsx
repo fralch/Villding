@@ -194,7 +194,7 @@ const VistaMiembros: React.FC<any> = (project) => {
           <Ionicons name="chevron-back-outline" size={24} color="white" />
         </TouchableOpacity>
         <Text style={{ color: "white", fontSize: 18 }}>
-          Administrar accesos
+          Ver miembros
         </Text>
         <View style={{ flexDirection: "row", alignItems: "center" }}>
      
