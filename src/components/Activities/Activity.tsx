@@ -140,6 +140,10 @@ export default function Activity(props: any) {
   const [isEditing, setIsEditing] = useState(false);
   const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
   
+  // States for duplication
+  const [duplicateModalVisible, setDuplicateModalVisible] = useState(false);
+  const [activityToDuplicate, setActivityToDuplicate] = useState<Activity | null>(null);
+
   // Get today's date in DD/MM format
   const today = new Date();
   const todayFormatted = `${today.getDate()}/${today.getMonth() + 1}`;
@@ -472,6 +476,33 @@ const handleSaveActivity = async () => {
     }
   };
 
+  const handleDuplicate = async (dateLabel: string) => {
+    if (!activityToDuplicate) return;
+
+    try {
+      // Format date from DD/MM to YYYY-MM-DD
+      const [day, month] = dateLabel.split('/').map(Number);
+      const year = new Date().getFullYear();
+      const formattedDate = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+
+      console.log('Duplicating activity:', activityToDuplicate.id, 'to date:', formattedDate);
+
+      await axios.post(`${API_BASE_URL}/activities/duplicate`, {
+        activity_id: activityToDuplicate.id,
+        new_date: formattedDate
+      });
+
+      Alert.alert('Éxito', 'Actividad duplicada exitosamente');
+      setDuplicateModalVisible(false);
+      setActivityToDuplicate(null);
+      await refreshActivities();
+    } catch (error: any) {
+      console.error('Error duplicating activity:', error);
+      const errorMessage = error.response?.data?.message || 'No se pudo duplicar la actividad';
+      Alert.alert('Error', errorMessage);
+    }
+  };
+
 
 
   return (
@@ -523,6 +554,12 @@ const handleSaveActivity = async () => {
                   setActivityItemCreateType={setActivityItemCreateType}
                   isToday={day.dayLabel === todayFormatted}
                   isAdmin={isAdmin}
+                  onLongPress={() => {
+                    if (isAdmin) {
+                      setActivityToDuplicate(activity);
+                      setDuplicateModalVisible(true);
+                    }
+                  }}
                 />
               ))
             ) : (
@@ -606,6 +643,56 @@ const handleSaveActivity = async () => {
         </TouchableOpacity>
       </Modal>
 
+      <Modal
+        visible={duplicateModalVisible}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setDuplicateModalVisible(false)}
+      >
+        <TouchableOpacity 
+          style={styles.modalContainer} 
+          activeOpacity={1} 
+          onPress={() => setDuplicateModalVisible(false)}
+        >
+          <View style={styles.modalContainerOptions}>
+            <TouchableOpacity 
+              style={styles.modalCloseButton}
+              onPress={() => setDuplicateModalVisible(false)}
+            >
+              <Text style={styles.modalCloseButtonText}>×</Text>
+            </TouchableOpacity>
+            
+            <Text style={styles.modalTitle}>Duplicar Actividad</Text>
+            <Text style={{color: '#666', textAlign: 'center', marginBottom: 15, paddingHorizontal: 10}}>
+                Selecciona la fecha para duplicar:{'\n'}
+                <Text style={{fontWeight: 'bold'}}>{activityToDuplicate?.name}</Text>
+            </Text>
+
+            <ScrollView style={{maxHeight: 300, width: '100%'}}>
+                {tracking.days.map((day) => (
+                    <TouchableOpacity
+                        key={day}
+                        style={{
+                            padding: 15,
+                            borderBottomWidth: 1,
+                            borderBottomColor: '#eee',
+                            alignItems: 'center',
+                            backgroundColor: '#f9f9f9',
+                            marginVertical: 2,
+                            borderRadius: 5
+                        }}
+                        onPress={() => handleDuplicate(day)}
+                    >
+                        <Text style={{fontSize: 16, color: '#333'}}>
+                            {getDayName(day)} - {day}
+                        </Text>
+                    </TouchableOpacity>
+                ))}
+            </ScrollView>
+          </View>
+        </TouchableOpacity>
+      </Modal>
+
        <Modal
          transparent
          visible={isVisible}
@@ -683,7 +770,8 @@ const ActivityCard: React.FC<{
   setActivityItemCreateType: (type: string) => void;
   isToday: boolean;
   isAdmin: boolean;
-}> = ({ activity, showModal, setActivityItemCreateType, isToday, isAdmin }) => {
+  onLongPress?: () => void;
+}> = ({ activity, showModal, setActivityItemCreateType, isToday, isAdmin, onLongPress }) => {
   const getStatusLabel = (status: string) => {
     switch (status.toLowerCase()) {
       case 'completado': return 'Completado';
@@ -745,6 +833,8 @@ const ActivityCard: React.FC<{
         setActivityItemCreateType(statusLabel);
         showModal();
       }}
+      onLongPress={onLongPress}
+      delayLongPress={500}
     >
       <View style={{ flex: 1, marginRight: 10 }}>
         <View style={styles.taskHeader}>

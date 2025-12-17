@@ -3,6 +3,7 @@ import { View, FlatList, TouchableOpacity, Text, Modal, Pressable, Alert } from 
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, NavigationProp, useRoute } from '@react-navigation/native';
 import { getProject } from '../../hooks/localStorageCurrentProject';
+import { getSesion } from '../../hooks/localStorageUser';
 import ConfirmModal from '../Alerta/ConfirmationModal';
 import axios from 'axios';
 import { Tracking, TrackingSection, Project } from '../../types/interfaces';
@@ -30,6 +31,7 @@ const TrackingCurrent = () => {
   const [currentWeekIndex, setCurrentWeekIndex] = useState(0); // Índice de la semana actual 0 es la primera semana
   const [totalWeeks, setTotalWeeks] = useState(0); // Número total de semanas del proyecto (desde start_date hasta end_date)
   const [titleTracking, setTitleTracking] = useState(""); // Título del nuevo seguimiento 
+  const [isAdmin, setIsAdmin] = useState(false); // Estado para verificar si el usuario es administrador
 
   // Estados para controlar la visibilidad de los modales
   const [addTrackingModalVisible, setAddTrackingModalVisible] = useState(false); // Modal para añadir seguimiento 
@@ -37,6 +39,82 @@ const TrackingCurrent = () => {
   const [selectedTracking, setSelectedTracking] = useState<Tracking | null>(null); // Tracking seleccionado para finalizar
   const [confirmModalVisible, setConfirmModalVisible] = useState(false); // Modal de confirmación 
   const [confirmModalMessage, setConfirmModalMessage] = useState(""); // Mensaje del modal de confirmación
+
+  // Selection Mode State
+  const [isSelectionMode, setIsSelectionMode] = useState(false);
+  const [selectedReportItems, setSelectedReportItems] = useState<Set<string>>(new Set());
+
+  // Toggle selection of a tracking item (trackingId + date)
+  const toggleReportItem = (trackingId: string, date: string) => {
+    const key = `${trackingId}|${date}`;
+    setSelectedReportItems(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(key)) {
+        newSet.delete(key);
+      } else {
+        newSet.add(key);
+      }
+      return newSet;
+    });
+  };
+
+  // Generate report for selected items
+  const generateMultipleReport = async () => {
+    if (selectedReportItems.size === 0) {
+      Alert.alert("Error", "Seleccione al menos un seguimiento para generar el reporte.");
+      return;
+    }
+
+    try {
+      const reportData = Array.from(selectedReportItems).map(key => {
+        const [trackingId, date] = key.split('|');
+        return { tracking_id: parseInt(trackingId), date };
+      });
+
+      Alert.alert('Descargando', `Generando reporte para ${reportData.length} elemento(s)...`);
+
+      const response = await axios.post(
+        `${API_BASE_URL}/tracking/report/multi`,
+        { report_data: reportData },
+        {
+          responseType: 'arraybuffer',
+          headers: { 'Content-Type': 'application/json' }
+        }
+      );
+
+      // Generate filename
+      const now = new Date();
+      const timestamp = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}_${String(now.getHours()).padStart(2,'0')}-${String(now.getMinutes()).padStart(2,'0')}`;
+      const fileName = `reporte_multiple_${timestamp}.pdf`;
+      const fileUri = FileSystem.documentDirectory + fileName;
+
+      const base64 = btoa(
+        new Uint8Array(response.data).reduce(
+          (data, byte) => data + String.fromCharCode(byte),
+          ''
+        )
+      );
+
+      await FileSystem.writeAsStringAsync(fileUri, base64, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+
+      if (await Sharing.isAvailableAsync()) {
+        await Sharing.shareAsync(fileUri, {
+          mimeType: 'application/pdf',
+          dialogTitle: `Reporte Múltiple`,
+        });
+      }
+
+      // Clear selection after success
+      setIsSelectionMode(false);
+      setSelectedReportItems(new Set());
+
+    } catch (error) {
+      console.error("Error generating multiple report:", error);
+      Alert.alert("Error", "No se pudo generar el reporte múltiple.");
+    }
+  };
 
   // Evitar doble carga inicial: refresco cuando se abre la app en esta pantalla
   const initialFetchDoneRef = useRef(false);
@@ -88,6 +166,45 @@ const TrackingCurrent = () => {
     
     return () => clearInterval(intervalId);
   }, [project, currentWeekIndex]);
+
+  // Verificar si el usuario es administrador
+  const checkAdminStatus = async () => {
+    if (!project?.id) return;
+
+    try {
+      const sessionStr = await getSesion();
+      if (!sessionStr) return;
+
+      const session = JSON.parse(sessionStr);
+
+      // Check if user is super admin (global admin)
+      if (session.is_admin === 1) {
+        setIsAdmin(true);
+        return;
+      }
+
+      // Check project specific admin status
+      const response = await axios.post(
+        `${API_BASE_URL}/project/check-attachment`,
+        { project_id: project.id }
+      );
+
+      const isProjectAdmin = response.data.users.some((user: any) =>
+        user.id === session.id && user.is_admin === 1
+      );
+
+      setIsAdmin(isProjectAdmin);
+    } catch (error) {
+      console.error("Error checking admin status:", error);
+    }
+  };
+
+  // Ejecutar checkAdminStatus cuando cambia el proyecto
+  useEffect(() => {
+    if (project?.id) {
+      checkAdminStatus();
+    }
+  }, [project?.id]);
 
   // Función para cargar el proyecto desde el almacenamiento local
   
@@ -599,9 +716,14 @@ const checkAndAdjustCurrentWeek = (startDateStr: string, weekIndex: number, isIn
             onPress={navigateToTracking}
             weekDates={weekDates}
             onLongPress={(tracking) => {
-              setSelectedTracking(tracking);
-              setFinishTrackingModalVisible(true);
+              if (isAdmin) {
+                setSelectedTracking(tracking);
+                setFinishTrackingModalVisible(true);
+              }
             }}
+            isSelectionMode={isSelectionMode}
+            selectedItems={selectedReportItems}
+            onToggleItem={toggleReportItem}
           />
         )}
         ListEmptyComponent={() => (
@@ -611,14 +733,46 @@ const checkAndAdjustCurrentWeek = (startDateStr: string, weekIndex: number, isIn
         )}
       />
 
-      {/* Botón para añadir seguimiento */}
-      <TouchableOpacity
-        style={[styles.addButton, { marginBottom: Math.max(insets.bottom, 1) }]}
-        onPress={() => setAddTrackingModalVisible(true)}
-      >
-        <Ionicons name="add-circle-outline" size={24} color="#7bc4c4" />
-        <Text style={styles.addButtonText}>Añadir seguimiento</Text>
-      </TouchableOpacity>
+      {/* Botones de Acción */}
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginHorizontal: 10, marginBottom: Math.max(insets.bottom, 1) }}>
+        
+
+        {isSelectionMode ? (
+          /* Generate Report Button */
+          <TouchableOpacity
+            style={[styles.addButton, { flex: 1, marginLeft: 5, backgroundColor: selectedReportItems.size > 0 ? '#07374a' : '#2a3b45' }]}
+            onPress={generateMultipleReport}
+            disabled={selectedReportItems.size === 0}
+          >
+            <Ionicons name="download-outline" size={24} color={selectedReportItems.size > 0 ? "#7bc4c4" : "#555"} />
+            <Text style={[styles.addButtonText, { color: selectedReportItems.size > 0 ? "#7bc4c4" : "#555" }]}>
+              Generar ({selectedReportItems.size})
+            </Text>
+          </TouchableOpacity>
+        ) : (
+          /* Add Tracking Button */
+          isAdmin ? (
+          <TouchableOpacity
+            style={[styles.addButton, { flex: 1, marginLeft: 5 }]}
+            onPress={() => setAddTrackingModalVisible(true)}
+          >
+            <Ionicons name="add-circle-outline" size={24} color="#7bc4c4" />
+            <Text style={styles.addButtonText}>Añadir</Text>
+          </TouchableOpacity>
+          ) : null
+        )}
+        {/* Toggle Selection Mode */}
+        <TouchableOpacity
+          style={[styles.addButton, { flex: 1, marginRight: 5, backgroundColor: isSelectionMode ? '#6c757d' : '#07374a' }]}
+          onPress={() => {
+            setIsSelectionMode(!isSelectionMode);
+            if (isSelectionMode) setSelectedReportItems(new Set());
+          }}
+        >
+          <Ionicons name={isSelectionMode ? "close-circle-outline" : "documents-outline"} size={24} color="#7bc4c4" />
+          <Text style={styles.addButtonText}>{isSelectionMode ? "Cancelar" : "Reporte"}</Text>
+        </TouchableOpacity>
+      </View>
 
       {/* Modal para añadir seguimiento */}
       <AddTrackingModal

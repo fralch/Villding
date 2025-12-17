@@ -171,41 +171,40 @@ export default function Hamburguesa(props: any) {
       </View>
       {/* Opciones de administración */}
       {isAdmin && (
-        <>
-          <List.Item
-            title='Editar proyecto'
-            titleStyle={{ color: '#FFF' }}
-            right={(props) => (
-              <List.Icon
-                {...props}
-                icon='pencil'
-                color='#FFF'
-              />
-            )}
-            onPress={() => {
-              navigate('EditProject', {
-                project: recibiendoProyecto,
-              });
-            }}
-          />
-          <List.Item
-            title='Administrar miembros'
-            titleStyle={{ color: '#FFF' }}
-            right={(props) => (
-              <List.Icon
-                {...props}
-                icon='account'
-                color='#FFF'
-              />
-            )}
-            onPress={() => {
-              navigate('VistaMiembros', {
-                id_project: recibiendoProyecto.id,
-              });
-            }}
-          />
-        </>
+        <List.Item
+          title='Editar proyecto'
+          titleStyle={{ color: '#FFF' }}
+          right={(props) => (
+            <List.Icon
+              {...props}
+              icon='pencil'
+              color='#FFF'
+            />
+          )}
+          onPress={() => {
+            navigate('EditProject', {
+              project: recibiendoProyecto,
+            });
+          }}
+        />
       )}
+      
+      <List.Item
+        title='Ver miembros'
+        titleStyle={{ color: '#FFF' }}
+        right={(props) => (
+          <List.Icon
+            {...props}
+            icon='account'
+            color='#FFF'
+          />
+        )}
+        onPress={() => {
+          navigate('VistaMiembros', {
+            id_project: recibiendoProyecto.id,
+          });
+        }}
+      />
      
      
       <Divider style={{ backgroundColor: '#0A455E' }} />
