@@ -366,39 +366,53 @@ const checkAndAdjustCurrentWeek = (startDateStr: string, weekIndex: number, isIn
     });
   };
 
+  // Helper function to get the exact Date for a specific day index in the current week
+  const getDateOfCurrentWeek = (dayIndex: number): Date | null => {
+    if (!project?.start_date) return null;
+
+    const [day, month, year] = project.start_date.split('/').map(Number);
+    const projectStartDate = new Date(year, month - 1, day);
+    const firstMonday = getMonday(projectStartDate);
+
+    const targetDate = new Date(firstMonday);
+    targetDate.setDate(firstMonday.getDate() + (currentWeekIndex * 7) + dayIndex);
+    
+    return targetDate;
+  };
+
   // Filtrar los seguimientos para mostrar solo los de la semana actual
   const filterTrackingsByWeek = () => {
-    if (trackingSections.length === 0 || weekDates.length === 0) return;  // Verifica si hay datos disponibles para filtrar
+    if (trackingSections.length === 0 || !project?.start_date) return;
 
-    const currentYear = new Date().getFullYear();                             // Obtiene el año actual para crear fechas completas
+    // Use the helper to get precise start and end of the week
+    const weekStart = getDateOfCurrentWeek(0); // Monday
+    const weekEnd = getDateOfCurrentWeek(6);   // Sunday
 
-    const [startDay, startMonth] = weekDates[0].split("/").map(Number);      // Extrae día y mes del primer día (Lunes) del formato "DD/MM"
-    const [endDay, endMonth] = weekDates[6].split("/").map(Number);          // Extrae día y mes del último día (Domingo) del formato "DD/MM"
+    if (!weekStart || !weekEnd) return;
 
-    const weekStart = new Date(currentYear, startMonth - 1, startDay);        // Crea fecha de inicio de semana (Lunes)
-    const weekEnd = new Date(currentYear, endMonth - 1, endDay, 23, 59, 59); // Crea fecha de fin de semana (Domingo) incluyendo todo el día
+    // Set times to cover the full range
+    weekStart.setHours(0, 0, 0, 0);
+    weekEnd.setHours(23, 59, 59, 999);
 
     const filtered = trackingSections
-      .map(section => ({                                                      // Mapea cada sección de seguimiento
-        ...section,                                                           // Mantiene los datos originales de la sección
-        trackings: section.trackings.filter(tracking => {                     // Filtra los seguimientos dentro de la sección
-          if (!tracking.date_start) return false;                            // Excluye seguimientos sin fecha de inicio
+      .map(section => ({
+        ...section,
+        trackings: section.trackings.filter(tracking => {
+          if (!tracking.date_start) return false;
           
-          const trackingStartDate = new Date(tracking.date_start);           // Convierte la fecha de inicio del seguimiento a objeto Date
+          const trackingStartDate = new Date(tracking.date_start);
           
-          // Si el tracking tiene deleted_at (soft delete), calcular su fecha de finalización
           if (tracking.deleted_at) {
-            const deletedDate = new Date(tracking.deleted_at);               // Fecha cuando fue eliminado (soft delete)
-            // El tracking se muestra desde su fecha de inicio hasta la semana donde fue eliminado
+            const deletedDate = new Date(tracking.deleted_at);
             return trackingStartDate <= weekEnd && deletedDate >= weekStart;
           }
           
-          // Si el tracking está activo (sin deleted_at), se muestra hasta el fin de semana actual
-          return trackingStartDate <= weekEnd;                              // Incluye solo seguimientos hasta el fin de semana
+          return trackingStartDate <= weekEnd;
         })
       }))
-      .filter(section => section.trackings.length > 0);                      // Elimina secciones que quedaron sin seguimientos
-    setFilteredTrackings(filtered);                                          // Actualiza el estado con las secciones filtradas
+      .filter(section => section.trackings.length > 0);
+      
+    setFilteredTrackings(filtered);
   };
 
   // Cambiar a la semana anterior o siguiente
@@ -451,11 +465,14 @@ const checkAndAdjustCurrentWeek = (startDateStr: string, weekIndex: number, isIn
 
     try {
       // Usar el día central de la semana como fecha de inicio
-      const year = new Date().getFullYear();
-      const centralDay = weekDates[3]; // Jueves
-      const [day, month] = centralDay.split("/").map(Number);
-
-      const startDate = new Date(year, month - 1, day);
+      // 3 means Thursday (0 = Monday, 3 = Thursday)
+      const startDate = getDateOfCurrentWeek(3); 
+      
+      if (!startDate) {
+        setConfirmModalMessage("Error: No se pudo calcular la fecha");
+        setConfirmModalVisible(true);
+        return;
+      }
 
       const trackingData = {
         project_id: project.id,
@@ -486,12 +503,15 @@ const checkAndAdjustCurrentWeek = (startDateStr: string, weekIndex: number, isIn
 
     try {
       // Calcular la fecha media de la semana actual (día central - jueves)
-      const year = new Date().getFullYear();
-      const centralDay = weekDates[3]; // Jueves (día central de la semana)
-      const [day, month] = centralDay.split("/").map(Number);
-      
-      // Crear la fecha completa con el año actual
-      const deletedAtDate = new Date(year, month - 1, day);
+      // 3 means Thursday
+      const deletedAtDate = getDateOfCurrentWeek(3);
+
+      if (!deletedAtDate) {
+         setConfirmModalMessage("Error: No se pudo calcular la fecha");
+         setConfirmModalVisible(true);
+         return;
+      }
+
       const deletedAt = deletedAtDate.toISOString().split('T')[0];
       
       // Preparar los datos para enviar
@@ -545,19 +565,30 @@ const checkAndAdjustCurrentWeek = (startDateStr: string, weekIndex: number, isIn
   const downloadDailyReports = async (dayIndex: number) => {
     console.log('=== INICIO downloadDailyReports ===');
     console.log('dayIndex:', dayIndex);
-    console.log('weekDates[dayIndex]:', weekDates[dayIndex]);
+    
+    // We can use optional chaining or check length, but the helper handles calculation better
+    // Verify that we have filtered trackings first
     console.log('filteredTrackings.length:', filteredTrackings.length);
 
-    if (!weekDates[dayIndex] || filteredTrackings.length === 0) {
+    if (filteredTrackings.length === 0) {
       console.log('ERROR: No hay datos para descargar');
       Alert.alert('Sin datos', 'No hay seguimientos para este día');
       return;
     }
 
     try {
-      // Obtener la fecha en formato YYYY-MM-DD
-      const [day, month] = weekDates[dayIndex].split('/').map(Number);
-      const year = new Date().getFullYear();
+      // Get correct date using our helper
+      const targetDate = getDateOfCurrentWeek(dayIndex);
+      
+      if (!targetDate) {
+         console.log('ERROR: No se pudo calcular la fecha');
+         Alert.alert('Error', 'No se pudo calcular la fecha del reporte');
+         return;
+      }
+      
+      const year = targetDate.getFullYear();
+      const month = targetDate.getMonth() + 1;
+      const day = targetDate.getDate();
       const formattedDate = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 
       console.log('Fecha formateada:', formattedDate);
