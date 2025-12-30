@@ -90,7 +90,7 @@ const TrackingSection: React.FC<TrackingSectionProps> = ({
           onPress={() => !isSelectionMode && onPress(tracking)}
           activeOpacity={isSelectionMode ? 1 : 0.7}
         >
-          <Text style={styles.taskTitle}>{tracking.title}</Text>
+          <Text style={styles.taskTitle} numberOfLines={1} ellipsizeMode="tail">{tracking.title}</Text>
           <View style={styles.iconRow}>
             {weekDates.map((dateStr, i) => {
               const status = getStatusForDay(tracking, i);
