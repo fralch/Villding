@@ -144,30 +144,50 @@ export default function Activity(props: any) {
   const [duplicateModalVisible, setDuplicateModalVisible] = useState(false);
   const [activityToDuplicate, setActivityToDuplicate] = useState<Activity | null>(null);
 
-  // Get today's date in DD/MM format
+  // Get today's date in YYYY-MM-DD format
   const today = new Date();
-  const todayFormatted = `${today.getDate()}/${today.getMonth() + 1}`;
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, '0');
+  const day = String(today.getDate()).padStart(2, '0');
+  const todayFormatted = `${year}-${month}-${day}`;
 
   const getDayName = (dateString: string) => {
     const days = [ 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
-    const [day, month] = dateString.split('/').map(Number);
-    const date = new Date(2024, month - 1, day);
-    return days[date.getDay()];
+    // dateString is YYYY-MM-DD
+    const [year, month, day] = dateString.split('-').map(Number);
+    const date = new Date(year, month - 1, day);
+    const dayIndex = date.getDay(); // 0 is Sunday
+    const adjustedIndex = dayIndex === 0 ? 6 : dayIndex - 1;
+    return days[adjustedIndex];
   };
 
-  // Función para formatear fecha_creacion de formato "YYYY-MM-DD" a "DD/MM"
+  const formatDateDisplay = (iso: string) => {
+    if (!iso) return '';
+    const [year, month, day] = iso.split('-');
+    return `${day}/${month}`;
+  };
+
+  // Función para formatear fecha_creacion de formato "YYYY-MM-DD" a "YYYY-MM-DD"
   const formatDateFromString = (dateString: string): string => {
     try {
-      // Si el formato es YYYY-MM-DD como '2025-03-03'
+      if (!dateString) return '';
+      // Si ya tiene el formato YYYY-MM-DD
       if (dateString.match(/^\d{4}-\d{2}-\d{2}$/)) {
-        const [year, month, day] = dateString.split('-');
-        return `${parseInt(day, 10)}/${parseInt(month, 10)}`;
+        return dateString;
       }
-
-      // Intenta con Date si el formato es otro
+      
+      // Si tiene tiempo, cortar
+      if (dateString.includes('T')) {
+          return dateString.split('T')[0];
+      }
+      
+      // Fallback a Date
       const date = new Date(dateString);
       if (!isNaN(date.getTime())) {
-        return `${date.getDate()}/${date.getMonth() + 1}`;
+         const year = date.getFullYear();
+         const month = String(date.getMonth() + 1).padStart(2, '0');
+         const day = String(date.getDate()).padStart(2, '0');
+         return `${year}-${month}-${day}`;
       }
 
       console.error('Formato de fecha no reconocido:', dateString);
@@ -191,10 +211,8 @@ export default function Activity(props: any) {
     }
 
     try {
-      // Convertir fecha de formato DD/MM a YYYY-MM-DD
-      const [day, month] = dayLabel.split('/').map(Number);
-      const year = new Date().getFullYear();
-      const formattedDate = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+      // dayLabel ya viene en formato YYYY-MM-DD
+      const formattedDate = dayLabel;
 
       console.log('Fecha formateada:', formattedDate);
       console.log('URL del API:', `${API_BASE_URL}/tracking/report/daily/${tracking.id}`);
@@ -294,7 +312,7 @@ export default function Activity(props: any) {
   
         const weekDaysWithActivities: WeekDay[] = tracking.days.map(dayLabel => {
           const dayActivities = apiActivities.filter(activity => {
-            // Usar la función específica para formatear YYYY-MM-DD a DD/MM
+            // Usar la función específica para formatear YYYY-MM-DD
             const formattedActivityDate = formatDateFromString(activity.fecha_creacion);
             return formattedActivityDate === dayLabel;
           });
@@ -480,10 +498,8 @@ const handleSaveActivity = async () => {
     if (!activityToDuplicate) return;
 
     try {
-      // Format date from DD/MM to YYYY-MM-DD
-      const [day, month] = dateLabel.split('/').map(Number);
-      const year = new Date().getFullYear();
-      const formattedDate = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+      // dateLabel is already YYYY-MM-DD
+      const formattedDate = dateLabel;
 
       console.log('Duplicating activity:', activityToDuplicate.id, 'to date:', formattedDate);
 
@@ -542,7 +558,7 @@ const handleSaveActivity = async () => {
                 <Text style={{ color: '#7bc4c4', marginLeft: 8, fontSize: 14 }}>Descargar Reporte</Text>
               </TouchableOpacity> 
               <Text style={[styles.dayTitle, { textAlign: 'right', flex: 1 }]}>
-                {getDayName(day.dayLabel)} - {day.dayLabel}
+                {getDayName(day.dayLabel)} - {formatDateDisplay(day.dayLabel)}
               </Text>
             </View>
             {day.activities.length > 0 ? (
@@ -684,7 +700,7 @@ const handleSaveActivity = async () => {
                         onPress={() => handleDuplicate(day)}
                     >
                         <Text style={{fontSize: 16, color: '#333'}}>
-                            {getDayName(day)} - {day}
+                            {getDayName(day)} - {formatDateDisplay(day)}
                         </Text>
                     </TouchableOpacity>
                 ))}
@@ -827,7 +843,7 @@ const ActivityCard: React.FC<{
         { backgroundColor: backgroundColor,
           flexDirection: 'row',
           justifyContent: 'space-between',
-         } 
+          } 
       ]}
       onPress={() => {
         setActivityItemCreateType(statusLabel);

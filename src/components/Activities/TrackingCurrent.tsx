@@ -305,7 +305,10 @@ const checkAndAdjustCurrentWeek = (startDateStr: string, weekIndex: number, isIn
     const dates = Array.from({ length: 7 }, (_, index) => {
       const date = new Date(targetMonday);
       date.setDate(targetMonday.getDate() + index);
-      return date.toLocaleDateString("es-PE", { day: "2-digit", month: "2-digit" });
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
     });
   
     // console.log('Calculated Dates:', dates);
@@ -555,10 +558,11 @@ const checkAndAdjustCurrentWeek = (startDateStr: string, weekIndex: number, isIn
 
   // Verificar si la fecha es hoy
   const isToday = (date: string) => {
-    return new Date().toLocaleDateString('es-PE', {
-      day: '2-digit',
-      month: '2-digit'
-    }) === date;
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}` === date;
   };
 
   // Descargar reportes diarios para un día específico
@@ -729,7 +733,7 @@ const checkAndAdjustCurrentWeek = (startDateStr: string, weekIndex: number, isIn
           <DayColumn
             key={index}
             day={day}
-            date={weekDates[index] || ''}
+            date={weekDates[index] ? weekDates[index].split('-').reverse().slice(0, 2).join('/') : ''}
             isToday={isToday(weekDates[index] || '')}
          
           />

@@ -11,7 +11,7 @@ type TrackingSectionProps = {
   };
   onPress: (tracking: Tracking) => void;
   onLongPress: (tracking: Tracking) => void;
-  weekDates: string[]; // Formato ["17/3", "18/3", etc.]
+  weekDates: string[]; // Formato ["YYYY-MM-DD", etc.]
   isSelectionMode?: boolean;
   selectedItems?: Set<string>; // keys: "trackingId|YYYY-MM-DD"
   onToggleItem?: (trackingId: string, date: string) => void;
@@ -33,31 +33,13 @@ const TrackingSection: React.FC<TrackingSectionProps> = ({
     return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
   };
   
-  // Helper to get full date string from weekDateStr
-  const getFullDate = (weekDateStr: string) => {
-    if (!weekDateStr) return null;
-    const [day, month] = weekDateStr.split('/');
-    const year = new Date().getFullYear(); // Use current year
-    return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
-  };
-  
-  // Función para obtener la fecha actual en formato "DD/M"
-  const getCurrentDateShort = () => {
-    const today = new Date();
-    return `${today.getDate()}/${today.getMonth() + 1}`;
-  };
-  
   const getStatusForDay = (tracking: any, dateIndex: number) => {
-    // Obtener la fecha del weekDates en el formato "DD/M"
-    const weekDateStr = weekDates[dateIndex]; // "17/3"
-    if (!weekDateStr) return null; // Si no hay fecha, retornar null
-    
-    // Convertir el formato "DD/M" a "YYYY-MM-DD" para comparar con days_summary
-    const fullDateStr = getFullDate(weekDateStr);
-    if (!fullDateStr) return null;
+    // Obtener la fecha del weekDates en el formato "YYYY-MM-DD"
+    const dateStr = weekDates[dateIndex];
+    if (!dateStr) return null; // Si no hay fecha, retornar null
     
     // Buscar esta fecha en days_summary
-    const dayInfo = tracking.days_summary?.find((d: any) => d.date === fullDateStr);
+    const dayInfo = tracking.days_summary?.find((d: any) => d.date === dateStr);
     
     if (!dayInfo) return null; // Si no se encuentra información para este día
     
@@ -77,16 +59,14 @@ const TrackingSection: React.FC<TrackingSectionProps> = ({
   // Función para verificar si una fecha es el día actual
   const isToday = (dateStr: string) => {
     if (!dateStr) return false;
-    const currentDateShort = getCurrentDateShort();
-    return dateStr === currentDateShort;
+    return dateStr === getCurrentDate();
   };
   
   // Función para verificar si una fecha es pasada (menor a la fecha actual)
   const isPast = (dateStr: string) => {
     if (!dateStr) return false;
-    const fullDate = getFullDate(dateStr);
     const currentDate = getCurrentDate();
-    return fullDate && fullDate < currentDate;
+    return dateStr < currentDate;
   };
   
   // Función para obtener el color de fondo según la fecha
@@ -96,11 +76,8 @@ const TrackingSection: React.FC<TrackingSectionProps> = ({
     }
     if (isToday(dateStr)) {
       return "#002a36"; // Color más oscuro para hoy
-    } else if (isPast(dateStr)) {
-      return "#003b4d"; // Color oscuro para días pasados
-    } else {
-      return "#004e66"; // Color original para días futuros
-    }
+    } 
+    return "#003b4d"; // Color unificado para el resto de días
   };
   
   return (
@@ -117,8 +94,7 @@ const TrackingSection: React.FC<TrackingSectionProps> = ({
           <View style={styles.iconRow}>
             {weekDates.map((dateStr, i) => {
               const status = getStatusForDay(tracking, i);
-              const fullDate = getFullDate(dateStr);
-              const isSelected = isSelectionMode && fullDate ? selectedItems.has(`${tracking.id}|${fullDate}`) : false;
+              const isSelected = isSelectionMode ? selectedItems.has(`${tracking.id}|${dateStr}`) : false;
               const backgroundColor = getBackgroundColor(dateStr, isSelected);
               
               return (
@@ -126,8 +102,8 @@ const TrackingSection: React.FC<TrackingSectionProps> = ({
                   key={i}
                   disabled={!isSelectionMode}
                   onPress={() => {
-                    if (isSelectionMode && onToggleItem && fullDate) {
-                      onToggleItem(String(tracking.id), fullDate);
+                    if (isSelectionMode && onToggleItem) {
+                      onToggleItem(String(tracking.id), dateStr);
                     }
                   }}
                   style={[
