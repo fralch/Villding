@@ -134,8 +134,26 @@ const ActivityItemCreate = forwardRef<ActivityItemCreateRef, ActivityItemCreateP
 
   // Función para establecer la fecha inicial
   const setInitialDate = () => {
-    const newDate = new Date().getFullYear() + "-" + date.split("/").reverse().join("-");
-    setFormData(prev => ({ ...prev, fecha_creacion: new Date(newDate).toISOString().split('T')[0] }));
+    // Si la fecha ya viene en formato YYYY-MM-DD
+    if (date.match(/^\d{4}-\d{2}-\d{2}$/)) {
+      setFormData(prev => ({ ...prev, fecha_creacion: date }));
+      return;
+    }
+
+    // Si la fecha viene en formato DD/MM (formato antiguo)
+    if (date.includes('/')) {
+      const newDate = new Date().getFullYear() + "-" + date.split("/").reverse().join("-");
+      setFormData(prev => ({ ...prev, fecha_creacion: new Date(newDate).toISOString().split('T')[0] }));
+      return;
+    }
+    
+    // Fallback por si acaso
+    try {
+      setFormData(prev => ({ ...prev, fecha_creacion: new Date(date).toISOString().split('T')[0] }));
+    } catch (e) {
+      console.error("Error parsing date:", date, e);
+      setFormData(prev => ({ ...prev, fecha_creacion: new Date().toISOString().split('T')[0] }));
+    }
   };
 
   // Función para comprimir imagen si es mayor a 0.5 MB
